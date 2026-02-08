@@ -1,0 +1,35 @@
+# Cấu hình quy trình tích hợp (Pipeline Settings)
+# Thiết lập các ngưỡng tin cậy và chiến lược hợp nhất module
+
+pipeline:
+  name: "STIXnet + CyberEntRel Augmented Pipeline"
+  version: "2.1"
+
+# Ngưỡng tin cậy (Confidence Thresholds)
+
+  thresholds:
+    global_acceptance: 0.5           
+    
+    # Ngưỡng cụ thể cho thực thể (SDO)
+    entity_extraction:
+      deep_learning_min_conf: 0.5   
+      kb_matcher_weight: 1.0         
+      ioc_regex_weight: 1.0          
+
+    # Ngưỡng cụ thể cho quan hệ (SRO)
+    relation_extraction:
+      rule_based_min_sim: 0.5        # Độ tương đồng Wu-Palmer tối thiểu 
+      sbert_cosine_min_sim: 0.5      # Độ tương đồng Cosine tối thiểu từ mô hình SBERT 
+      joint_model_min_conf: 0.5      # Ngưỡng tin cậy từ lõi CyberEntRel 
+
+# Chiến lược hợp nhất (Merge Strategy)
+  merger:
+    priority_order:
+      - "ioc_finder"                 # Ưu tiên 1: Regex cho độ chính xác cao nhất 
+      - "kb_matcher"                 # Ưu tiên 2: Các thực thể đã biết trong Knowledge Base 
+      - "joint_model"                # Ưu tiên 3: Trích xuất liên hợp cho thực thể mới/quan hệ phức tạp 
+      - "ttp_extractor"              # Ưu tiên 4: Kỹ thuật ẩn ý từ Bosch dataset 
+
+    handle_conflicts: "highest_confidence" # Nếu trùng lặp, chọn cái có điểm tin cậy cao hơn 
+    allow_novel_entities: true             # Cho phép thêm thực thể mới nếu vượt ngưỡng 
+

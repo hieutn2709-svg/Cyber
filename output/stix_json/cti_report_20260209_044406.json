@@ -1,0 +1,49 @@
+{
+    "type": "bundle",
+    "id": "bundle--c3f9ed35-dc8e-4734-99a7-a4e0468f934f",
+    "objects": [
+        {
+            "type": "intrusion-set",
+            "spec_version": "2.1",
+            "id": "intrusion-set--879cf146-b614-4b35-9fad-b1905df744e2",
+            "created": "2026-02-08T21:44:06.067507Z",
+            "modified": "2026-02-08T21:44:06.067507Z",
+            "name": "OceanLotus",
+            "confidence": 100,
+            "external_references": [
+                {
+                    "source_name": "kb_matcher"
+                }
+            ]
+        },
+        {
+            "type": "vulnerability",
+            "spec_version": "2.1",
+            "id": "vulnerability--22e9a179-4c62-4f68-bd66-e33939cac1d3",
+            "created": "2026-02-08T21:44:06.067507Z",
+            "modified": "2026-02-08T21:44:06.067507Z",
+            "name": "CVE-2021-26855",
+            "confidence": 100,
+            "external_references": [
+                {
+                    "source_name": "ioc_finder"
+                },
+                {
+                    "source_name": "cve",
+                    "external_id": "CVE-2021-26855"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--04b38ce5-3bfb-4899-8492-0c172512a689",
+            "created": "2026-02-08T21:44:06.067507Z",
+            "modified": "2026-02-08T21:44:06.067507Z",
+            "relationship_type": "exploits",
+            "source_ref": "intrusion-set--879cf146-b614-4b35-9fad-b1905df744e2",
+            "target_ref": "vulnerability--22e9a179-4c62-4f68-bd66-e33939cac1d3",
+            "confidence": 90
+        }
+    ]
+}

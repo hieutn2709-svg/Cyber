@@ -1,0 +1,28 @@
+# Cấu hình mô hình trích xuất liên hợp CyberEntRel - STIXnet
+model:
+  architecture: "RoBERTa-BiGRU-CRF"
+  encoder: "roberta-base"
+  max_seq_length: 512
+  hidden_layer_neurons: 1536 
+  
+  bigru:
+    dimension: 250             # Kích thước lớp GRU 
+    num_layers: 2              # Stacked BiGRU 
+    dropout: 0.5               # Tỷ lệ dropout 
+    use_attention: true        # Sử dụng cơ chế chú ý
+
+# Các khối khác giữ nguyên cấp độ ngoài cùng
+training:
+  optimizer: "AdamW"
+  learning_rate: 2.0e-5
+  batch_size: 16
+  epochs: 100
+  weight_decay: 0.01
+
+multi_task_weight:
+  ner_loss_weight: 0.8
+  rel_loss_weight: 0.2
+
+tagging:
+  scheme: "BIEOS-extended"
+  num_entity_types: 18

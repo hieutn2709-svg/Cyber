@@ -1,0 +1,93 @@
+{
+  "stix_version": "2.1",
+  "description": "Mapping dictionary from model labels to STIX 2.1 SDOs and SROs",
+  
+  "stix_domain_objects": [
+    "attack-pattern",
+    "campaign",
+    "course-of-action",
+    "grouping",
+    "identity",
+    "indicator",
+    "infrastructure",
+    "intrusion-set",
+    "location",
+    "malware",
+    "malware-analysis",
+    "note",
+    "observed-data",
+    "opinion",
+    "report",
+    "threat-actor",
+    "tool",
+    "vulnerability"
+  ],
+
+  "label_mapping": {
+    "entities": {
+      "tactic": "x-mitre-tactic",
+      "technique": "attack-pattern",
+      "assault_technique": "attack-pattern",
+      "mitigation": "course-of-action",
+      "group": "intrusion-set",
+      "APT_group": "intrusion-set",
+      "software": "malware",
+      "ransomware": "malware",
+      "application": "tool",
+      "corporation": "identity",
+      "locale": "location",
+      "infected_file": "artifact",
+      "vulnerability_id": "vulnerability",
+      "algorithm": "tool"
+    }
+  },
+
+  "stix_relationship_objects": {
+    "description": "Standard STIX 2.1 relationships (100+ types support)",
+    "common_relations": [
+      "uses",
+      "targets",
+      "exploits",
+      "launches",
+      "indicates",
+      "originates-from",
+      "operates-in",
+      "is-susceptible-to",
+      "belongs-to",
+      "implements",
+      "mitigates",
+      "attributed-to",
+      "variant-of",
+      "compromises",
+      "downloads",
+      "delivers"
+    ],
+    "matching_rules": [
+      {
+        "source": "intrusion-set",
+        "target": "attack-pattern",
+        "relationship": "uses"
+      },
+      {
+        "source": "malware",
+        "target": "vulnerability",
+        "relationship": "exploits"
+      },
+      {
+        "source": "intrusion-set",
+        "target": "location",
+        "relationship": "targets"
+      },
+      {
+        "source": "indicator",
+        "target": "malware",
+        "relationship": "indicates"
+      },
+      {
+        "source": "intrusion-set",
+        "target": "campaign",
+        "relationship": "launches"
+      }
+    ]
+  }
+}

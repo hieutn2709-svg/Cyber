@@ -1,0 +1,1256 @@
+{
+  "protocol": "five-fold document-level cross-validation with rotating validation fold",
+  "assignment_seed": 42,
+  "number_of_folds": 5,
+  "number_of_documents": 52,
+  "folds": [
+    {
+      "fold": 0,
+      "documents": [
+        "400",
+        "372",
+        "387",
+        "411",
+        "415",
+        "401",
+        "402",
+        "417",
+        "397",
+        "403",
+        "366"
+      ],
+      "source_files": [
+        "Andariel.txt",
+        "APT18.txt",
+        "APT41.txt",
+        "AXIOM.txt",
+        "Deep_Panda.txt",
+        "Dragonfly.txt",
+        "GALLIUM.txt",
+        "Higaisa.txt",
+        "MuddyWater.txt",
+        "Whitefly.txt",
+        "WinDealer.txt"
+      ]
+    },
+    {
+      "fold": 1,
+      "documents": [
+        "374",
+        "376",
+        "386",
+        "399",
+        "416",
+        "390",
+        "420",
+        "407",
+        "396",
+        "409",
+        "423"
+      ],
+      "source_files": [
+        "APT28.txt",
+        "APT32.txt",
+        "APT39.txt",
+        "Blue_Mockingbird.txt",
+        "Elderwood.txt",
+        "FIN5.txt",
+        "Gallmaker.txt",
+        "Nomadic_Octopus.txt",
+        "PLATINUM.txt",
+        "Stealth_Falcon.txt",
+        "Wizard_Spider.txt"
+      ]
+    },
+    {
+      "fold": 2,
+      "documents": [
+        "371",
+        "373",
+        "377",
+        "381",
+        "412",
+        "418",
+        "398",
+        "424",
+        "23",
+        "422"
+      ],
+      "source_files": [
+        "APT12.txt",
+        "APT19.txt",
+        "APT33.txt",
+        "APT38.txt",
+        "Cobalt_Group.txt",
+        "Honeybee.txt",
+        "Inception.txt",
+        "Silent_Librarian.txt",
+        "test2.json",
+        "Windigo.txt"
+      ]
+    },
+    {
+      "fold": 3,
+      "documents": [
+        "410",
+        "375",
+        "413",
+        "391",
+        "392",
+        "419",
+        "408",
+        "421",
+        "426",
+        "406"
+      ],
+      "source_files": [
+        "ALLANITE.txt",
+        "APT3.txt",
+        "CopyKittens.txt",
+        "FIN6.txt",
+        "FIN7.txt",
+        "Fox_Kitten.txt",
+        "LazyScripter.txt",
+        "Leviathan.txt",
+        "Naikon.txt",
+        "ZIRCONIUM.txt"
+      ]
+    },
+    {
+      "fold": 4,
+      "documents": [
+        "370",
+        "378",
+        "414",
+        "388",
+        "389",
+        "393",
+        "405",
+        "425",
+        "365",
+        "395"
+      ],
+      "source_files": [
+        "APT1.txt",
+        "APT37.txt",
+        "DarkHydrus.txt",
+        "FIN10.txt",
+        "FIN4.txt",
+        "FIN8.txt",
+        "Mustang_Panda.txt",
+        "Rancor.txt",
+        "STIXnet_Example.txt",
+        "TA459.txt"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "document_id": "426",
+      "source_file": "Naikon.txt",
+      "characters": 1783,
+      "entity_mentions": 32,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 7,
+        "intrusion-set": 18,
+        "location": 3,
+        "tool": 2
+      },
+      "relation_counts": {
+        "targets": 5,
+        "used-by": 2,
+        "uses": 2
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "425",
+      "source_file": "Rancor.txt",
+      "characters": 776,
+      "entity_mentions": 18,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 1,
+        "intrusion-set": 10,
+        "location": 1,
+        "tool": 4
+      },
+      "relation_counts": {
+        "targets": 2,
+        "uses": 7
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "424",
+      "source_file": "Silent_Librarian.txt",
+      "characters": 2122,
+      "entity_mentions": 25,
+      "relation_instances": 7,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "identity": 1,
+        "intrusion-set": 17,
+        "location": 2
+      },
+      "relation_counts": {
+        "originates-from": 2,
+        "targets": 1,
+        "used-by": 3,
+        "uses": 1
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "423",
+      "source_file": "Wizard_Spider.txt",
+      "characters": 1391,
+      "entity_mentions": 25,
+      "relation_instances": 10,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 1,
+        "intrusion-set": 10,
+        "location": 1,
+        "malware": 4,
+        "tool": 5
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "used-by": 2,
+        "uses": 7
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "422",
+      "source_file": "Windigo.txt",
+      "characters": 920,
+      "entity_mentions": 20,
+      "relation_instances": 15,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "identity": 1,
+        "intrusion-set": 10,
+        "malware": 2,
+        "tool": 2
+      },
+      "relation_counts": {
+        "deliver": 2,
+        "targeted-by": 1,
+        "targets": 1,
+        "used-by": 4,
+        "uses": 7
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "421",
+      "source_file": "Leviathan.txt",
+      "characters": 1430,
+      "entity_mentions": 37,
+      "relation_instances": 25,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "identity": 3,
+        "intrusion-set": 14,
+        "location": 6,
+        "malware": 3,
+        "tool": 5
+      },
+      "relation_counts": {
+        "deliver": 1,
+        "originates-from": 1,
+        "targets": 7,
+        "used-by": 5,
+        "uses": 11
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "420",
+      "source_file": "Gallmaker.txt",
+      "characters": 723,
+      "entity_mentions": 12,
+      "relation_instances": 4,
+      "entity_counts": {
+        "attack-pattern": 1,
+        "identity": 2,
+        "intrusion-set": 7,
+        "location": 1,
+        "tool": 1
+      },
+      "relation_counts": {
+        "targeted-by": 1,
+        "targets": 1,
+        "uses": 2
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "419",
+      "source_file": "Fox_Kitten.txt",
+      "characters": 1047,
+      "entity_mentions": 29,
+      "relation_instances": 16,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 3,
+        "intrusion-set": 12,
+        "location": 6,
+        "tool": 5
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targets": 7,
+        "used-by": 1,
+        "uses": 7
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "418",
+      "source_file": "Honeybee.txt",
+      "characters": 842,
+      "entity_mentions": 18,
+      "relation_instances": 10,
+      "entity_counts": {
+        "attack-pattern": 1,
+        "intrusion-set": 8,
+        "location": 6,
+        "malware": 1,
+        "tool": 2
+      },
+      "relation_counts": {
+        "targets": 6,
+        "used-by": 1,
+        "uses": 3
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "417",
+      "source_file": "Higaisa.txt",
+      "characters": 970,
+      "entity_mentions": 25,
+      "relation_instances": 12,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "intrusion-set": 13,
+        "location": 6,
+        "tool": 3
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targets": 5,
+        "uses": 6
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "416",
+      "source_file": "Elderwood.txt",
+      "characters": 1379,
+      "entity_mentions": 17,
+      "relation_instances": 6,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 1,
+        "intrusion-set": 10,
+        "location": 1,
+        "malware": 2
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targets": 1,
+        "used-by": 3,
+        "uses": 1
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "415",
+      "source_file": "Deep_Panda.txt",
+      "characters": 1498,
+      "entity_mentions": 35,
+      "relation_instances": 13,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "identity": 4,
+        "intrusion-set": 19,
+        "location": 1,
+        "malware": 1,
+        "tool": 4
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 1,
+        "targets": 1,
+        "used-by": 1,
+        "uses": 9
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "414",
+      "source_file": "DarkHydrus.txt",
+      "characters": 1131,
+      "entity_mentions": 21,
+      "relation_instances": 11,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "identity": 3,
+        "intrusion-set": 7,
+        "location": 1,
+        "malware": 2,
+        "tool": 3
+      },
+      "relation_counts": {
+        "targets": 2,
+        "used-by": 3,
+        "uses": 6
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "413",
+      "source_file": "CopyKittens.txt",
+      "characters": 858,
+      "entity_mentions": 28,
+      "relation_instances": 11,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "campaign": 1,
+        "indicator": 1,
+        "intrusion-set": 8,
+        "location": 7,
+        "malware": 2,
+        "tool": 6
+      },
+      "relation_counts": {
+        "indicates": 1,
+        "originates-from": 1,
+        "used-by": 2,
+        "uses": 7
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "412",
+      "source_file": "Cobalt_Group.txt",
+      "characters": 1421,
+      "entity_mentions": 30,
+      "relation_instances": 21,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "identity": 1,
+        "intrusion-set": 10,
+        "location": 4,
+        "malware": 2,
+        "tool": 8
+      },
+      "relation_counts": {
+        "authored-by": 1,
+        "targeted-by": 1,
+        "targets": 3,
+        "used-by": 1,
+        "uses": 15
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "411",
+      "source_file": "AXIOM.txt",
+      "characters": 843,
+      "entity_mentions": 15,
+      "relation_instances": 5,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "intrusion-set": 10,
+        "location": 1
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "used-by": 2,
+        "uses": 2
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "410",
+      "source_file": "ALLANITE.txt",
+      "characters": 815,
+      "entity_mentions": 14,
+      "relation_instances": 6,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "intrusion-set": 7,
+        "location": 3
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targets": 2,
+        "used-by": 1,
+        "uses": 2
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "409",
+      "source_file": "Stealth_Falcon.txt",
+      "characters": 843,
+      "entity_mentions": 14,
+      "relation_instances": 7,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "intrusion-set": 6,
+        "location": 3,
+        "tool": 2
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targets": 1,
+        "used-by": 3,
+        "uses": 2
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "408",
+      "source_file": "LazyScripter.txt",
+      "characters": 684,
+      "entity_mentions": 16,
+      "relation_instances": 7,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 2,
+        "intrusion-set": 8,
+        "tool": 3
+      },
+      "relation_counts": {
+        "targets": 2,
+        "uses": 5
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "407",
+      "source_file": "Nomadic_Octopus.txt",
+      "characters": 935,
+      "entity_mentions": 17,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 2,
+        "intrusion-set": 9,
+        "location": 2,
+        "malware": 1,
+        "tool": 1
+      },
+      "relation_counts": {
+        "deliver": 1,
+        "originates-from": 1,
+        "targets": 2,
+        "uses": 5
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "406",
+      "source_file": "ZIRCONIUM.txt",
+      "characters": 989,
+      "entity_mentions": 23,
+      "relation_instances": 14,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 3,
+        "intrusion-set": 10,
+        "location": 2,
+        "tool": 3,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 2,
+        "targets": 4,
+        "used-by": 4,
+        "uses": 3
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "405",
+      "source_file": "Mustang_Panda.txt",
+      "characters": 1007,
+      "entity_mentions": 24,
+      "relation_instances": 12,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "intrusion-set": 10,
+        "location": 7,
+        "malware": 2,
+        "tool": 3
+      },
+      "relation_counts": {
+        "deliver": 1,
+        "originates-from": 1,
+        "targets": 6,
+        "used-by": 2,
+        "uses": 2
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "403",
+      "source_file": "Whitefly.txt",
+      "characters": 1101,
+      "entity_mentions": 18,
+      "relation_instances": 7,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 1,
+        "intrusion-set": 10,
+        "location": 2,
+        "malware": 1,
+        "tool": 2
+      },
+      "relation_counts": {
+        "targets": 2,
+        "used-by": 2,
+        "uses": 3
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "402",
+      "source_file": "GALLIUM.txt",
+      "characters": 1300,
+      "entity_mentions": 26,
+      "relation_instances": 10,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "intrusion-set": 14,
+        "location": 3,
+        "malware": 1,
+        "tool": 4
+      },
+      "relation_counts": {
+        "used-by": 1,
+        "uses": 9
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "401",
+      "source_file": "Dragonfly.txt",
+      "characters": 1470,
+      "entity_mentions": 34,
+      "relation_instances": 20,
+      "entity_counts": {
+        "attack-pattern": 8,
+        "identity": 5,
+        "intrusion-set": 16,
+        "location": 1,
+        "tool": 4
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 2,
+        "targets": 5,
+        "used-by": 3,
+        "uses": 9
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "400",
+      "source_file": "Andariel.txt",
+      "characters": 2023,
+      "entity_mentions": 31,
+      "relation_instances": 11,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "campaign": 3,
+        "identity": 1,
+        "intrusion-set": 17,
+        "location": 5,
+        "tool": 3
+      },
+      "relation_counts": {
+        "located-at": 1,
+        "originates-from": 2,
+        "targets": 3,
+        "used-by": 2,
+        "uses": 3
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "399",
+      "source_file": "Blue_Mockingbird.txt",
+      "characters": 1535,
+      "entity_mentions": 26,
+      "relation_instances": 15,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "domain-name": 1,
+        "identity": 1,
+        "intrusion-set": 12,
+        "malware": 1,
+        "tool": 5,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "targeted-by": 1,
+        "targets": 2,
+        "used-by": 4,
+        "uses": 8
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "398",
+      "source_file": "Inception.txt",
+      "characters": 1229,
+      "entity_mentions": 20,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 1,
+        "identity": 1,
+        "intrusion-set": 11,
+        "location": 6,
+        "tool": 1
+      },
+      "relation_counts": {
+        "located-at": 1,
+        "targets": 6,
+        "used-by": 1,
+        "uses": 1
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "397",
+      "source_file": "MuddyWater.txt",
+      "characters": 1446,
+      "entity_mentions": 30,
+      "relation_instances": 14,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 2,
+        "intrusion-set": 15,
+        "location": 3,
+        "malware": 2,
+        "tool": 5
+      },
+      "relation_counts": {
+        "targets": 3,
+        "used-by": 1,
+        "uses": 10
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "396",
+      "source_file": "PLATINUM.txt",
+      "characters": 1161,
+      "entity_mentions": 18,
+      "relation_instances": 6,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 2,
+        "intrusion-set": 12,
+        "location": 1,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "targets": 4,
+        "used-by": 1,
+        "uses": 1
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "395",
+      "source_file": "TA459.txt",
+      "characters": 502,
+      "entity_mentions": 13,
+      "relation_instances": 7,
+      "entity_counts": {
+        "attack-pattern": 1,
+        "identity": 1,
+        "intrusion-set": 6,
+        "location": 4,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "originates-from": 2,
+        "targeted-by": 2,
+        "targets": 2,
+        "uses": 1
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "393",
+      "source_file": "FIN8.txt",
+      "characters": 1320,
+      "entity_mentions": 27,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 1,
+        "intrusion-set": 17,
+        "tool": 5,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "targeted-by": 1,
+        "targets": 1,
+        "used-by": 2,
+        "uses": 5
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "392",
+      "source_file": "FIN7.txt",
+      "characters": 1572,
+      "entity_mentions": 28,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "intrusion-set": 17,
+        "location": 1,
+        "malware": 4,
+        "tool": 2
+      },
+      "relation_counts": {
+        "authored-by": 1,
+        "targets": 1,
+        "used-by": 2,
+        "uses": 5
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "391",
+      "source_file": "FIN6.txt",
+      "characters": 1686,
+      "entity_mentions": 28,
+      "relation_instances": 11,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "intrusion-set": 14,
+        "malware": 4,
+        "tool": 6
+      },
+      "relation_counts": {
+        "used-by": 1,
+        "uses": 10
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "390",
+      "source_file": "FIN5.txt",
+      "characters": 1396,
+      "entity_mentions": 30,
+      "relation_instances": 12,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "identity": 3,
+        "intrusion-set": 12,
+        "location": 1,
+        "malware": 2,
+        "tool": 6
+      },
+      "relation_counts": {
+        "deliver": 2,
+        "used-by": 3,
+        "uses": 7
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "388",
+      "source_file": "FIN10.txt",
+      "characters": 1217,
+      "entity_mentions": 25,
+      "relation_instances": 9,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "intrusion-set": 12,
+        "location": 1,
+        "malware": 1,
+        "tool": 5
+      },
+      "relation_counts": {
+        "targets": 1,
+        "used-by": 4,
+        "uses": 4
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "387",
+      "source_file": "APT41.txt",
+      "characters": 1683,
+      "entity_mentions": 40,
+      "relation_instances": 19,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "identity": 3,
+        "intrusion-set": 22,
+        "malware": 4,
+        "tool": 5,
+        "vulnerability": 3
+      },
+      "relation_counts": {
+        "deliver": 2,
+        "targeted-by": 5,
+        "targets": 2,
+        "used-by": 5,
+        "uses": 5
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "386",
+      "source_file": "APT39.txt",
+      "characters": 1183,
+      "entity_mentions": 30,
+      "relation_instances": 15,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 4,
+        "intrusion-set": 14,
+        "location": 6,
+        "tool": 2
+      },
+      "relation_counts": {
+        "attributed-to": 1,
+        "located-at": 1,
+        "originates-from": 1,
+        "targets": 6,
+        "used-by": 1,
+        "uses": 5
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "381",
+      "source_file": "APT38.txt",
+      "characters": 1494,
+      "entity_mentions": 29,
+      "relation_instances": 14,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 4,
+        "intrusion-set": 13,
+        "location": 3,
+        "malware": 3,
+        "tool": 2
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 2,
+        "targets": 1,
+        "used-by": 1,
+        "uses": 9
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "378",
+      "source_file": "APT37.txt",
+      "characters": 1944,
+      "entity_mentions": 37,
+      "relation_instances": 10,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "campaign": 1,
+        "identity": 2,
+        "intrusion-set": 15,
+        "location": 13,
+        "malware": 4
+      },
+      "relation_counts": {
+        "originates-from": 2,
+        "targets": 3,
+        "uses": 5
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "377",
+      "source_file": "APT33.txt",
+      "characters": 1571,
+      "entity_mentions": 34,
+      "relation_instances": 8,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "identity": 1,
+        "intrusion-set": 16,
+        "location": 3,
+        "tool": 7,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "uses": 8
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "376",
+      "source_file": "APT32.txt",
+      "characters": 1744,
+      "entity_mentions": 36,
+      "relation_instances": 17,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 4,
+        "intrusion-set": 17,
+        "location": 5,
+        "malware": 1,
+        "tool": 5
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 1,
+        "targets": 6,
+        "used-by": 2,
+        "uses": 7
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "373",
+      "source_file": "APT19.txt",
+      "characters": 2296,
+      "entity_mentions": 33,
+      "relation_instances": 6,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "domain-name": 1,
+        "identity": 1,
+        "intrusion-set": 25,
+        "tool": 1
+      },
+      "relation_counts": {
+        "targets": 1,
+        "used-by": 2,
+        "uses": 3
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "375",
+      "source_file": "APT3.txt",
+      "characters": 1780,
+      "entity_mentions": 32,
+      "relation_instances": 10,
+      "entity_counts": {
+        "attack-pattern": 5,
+        "file_paths": 1,
+        "identity": 1,
+        "intrusion-set": 18,
+        "location": 5,
+        "tool": 1,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "originates-from": 2,
+        "targeted-by": 1,
+        "targets": 1,
+        "used-by": 2,
+        "uses": 4
+      },
+      "fold": 3
+    },
+    {
+      "document_id": "374",
+      "source_file": "APT28.txt",
+      "characters": 2710,
+      "entity_mentions": 39,
+      "relation_instances": 17,
+      "entity_counts": {
+        "attack-pattern": 6,
+        "campaign": 1,
+        "identity": 5,
+        "intrusion-set": 19,
+        "location": 4,
+        "malware": 1,
+        "tool": 2,
+        "vulnerability": 1
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 2,
+        "targets": 4,
+        "used-in": 1,
+        "uses": 9
+      },
+      "fold": 1
+    },
+    {
+      "document_id": "372",
+      "source_file": "APT18.txt",
+      "characters": 980,
+      "entity_mentions": 20,
+      "relation_instances": 4,
+      "entity_counts": {
+        "attack-pattern": 4,
+        "identity": 1,
+        "intrusion-set": 13,
+        "tool": 2
+      },
+      "relation_counts": {
+        "targets": 1,
+        "uses": 3
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "371",
+      "source_file": "APT12.txt",
+      "characters": 894,
+      "entity_mentions": 14,
+      "relation_instances": 8,
+      "entity_counts": {
+        "attack-pattern": 2,
+        "identity": 2,
+        "intrusion-set": 6,
+        "location": 1,
+        "tool": 3
+      },
+      "relation_counts": {
+        "originates-from": 1,
+        "targeted-by": 2,
+        "targets": 1,
+        "used-by": 1,
+        "uses": 3
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "370",
+      "source_file": "APT1.txt",
+      "characters": 2113,
+      "entity_mentions": 45,
+      "relation_instances": 14,
+      "entity_counts": {
+        "attack-pattern": 8,
+        "identity": 3,
+        "intrusion-set": 24,
+        "malware": 4,
+        "tool": 6
+      },
+      "relation_counts": {
+        "attributed-to": 1,
+        "used-by": 2,
+        "uses": 11
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "366",
+      "source_file": "WinDealer.txt",
+      "characters": 16124,
+      "entity_mentions": 40,
+      "relation_instances": 6,
+      "entity_counts": {
+        "attack-pattern": 9,
+        "identity": 6,
+        "indicator": 1,
+        "location": 11,
+        "malware": 8,
+        "threat-actor": 2,
+        "tool": 3
+      },
+      "relation_counts": {
+        "deliver": 1,
+        "indicates": 1,
+        "targets": 2,
+        "uses": 2
+      },
+      "fold": 0
+    },
+    {
+      "document_id": "365",
+      "source_file": "STIXnet_Example.txt",
+      "characters": 1769,
+      "entity_mentions": 37,
+      "relation_instances": 13,
+      "entity_counts": {
+        "attack-pattern": 3,
+        "domain-name": 1,
+        "identity": 4,
+        "intrusion-set": 13,
+        "location": 8,
+        "malware": 2,
+        "sha256s": 2,
+        "tool": 4
+      },
+      "relation_counts": {
+        "deliver": 1,
+        "originates-from": 1,
+        "targets": 4,
+        "uses": 7
+      },
+      "fold": 4
+    },
+    {
+      "document_id": "23",
+      "source_file": "test2.json",
+      "characters": 8134,
+      "entity_mentions": 58,
+      "relation_instances": 11,
+      "entity_counts": {
+        "campaign": 1,
+        "identity": 7,
+        "intrusion-set": 8,
+        "location": 6,
+        "malware": 7,
+        "tactic": 4,
+        "tool": 3,
+        "url": 20,
+        "vulnerability": 2
+      },
+      "relation_counts": {
+        "attributed-to": 1,
+        "drops": 1,
+        "have": 1,
+        "targeted-by": 1,
+        "targets": 5,
+        "uses": 2
+      },
+      "fold": 2
+    },
+    {
+      "document_id": "389",
+      "source_file": "FIN4.txt",
+      "characters": 1726,
+      "entity_mentions": 29,
+      "relation_instances": 14,
+      "entity_counts": {
+        "attack-pattern": 8,
+        "identity": 4,
+        "indicator": 1,
+        "intrusion-set": 14,
+        "tool": 2
+      },
+      "relation_counts": {
+        "indicates": 2,
+        "targeted-by": 3,
+        "targets": 2,
+        "used-by": 2,
+        "uses": 5
+      },
+      "fold": 4
+    }
+  ]
+}

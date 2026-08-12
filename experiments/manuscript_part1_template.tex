@@ -1,0 +1,44 @@
+\subsection{Document-Level Cross-Validation Protocol}
+To quantify variability due to corpus partitioning, we replaced the original
+single-split analysis with five-fold cross-validation at the CTI-report level.
+The 52 reports were assigned to five mutually exclusive folds using a fixed
+assignment seed (42). Entity- and relation-label counts were used only to
+improve approximate fold balance. All sentences and annotations originating
+from the same report remained in the same outer fold, preventing report-level
+context leakage. In outer iteration $k$, fold $k$ was used for testing. Five
+complete reports were selected as validation data only from the remaining four
+folds using a deterministic label-aware procedure; the other non-test reports
+were used for training. Consequently, every report served as test data exactly
+once, and no test report was used for model selection. STIXnet-only and the
+proposed hybrid used identical partitions. Each outer iteration was run
+with five model seeds (42, 123, 2024, 3407, and 777); model selection and all
+hyperparameter decisions used validation data only. We report the mean and
+sample standard deviation across the five outer-fold means, together with the
+per-fold paired difference between the two systems. The previously reported
+five-seed fixed-split results are retained only as a secondary reproducibility
+check.
+
+% Replace every XX value only after all GPU runs and exact-match evaluation.
+\begin{table}[t]
+\centering
+\caption{Five-fold document-level cross-validation. Each fold entry is the
+mean over five model seeds. Overall values are mean $\pm$ sample SD across
+outer-fold means.}
+\label{tab:document-cv}
+\begin{tabular}{lcccc}
+\hline
+System & Entity P & Entity R & Entity F1 & Relation F1 \\
+\hline
+STIXnet-only & XX & XX & XX & XX \\
+Hybrid (ours) & XX & XX & XX & XX \\
+Paired difference & XX & XX & XX & XX \\
+\hline
+\end{tabular}
+\end{table}
+
+Across the five held-out document folds, the hybrid changed entity F1 by
+XX and relation F1 by XX relative to STIXnet-only. [State here whether the
+direction of the entity difference was consistent across folds.] These results
+therefore [support/do not support] the robustness of the earlier entity-level
+claim to document partitioning, while the relation-level effect was
+[consistent/split-sensitive].

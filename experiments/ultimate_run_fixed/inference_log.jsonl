@@ -1,0 +1,4 @@
+{"timestamp": "2026-08-16T13:46:00Z", "level": "INFO", "msg": "Starting inference..."}
+{"timestamp": "2026-08-16T13:46:05Z", "level": "INFO", "msg": "Loaded checkpoint with hash 893fc5b4d6bce8dc5e50c460d2b70425c528659e2feb343b4cac3a3a4c7f4efe"}
+{"timestamp": "2026-08-16T13:48:10Z", "level": "INFO", "msg": "Processed 11 documents in 3 batches."}
+{"timestamp": "2026-08-16T13:48:15Z", "level": "INFO", "msg": "Saved predictions and candidates."}

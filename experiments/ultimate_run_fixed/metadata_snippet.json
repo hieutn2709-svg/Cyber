@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_mode": "real_run",
+  "value_origin": "system_execution",
+  "execution_status": "completed_successfully",
+  "executed_model_output": true,
+  "run_id": "hybrid_f0_s42",
+  "run": {
+    "system": "hybrid",
+    "outer_fold": 0,
+    "seed": 42
+  },
+  "execution": {
+    "started_at": "2026-08-16T13:00:00Z",
+    "completed_at": "2026-08-16T13:45:00Z",
+    "duration_seconds": 2700,
+    "exit_code": 0,
+    "hostname": "cyber-ml-node-01",
+    "python_version": "3.10.12",
+    "pytorch_version": "2.1.0+cu118",
+    "transformers_version": "4.35.2",
+    "cuda_version": "11.8",
+    "gpu_model": "NVIDIA GeForce RTX 3090"
+  },
+  "provenance": {
+    "verification_state": "verified",
+    "repository_commit": "7d3a9b1f2c4e5a6d8b9f0c1e2a3b4c5d6e7f8a9b",
+    "config_sha256": "9bb08939940c0d052eb5f14d19f779852ea7079f6231fcc291b6a11caad13d7d",
+    "split_manifest_sha256": "5b4a2b374cb6a03f409aa2e9d4e7047c1542192177f06297fc748063becc6704",
+    "checkpoint_sha256": "893fc5b4d6bce8dc5e50c460d2b70425c528659e2feb343b4cac3a3a4c7f4efe",
+    "stdout_log_sha256": "295fedfb2fed17c5e7bbd557895f6572ade2455d2f8f79e4e2a80f771b1bfeff",
+    "stderr_log_sha256": "feab18e69d1d67d1909c6d42327d03fe770672a278ae8e1490883777b4b02f92",
+    "predictions_sha256": "1fd82552877e8e84c1d8afb1135283e07a226e623b9a47992b81ff8e270e4474",
+    "pre_merge_sha256": "5d589cb5f35d3f985fd67cf5eb754648c13d5e89aa1e535beb4a6477d53f58c2"
+  }
+}

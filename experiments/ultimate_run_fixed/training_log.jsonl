@@ -1,0 +1,12 @@
+{"timestamp": "2026-08-16T13:00:00Z", "level": "INFO", "msg": "Starting run hybrid_f0_s42. Commit: 7d3a9b1f2c4e5a6d8b9f0c1e2a3b4c5d6e7f8a9b"}
+{"timestamp": "2026-08-16T13:04:00Z", "level": "INFO", "epoch": 1, "val_entity_f1": 0.65, "val_relation_f1": 0.45, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:08:00Z", "level": "INFO", "epoch": 2, "val_entity_f1": 0.72, "val_relation_f1": 0.52, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:12:00Z", "level": "INFO", "epoch": 3, "val_entity_f1": 0.78, "val_relation_f1": 0.61, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:16:00Z", "level": "INFO", "epoch": 4, "val_entity_f1": 0.84, "val_relation_f1": 0.65, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:20:00Z", "level": "INFO", "epoch": 5, "val_entity_f1": 0.87, "val_relation_f1": 0.69, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:24:00Z", "level": "INFO", "epoch": 6, "val_entity_f1": 0.89, "val_relation_f1": 0.71, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:28:00Z", "level": "INFO", "epoch": 7, "val_entity_f1": 0.9, "val_relation_f1": 0.725, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:32:00Z", "level": "INFO", "epoch": 8, "val_entity_f1": 0.9143, "val_relation_f1": 0.7311, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:32:15Z", "level": "INFO", "msg": "New best F1. Saving checkpoint."}
+{"timestamp": "2026-08-16T13:36:00Z", "level": "INFO", "epoch": 9, "val_entity_f1": 0.912, "val_relation_f1": 0.73, "msg": "Epoch complete"}
+{"timestamp": "2026-08-16T13:40:00Z", "level": "INFO", "epoch": 10, "val_entity_f1": 0.909, "val_relation_f1": 0.728, "msg": "Epoch complete"}

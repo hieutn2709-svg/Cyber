@@ -1,0 +1,9 @@
+{
+  "best_epoch": 8,
+  "test_entity_precision": 0.9089,
+  "test_entity_recall": 0.9198,
+  "test_entity_f1": 0.9143,
+  "test_relation_precision": 0.7311,
+  "test_relation_recall": 0.7311,
+  "test_relation_f1": 0.7311
+}

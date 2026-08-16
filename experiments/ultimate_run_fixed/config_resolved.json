@@ -1,0 +1,36 @@
+{
+  "system": "hybrid_roberta_bigru_crf",
+  "seed": 42,
+  "fold": 0,
+  "epochs": 10,
+  "batch_size": 16,
+  "learning_rate": 2e-05,
+  "model_name": "roberta-base",
+  "base_model_revision": "main",
+  "base_model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "encoder_frozen": true,
+  "save_trainable_parameters_only": true,
+  "architecture": {
+    "encoder": "RoBERTa",
+    "sequence_layer": "BiGRU",
+    "bigru_hidden_size": 250,
+    "num_bigru_layers": 2,
+    "attention_heads": 8,
+    "decoder": "CRF"
+  },
+  "reconciliation": {
+    "lambda": 0.8,
+    "tau": 0.65,
+    "source_priors": {
+      "kb_matcher": 0.9,
+      "ioc_finder": 0.95,
+      "ttp_extractor": 0.85,
+      "contextual_branch": 1.0
+    }
+  },
+  "relation_model": {
+    "hidden_size": 512,
+    "dropout": 0.1
+  },
+  "data_path": "data/corpus"
+}

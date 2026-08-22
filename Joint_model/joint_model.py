@@ -1,77 +1,117 @@
+"""RoBERTa/BiGRU model with separate sequence-tag and role heads."""
+
+from __future__ import annotations
+
+import math
+
 import torch
 import torch.nn as nn
-from transformers import RobertaModel
 from torchcrf import CRF
+from transformers import RobertaModel
 
-class AttentionLayer(nn.Module):
-    def __init__(self, hidden_dim):
-        super(AttentionLayer, self).__init__()
-        self.W1 = nn.Linear(hidden_dim, hidden_dim)
-        self.W2 = nn.Linear(hidden_dim, hidden_dim)
-        self.v = nn.Linear(hidden_dim, 1, bias=False)
-        self.q = nn.Parameter(torch.randn(hidden_dim)) 
 
-    def forward(self, gru_output):
-        e_t = torch.tanh(self.W1(gru_output) + self.W2(self.q)) 
-        weights = torch.softmax(self.v(e_t), dim=1) 
-        
-        context_vector = gru_output * weights
-        return context_vector, weights
+class MultiHeadSelfAttention(nn.Module):
+    """Self-attention that supports BiGRU widths not divisible by head count."""
+
+    def __init__(self, input_dim: int, num_heads: int, dropout: float):
+        super().__init__()
+        if num_heads < 1 or input_dim < num_heads:
+            raise ValueError("Attention requires at least one dimension per head")
+        self.num_heads = num_heads
+        self.head_dim = input_dim // num_heads
+        self.inner_dim = self.num_heads * self.head_dim
+        self.query = nn.Linear(input_dim, self.inner_dim)
+        self.key = nn.Linear(input_dim, self.inner_dim)
+        self.value = nn.Linear(input_dim, self.inner_dim)
+        self.output = nn.Linear(self.inner_dim, input_dim)
+        self.dropout = nn.Dropout(dropout)
+
+    def _split_heads(self, values: torch.Tensor) -> torch.Tensor:
+        batch, sequence, _ = values.shape
+        return values.view(batch, sequence, self.num_heads, self.head_dim).transpose(1, 2)
+
+    def forward(
+        self, values: torch.Tensor, attention_mask: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        query = self._split_heads(self.query(values))
+        key = self._split_heads(self.key(values))
+        value = self._split_heads(self.value(values))
+        scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(self.head_dim)
+        if attention_mask is not None:
+            key_mask = ~attention_mask.bool()[:, None, None, :]
+            scores = scores.masked_fill(key_mask, torch.finfo(scores.dtype).min)
+        weights = self.dropout(torch.softmax(scores, dim=-1))
+        attended = torch.matmul(weights, value).transpose(1, 2).contiguous()
+        batch, sequence, _, _ = attended.shape
+        attended = attended.view(batch, sequence, self.inner_dim)
+        return self.output(attended), weights
+
 
 class CyberEntRelModel(nn.Module):
-
-    def __init__(self, num_labels, num_rel_types, model_config):
-        super(CyberEntRelModel, self).__init__()
-        
-        self.roberta = RobertaModel.from_pretrained(model_config['encoder'])
-        roberta_hidden_size = 768 # Chuẩn của roberta-base
+    def __init__(self, num_labels: int, num_roles: int, model_config: dict):
+        super().__init__()
+        self.roberta = RobertaModel.from_pretrained(model_config["encoder"])
+        roberta_hidden_size = self.roberta.config.hidden_size
+        bigru_config = model_config["bigru"]
 
         self.bigru = nn.GRU(
             input_size=roberta_hidden_size,
-            hidden_size=model_config['bigru']['dimension'], # 250
-            num_layers=model_config['bigru']['num_layers'], # 2
+            hidden_size=bigru_config["dimension"],
+            num_layers=bigru_config["num_layers"],
             bidirectional=True,
             batch_first=True,
-            dropout=model_config['bigru']['dropout'] # 0.5
+            dropout=bigru_config["dropout"] if bigru_config["num_layers"] > 1 else 0.0,
         )
-        
-        gru_hidden_dim = model_config['bigru']['dimension'] * 2 
+        gru_hidden_dim = bigru_config["dimension"] * 2
+        self.attention = MultiHeadSelfAttention(
+            gru_hidden_dim,
+            bigru_config["attention_heads"],
+            model_config["dropout"],
+        )
+        projection_size = model_config["hidden_layer_neurons"]
+        self.projection = nn.Linear(gru_hidden_dim, projection_size)
+        self.dropout = nn.Dropout(model_config["dropout"])
+        self.layer_norm = nn.LayerNorm(projection_size)
 
-        self.attention = AttentionLayer(gru_hidden_dim)
-
-        self.fc = nn.Linear(gru_hidden_dim, model_config['hidden_layer_neurons']) # 1536
-        self.dropout = nn.Dropout(model_config['bigru']['dropout'])
-        self.layer_norm = nn.LayerNorm(model_config['hidden_layer_neurons'])
-
-        self.rel_classifier = nn.Linear(model_config['hidden_layer_neurons'], num_rel_types)
-
-        self.crf_classifier = nn.Linear(model_config['hidden_layer_neurons'], num_labels)
+        self.tag_classifier = nn.Linear(projection_size, num_labels)
+        self.role_classifier = nn.Linear(projection_size, num_roles)
         self.crf = CRF(num_labels, batch_first=True)
 
-    def forward(self, input_ids, attention_mask, labels=None, rel_labels=None):
-        outputs = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
-        sequence_output = outputs.last_hidden_state 
-
-        gru_output, _ = self.bigru(sequence_output) 
-        context_vector, _ = self.attention(gru_output)
-
-        dense_output = self.dropout(torch.relu(self.fc(context_vector)))
-        dense_output = self.layer_norm(dense_output)
-
-        logits = self.crf_classifier(dense_output)
-
-        pooled_output, _ = torch.max(dense_output, dim=1)
-        rel_logits = self.rel_classifier(pooled_output)
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        labels: torch.Tensor | None = None,
+        role_labels: torch.Tensor | None = None,
+    ):
+        encoded = self.roberta(
+            input_ids=input_ids, attention_mask=attention_mask
+        ).last_hidden_state
+        contextual, _ = self.bigru(encoded)
+        contextual, _ = self.attention(contextual, attention_mask)
+        features = self.layer_norm(
+            self.dropout(torch.relu(self.projection(contextual)))
+        )
+        tag_emissions = self.tag_classifier(features)
+        role_logits = self.role_classifier(features)
 
         if labels is not None:
-            ner_loss = -self.crf(logits, labels, mask=attention_mask.bool(), reduction='token_mean')
-            
-            rel_loss_fct = nn.CrossEntropyLoss()
-            rel_loss = rel_loss_fct(rel_logits, rel_labels)
-            
-            total_loss = (0.8 * ner_loss) + (0.2 * rel_loss)
-            return total_loss
-        else:
-            prediction = self.crf.decode(logits, mask=attention_mask.bool())
-            rel_prediction = torch.argmax(rel_logits, dim=-1)
-            return prediction, rel_prediction
+            if role_labels is None:
+                raise ValueError("role_labels are required when sequence labels are provided")
+            tag_loss = -self.crf(
+                tag_emissions,
+                labels,
+                mask=attention_mask.bool(),
+                reduction="token_mean",
+            )
+            role_loss = nn.CrossEntropyLoss(ignore_index=-100)(
+                role_logits.reshape(-1, role_logits.shape[-1]),
+                role_labels.reshape(-1),
+            )
+            return (0.8 * tag_loss) + (0.2 * role_loss)
+
+        tag_predictions = self.crf.decode(
+            tag_emissions, mask=attention_mask.bool()
+        )
+        role_predictions = torch.argmax(role_logits, dim=-1)
+        return tag_predictions, role_predictions

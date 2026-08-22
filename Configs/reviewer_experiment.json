@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "encoder": "roberta-base",
+  "bigru_hidden_size": 250,
+  "bigru_layers": 2,
+  "attention_heads": 8,
+  "dropout": 0.35,
+  "encoder_learning_rate": 0.00003,
+  "head_learning_rate": 0.0003,
+  "weight_decay": 0.01,
+  "joint_max_epochs": 30,
+  "joint_patience": 5,
+  "relation_refinement_epochs": 12,
+  "relation_refinement_patience": 4,
+  "sequence_tag_count": 61,
+  "role_labels": [
+    "O",
+    "ROLE_1",
+    "ROLE_2",
+    "ROLE_BOTH"
+  ],
+  "split_seed": 11800,
+  "selection_data": "validation_only"
+}

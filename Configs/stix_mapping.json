@@ -1,6 +1,37 @@
 {
   "stix_version": "2.1",
   "description": "Mapping dictionary from model labels to STIX 2.1 SDOs and SROs",
+
+  "core_entity_types": [
+    "attack-pattern",
+    "campaign",
+    "domain-name",
+    "identity",
+    "indicator",
+    "intrusion-set",
+    "location",
+    "malware",
+    "tool",
+    "vulnerability"
+  ],
+
+  "model_entity_types": [
+    "attack-pattern",
+    "campaign",
+    "domain-name",
+    "file_paths",
+    "identity",
+    "indicator",
+    "intrusion-set",
+    "location",
+    "malware",
+    "sha256s",
+    "tactic",
+    "threat-actor",
+    "tool",
+    "url",
+    "vulnerability"
+  ],
   
   "stix_domain_objects": [
     "attack-pattern",

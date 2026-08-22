@@ -1,238 +1,107 @@
-# STIXnet-CyberEntRel
+# STIXnet-CyberEntRel reproducibility repository
 
-## 📋 Tổng quan
+This repository contains the code, document-level fold manifest, configuration,
+and provenance records used to audit a STIX-oriented entity and relation
+extraction prototype. Current claims are deliberately limited to results with
+identified experimental support. Historical uploads that cannot support an
+active result claim are retained under `archive/deprecated/`.
 
-Dự án này trình bày việc phát triển và đánh giá một hệ thống trích xuất thông tin Cyber Threat Intelligence (CTI) tự động bằng cách tích hợp mô hình học sâu **CyberEntRel** vào kiến trúc **STIXnet**. Hệ thống kết hợp ưu điểm của trích xuất liên hợp (joint extraction) với tri thức chuyên gia để tự động nhận diện các thực thể STIX Domain Objects (SDOs) và quan hệ STIX Relationship Objects (SROs) từ báo cáo CTI.
+## Current same-split results
 
-### 🎯 Mục tiêu chính
+The primary comparison uses the same fixed five-fold document manifest for all
+systems. Values are macro means and sample standard deviations over the five
+outer folds.
 
-- **Trích xuất tự động**: Nhận dạng đồng thời 18 loại thực thể STIX và hơn 100 loại quan hệ từ báo cáo CTI
-- **Tích hợp thông minh**: Kết hợp mô hình học sâu end-to-end với tri thức chuyên gia (Rule-based/Knowledge Base)
-- **Hiệu năng cao**: Đạt F1 ≈ 0.927 cho thực thể và 0.763 cho quan hệ
-- **Chuẩn hóa STIX 2.1**: Xuất kết quả theo định dạng STIX 2.1 để chia sẻ và tích hợp
+| Configuration | Variant | Entity F1 | Relation F1 |
+| --- | --- | ---: | ---: |
+| Rule/knowledge-based same-split reproduction | baseline | 0.289 ± 0.051 | 0.011 ± 0.012 |
+| Contextual neural | V10 | 0.698 ± 0.051 | 0.219 ± 0.041 |
+| Conservative hybrid | V13 | 0.710 ± 0.051 | 0.222 ± 0.040 |
 
-### ⚡ Điểm nổi bật
+The machine-readable primary table is
+[`experiments/results/current_results.csv`](experiments/results/current_results.csv).
+V11 and V12 are preserved only as sequential development-stage diagnostics in
+[`experiments/results/variant_provenance.csv`](experiments/results/variant_provenance.csv);
+they are not independent confirmatory ablations.
 
-- **Joint Extraction**: Sử dụng kiến trúc RoBERTa-BiGRU-CRF để trích xuất đồng thời thực thể và quan hệ
-- **Hybrid Approach**: Chiến lược "Tăng cường" kết hợp Rule-based (Precision) và Deep Learning (Recall)
-- **BIEOS Tagging**: Sơ đồ nhãn mở rộng BIEOS để đánh dấu ranh giới thực thể và vai trò quan hệ
-- **Multi-task Learning**: Học đa tác vụ với trọng số α=0.8 cho NER và 0.2 cho RE
+### STIXnet literature result versus this reproduction
 
----
+The original STIXnet paper reports entity F1 0.916 and relation F1 0.724 in its
+own experimental setting. Those are **literature-reported** numbers, not results
+produced by this repository. The 0.289/0.011 row above is this project's
+**same-split reproduction** of the available rule/knowledge-based comparator.
+It is STIXnet-inspired rather than a faithful execution of the full original
+STIXnet system, so the two rows are not directly comparable. See Marchiori,
+Conti, and Verde, *STIXnet: A Novel and Modular Solution for Extracting All
+STIX Objects in CTI Reports*, ARES 2023,
+[DOI 10.1145/3600160.3600182](https://doi.org/10.1145/3600160.3600182).
 
-## 🏗️ Kiến trúc hệ thống
+## Reviewed architecture and configuration
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CTI Reports (PDF/HTML/Text)                   │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  Preprocessing Module                            │
-│  ├─ Text Extraction (Apache Tika)                               │
-│  ├─ Cleaning & Desanitizing                                     │
-│  └─ Tokenization                                                │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │
-         ┌─────────────┴─────────────┐
-         │                           │
-         ▼                           ▼
-┌──────────────────┐      ┌──────────────────────┐
-│  Joint Model     │      │  STIXnet Modules     │
-│  (CyberEntRel)   │      │  (Parallel)          │
-│                  │      │                      │
-│ • RoBERTa-BiGRU  │      │ • IOC Finder (Regex) │
-│ • Attention      │      │ • KB Matcher         │
-│ • CRF Layer      │      │ • TTP Extractor      │
-│ • BIEOS Tagging  │      │                      │
-└────────┬─────────┘      └──────────┬───────────┘
-         │                           │
-         └─────────────┬─────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Integration & Merge Module                          │
-│  ├─ Confidence Scoring                                          │
-│  ├─ Conflict Resolution                                         │
-│  └─ Duplicate Removal                                           │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                STIX 2.1 Output (JSON)                           │
-│  ├─ 18 SDO Types (Entities)                                    │
-│  └─ 100+ SRO Types (Relations)                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+The contextual model uses a `roberta-base` encoder, a two-layer BiGRU with
+hidden size 250, eight attention heads, and dropout 0.35. Entity boundary/type
+prediction uses 61 sequence tags: `O` plus B/I/E/S for 15 model entity types.
+Relation roles are not folded into that tag inventory. They are predicted by a
+separate four-class token head:
 
----
+- `O`
+- `ROLE_1`
+- `ROLE_2`
+- `ROLE_BOTH`
 
-## 📁 Cấu trúc thư mục
+The optimizer uses encoder learning rate `3e-5`, task-head learning rate
+`3e-4`, and weight decay `0.01`. Joint training is capped at 30 epochs with
+patience 5. Relation refinement is capped at 12 epochs with patience 4. The
+canonical record is [`Configs/reviewer_experiment.json`](Configs/reviewer_experiment.json),
+with a human-readable mirror in [`Configs/model_config.yaml`](Configs/model_config.yaml).
 
-```
-CTI_Integrated_Project/
-│
-├── configs/                          # Nền tảng cấu hình
-│   ├── model_config.yaml             # Tham số AI (alpha, learning rate)
-│   ├── stix_mapping.json             # Ánh xạ 18 SDO và >100 SRO
-│   └── pipeline_settings.yaml        # Ngưỡng tin cậy (0.5)
-│
-├── data/                             # Quản lý dữ liệu đa nguồn
-│   ├── raw/                          # Báo cáo CTI thô (PDF, HTML, Text)
-│   ├── processed/                    # Dữ liệu BIEOS cho huấn luyện
-│   └── bosch_annoCTR/                # Tập lệnh nhận diện TTP
-│ 
-│
-│── preprocessing/                # Tiền xử lý
-│      ├── text_extractor.py         # Trích xuất văn bản (Tika)
-│      └── cleaner.py                # Làm sạch và desanitizing
-│ 
-│── joint_model/                  # Lõi AI CyberEntRel
-│      ├── tagging_scheme.py         # Logic nhãn BIEOS-extended
-│      ├── joint_model.py            # RoBERTa-BiGRU-Attention-CRF
-│      ├── train_model.ipynb         # Huấn luyện & Fine-tuning
-│      └── inference.py              # Service dự đoán
-│   
-│── extraction/                   # Module STIXnet bổ trợ
-│      ├── ioc_finder.py             # Trích xuất bằng Regex
-│      └── ttp_extractor.py          # Nhận diện TTP (Bosch)
-│   
-│── integration/                  # Hợp nhất và Chuẩn hóa
-│      ├── merger.py                 # Merge & Confidence Scoring
-│      └── stix_mapper.py            # Xuất JSON STIX 2.1
-│   
-│── utils/                        # Công cụ hỗ trợ
-│       ├── data_converter.py         # Chuyển đổi sang BIEOS
-│       └── metrics.py                # Tính P, R, F1
-│
-├── models_checkpoints/               # Lưu trữ trọng số mô hình
-│   └── cyber_joint_v1/               # Mô hình fine-tuned
-│
-├── output/                           # Kết quả đầu ra
-│    └─ stix_json/                    # Tệp JSON chuẩn STIX
-│
-├── main.py                           # Entry point chính
-└── README.md                         # Tài liệu này
+## Document-level evaluation
+
+The official manifest uses `split_seed=11800` and 52 complete documents. Fold
+sizes are 11, 11, 10, 10, and 10. The controlled evaluation's core entity types
+are:
+
+`attack-pattern`, `campaign`, `domain-name`, `identity`, `indicator`,
+`intrusion-set`, `location`, `malware`, `tool`, and `vulnerability`.
+
+For outer fold `k`, fold `k` is held out for testing. Validation documents are
+selected only from the remaining outer-training documents. Model checkpoints,
+decoding choices, reconciliation policies, and thresholds are selected on that
+validation partition and frozen before the corresponding test fold is scored.
+Test reports do not participate in model or threshold selection.
+
+See [`experiments/README.md`](experiments/README.md) and
+[`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for commands and provenance limits.
+
+## Preflight
+
+The audit requires only the Python standard library:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
+python experiments/build_document_cv.py --check
 ```
 
+The first command rejects conflicting active metrics/configuration and validates
+the tag spaces, result tables, and split topology. The second compares a fresh
+in-memory manifest against the checked-in official files without rewriting
+them.
 
-## 🔬 Phương pháp
+## Repository status and limits
 
-### 1. Sơ đồ nhãn BIEOS-Extended
+- The raw 52-document corpus and annotations remain in `data/`.
+- The checked-in source includes prototype extraction and integration modules.
+- No new experiment was run during this audit and no synthetic result was
+  generated.
+- Exact environment locks, independently verifiable run logs, checkpoints for
+  V10--V13, and per-fold prediction artifacts are not present. These remain
+  unresolved provenance limitations and are not implied by the summary tables.
+- Unsupported historical metrics, the former fixed-run bundle, the legacy
+  combined-role label export, and the old notebook are explicitly deprecated in
+  [`archive/deprecated/README.md`](archive/deprecated/README.md).
 
-Mô hình sử dụng sơ đồ nhãn BIEOS để đánh dấu đồng thời:
-- **Ranh giới thực thể**: B (Begin), I (Inside), E (End), S (Single), O (Outside)
-- **Loại thực thể**: 18 loại SDO (Malware, Tool, Campaign, v.v.)
-- **Vai trò quan hệ**: _1 (Subject), _2 (Object)
+## License and third-party material
 
-**Ví dụ:**
-```
-Token:  APT28   uses    a    variant   of    XYZ     malware
-Label:  B-IS_1  O       O    O         O     B-Mal_2 I-Mal_2
-```
-
-### 2. Kiến trúc mô hình
-
-```
-Input Text
-    ↓
-RoBERTa Encoder (Pre-trained)
-    ↓
-BiGRU (Bidirectional Context)
-    ↓
-Self-Attention Layer
-    ↓
-CRF (Conditional Random Field)
-    ↓
-BIEOS Tag Sequence
-    ↓
-Relation Matching Algorithm
-    ↓
-(Entity_1, Relation, Entity_2) Triples
-```
-
-### 3. Chiến lược học đa tác vụ
-
-```python
-Total_Loss = α × Loss_NER + (1-α) × Loss_RE
-# α = 0.8 (ưu tiên nhận dạng thực thể)
-```
-
-### 4. Cơ chế hợp nhất (Merge)
-
-1. **Confidence Scoring**: Mỗi thực thể/quan hệ được gán điểm tin cậy
-2. **Priority Rules**:
-   - IOC Finder (Regex) > KB Matcher > Joint Model > TTP Extractor
-   - Điểm tin cậy > 0.5 mới được chấp nhận
-3. **Conflict Resolution**:
-   - Nếu trùng lặp → chọn nguồn có độ tin cao hơn
-   - Nếu mâu thuẫn → ưu tiên Rule-based
-
----
-
-## 🛠️ Lộ trình phát triển
-
-### Giai đoạn 1: Nền tảng cấu hình
-- [x] Định nghĩa STIX mapping (18 SDO + 100+ SRO)
-- [x] Thiết lập tham số mô hình
-- [x] Cấu hình pipeline settings
-
-### Giai đoạn 2: Tiền xử lý
-- [x] Text extraction (Apache Tika)
-- [x] Cleaning & desanitizing
-- [x] Tokenization
-
-### Giai đoạn 3: Lõi AI
-- [x] BIEOS tagging scheme
-- [x] RoBERTa-BiGRU-CRF architecture
-- [x] Multi-task learning
-- [x] Training pipeline
-
-### Giai đoạn 4: Module bổ trợ
-- [x] IOC Finder (Regex)
-- [x] KB Matcher (Aho-Corasick)
-- [x] TTP Extractor (Bosch)
-- [x] Inference service
-
-### Giai đoạn 5: Tích hợp
-- [x] Merge algorithm
-- [x] STIX 2.1 mapper
-- [x] Confidence scoring
-- [x] Evaluation metrics
-
-### Giai đoạn 6: Hoàn thiện
-- [x] Main pipeline
-- [x] Documentation
-- [ ] Web interface (Coming soon)
-- [ ] API service (Coming soon)
-
----
-
-## 📖 Tài liệu tham khảo
-
-### Nghiên cứu chính
-
-1. **STIXnet** (Marchiori et al., 2023)
-   - Framework trích xuất thông tin CTI theo chuẩn STIX
-   - Pipeline modular với nhiều module chuyên biệt
-   - F1 ≈ 0.916 cho thực thể, 0.724 cho quan hệ
-
-2. **CyberEntRel** (Ahmed et al., 2024)
-   - Joint extraction với BIEOS tagging
-   - RoBERTa-BiGRU-CRF architecture
-   - F1 ≈ 0.86 trên dữ liệu CTI
-
-### Dataset
-
-- **STIXnet Dataset**: Báo cáo CTI đã gán nhãn (18 SDO types)
-- **Bosch annoCTR**: Tập lệnh hướng dẫn nhận diện TTP
-
-### Công cụ
-
-- **Apache Tika**: Text extraction
-- **spaCy**: NLP preprocessing
-- **Transformers (HuggingFace)**: RoBERTa model
-- **PyTorch**: Deep learning framework
-- **torchcrf**: CRF implementation
-
+See [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md). The repository currently
+does not grant an open-source license. Dataset, model, paper, and third-party
+software rights remain with their respective owners.

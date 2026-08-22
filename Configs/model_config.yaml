@@ -1,28 +1,39 @@
-# Cấu hình mô hình trích xuất liên hợp CyberEntRel - STIXnet
+# Reviewer experiment configuration. Configs/reviewer_experiment.json is the
+# canonical machine-readable record used by the reproducibility preflight.
 model:
   architecture: "RoBERTa-BiGRU-CRF"
   encoder: "roberta-base"
   max_seq_length: 512
-  hidden_layer_neurons: 1536 
+  hidden_layer_neurons: 1536
+  dropout: 0.35
   
   bigru:
-    dimension: 250             # Kích thước lớp GRU 
-    num_layers: 2              # Stacked BiGRU 
-    dropout: 0.5               # Tỷ lệ dropout 
-    use_attention: true        # Sử dụng cơ chế chú ý
+    dimension: 250
+    num_layers: 2
+    dropout: 0.35
+    use_attention: true
+    attention_heads: 8
 
-# Các khối khác giữ nguyên cấp độ ngoài cùng
 training:
   optimizer: "AdamW"
-  learning_rate: 2.0e-5
-  batch_size: 16
-  epochs: 100
+  encoder_learning_rate: 3.0e-5
+  head_learning_rate: 3.0e-4
   weight_decay: 0.01
+  joint_max_epochs: 30
+  joint_patience: 5
+  relation_refinement_epochs: 12
+  relation_refinement_patience: 4
+  selection_data: "validation_only"
 
 multi_task_weight:
   ner_loss_weight: 0.8
   rel_loss_weight: 0.2
 
 tagging:
-  scheme: "BIEOS-extended"
-  num_entity_types: 18
+  scheme: "BIEOS"
+  sequence_tags: 61
+  role_labels:
+    - "O"
+    - "ROLE_1"
+    - "ROLE_2"
+    - "ROLE_BOTH"

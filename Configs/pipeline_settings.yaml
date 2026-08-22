@@ -1,9 +1,14 @@
-# Cấu hình quy trình tích hợp (Pipeline Settings)
-# Thiết lập các ngưỡng tin cậy và chiến lược hợp nhất module
+# Prototype inference defaults only. These values were not used to select or
+# score the reviewer experiments. Reported experiment thresholds and model
+# variants were selected on each outer fold's validation partition, frozen,
+# and then applied once to its held-out test partition.
 
 pipeline:
   name: "STIXnet + CyberEntRel Augmented Pipeline"
   version: "2.1"
+  experiment_selection:
+    scope: "validation_only"
+    freeze_before_test: true
 
 # Ngưỡng tin cậy (Confidence Thresholds)
 

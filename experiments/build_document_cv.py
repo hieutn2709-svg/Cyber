@@ -22,12 +22,26 @@ import json
 import math
 import random
 import re
+import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 
 UUID_PREFIX = re.compile(r"^[0-9a-fA-F]{8}-")
+SPLIT_SEED = 11800
+CORE_ENTITY_TYPES = (
+    "attack-pattern",
+    "campaign",
+    "domain-name",
+    "identity",
+    "indicator",
+    "intrusion-set",
+    "location",
+    "malware",
+    "tool",
+    "vulnerability",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,7 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--annotations",
         type=Path,
-        default=Path("Data/Annotations.json"),
+        default=Path("data/Annotations.json"),
         help="Label Studio JSON export (one task per CTI report).",
     )
     parser.add_argument(
@@ -44,7 +58,12 @@ def parse_args() -> argparse.Namespace:
         default=Path("experiments/cv_manifest"),
     )
     parser.add_argument("--folds", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=SPLIT_SEED)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Verify that a fresh manifest matches the checked-in output files.",
+    )
     return parser.parse_args()
 
 
@@ -206,7 +225,8 @@ def write_outputs(
 
     manifest = {
         "protocol": "five-fold document-level cross-validation with rotating validation fold",
-        "assignment_seed": seed,
+        "split_seed": seed,
+        "core_entity_types": list(CORE_ENTITY_TYPES),
         "number_of_folds": len(folds),
         "number_of_documents": len(documents),
         "folds": [
@@ -232,7 +252,7 @@ def write_outputs(
             "entity_mentions",
             "relation_instances",
         ]
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for document in sorted(documents, key=lambda item: int(item["document_id"])):
             row = {key: document[key] for key in fieldnames if key != "fold"}
@@ -274,7 +294,7 @@ def write_outputs(
 
     with (output_dir / "fold_summary.csv").open("w", newline="", encoding="utf-8") as stream:
         fieldnames = ["fold", "documents", "entity_mentions", "relation_instances", "characters"]
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for fold_index, fold in enumerate(folds):
             writer.writerow(
@@ -296,6 +316,39 @@ def main() -> None:
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate document/task identifiers detected")
     folds = assign_folds(documents, args.folds, args.seed)
+    if args.check:
+        with tempfile.TemporaryDirectory(prefix="document-cv-check-") as temp_dir:
+            generated_dir = Path(temp_dir)
+            write_outputs(documents, folds, generated_dir, args.seed)
+            generated_files = {
+                path.relative_to(generated_dir): path
+                for path in generated_dir.rglob("*")
+                if path.is_file()
+            }
+            checked_in_files = {
+                path.relative_to(args.output_dir): path
+                for path in args.output_dir.rglob("*")
+                if path.is_file()
+            }
+            if set(generated_files) != set(checked_in_files):
+                raise SystemExit(
+                    "Manifest file set differs: "
+                    f"generated={sorted(map(str, generated_files))}, "
+                    f"checked_in={sorted(map(str, checked_in_files))}"
+                )
+            mismatches = []
+            for relative_path, generated_path in generated_files.items():
+                generated = generated_path.read_text(encoding="utf-8").replace("\r\n", "\n")
+                checked_in = checked_in_files[relative_path].read_text(
+                    encoding="utf-8"
+                ).replace("\r\n", "\n")
+                if generated != checked_in:
+                    mismatches.append(str(relative_path))
+            if mismatches:
+                raise SystemExit(f"Checked-in manifest differs: {mismatches}")
+        print("Fresh generation matches checked-in manifest")
+        return
+
     write_outputs(documents, folds, args.output_dir, args.seed)
     print(f"Wrote {args.folds} document folds for {len(documents)} reports to {args.output_dir}")
 

@@ -1,44 +1,39 @@
-\subsection{Document-Level Cross-Validation Protocol}
-To quantify variability due to corpus partitioning, we replaced the original
-single-split analysis with five-fold cross-validation at the CTI-report level.
-The 52 reports were assigned to five mutually exclusive folds using a fixed
-assignment seed (42). Entity- and relation-label counts were used only to
-improve approximate fold balance. All sentences and annotations originating
-from the same report remained in the same outer fold, preventing report-level
-context leakage. In outer iteration $k$, fold $k$ was used for testing. Five
-complete reports were selected as validation data only from the remaining four
-folds using a deterministic label-aware procedure; the other non-test reports
-were used for training. Consequently, every report served as test data exactly
-once, and no test report was used for model selection. STIXnet-only and the
-proposed hybrid used identical partitions. Each outer iteration was run
-with five model seeds (42, 123, 2024, 3407, and 777); model selection and all
-hyperparameter decisions used validation data only. We report the mean and
-sample standard deviation across the five outer-fold means, together with the
-per-fold paired difference between the two systems. The previously reported
-five-seed fixed-split results are retained only as a secondary reproducibility
-check.
+\subsection{Document-Level Reproducibility Protocol}
+The controlled evaluation uses 52 complete CTI reports assigned to five
+mutually exclusive document folds with split seed 11800. Fold sizes are 11,
+11, 10, 10, and 10 reports. All content and annotations from one report remain
+within a single outer fold. In outer iteration $k$, fold $k$ is test data;
+validation documents are drawn only from the remaining outer-training
+partition. Model checkpoints, decoding choices, reconciliation policies, and
+thresholds are selected using validation data and frozen before test scoring.
 
-% Replace every XX value only after all GPU runs and exact-match evaluation.
+The contextual model uses a \texttt{roberta-base} encoder, a two-layer BiGRU
+with hidden size 250, eight attention heads, and dropout 0.35. Encoder and task
+head learning rates are $3\times10^{-5}$ and $3\times10^{-4}$, respectively,
+with weight decay 0.01. Joint training uses at most 30 epochs with patience 5;
+relation refinement uses at most 12 epochs with patience 4. Entity
+boundary/type prediction uses 61 BIEOS sequence tags. Relation roles are
+predicted by a separate four-class head: \texttt{O}, \texttt{ROLE\_1},
+\texttt{ROLE\_2}, and \texttt{ROLE\_BOTH}.
+
 \begin{table}[t]
 \centering
-\caption{Five-fold document-level cross-validation. Each fold entry is the
-mean over five model seeds. Overall values are mean $\pm$ sample SD across
-outer-fold means.}
+\caption{Document-level five-fold same-split results. Values are mean $\pm$
+sample standard deviation over the five outer folds.}
 \label{tab:document-cv}
-\begin{tabular}{lcccc}
+\begin{tabular}{lcc}
 \hline
-System & Entity P & Entity R & Entity F1 & Relation F1 \\
+Configuration & Entity F1 & Relation F1 \\
 \hline
-STIXnet-only & XX & XX & XX & XX \\
-Hybrid (ours) & XX & XX & XX & XX \\
-Paired difference & XX & XX & XX & XX \\
+Rule/KB same-split baseline & $0.289\pm0.051$ & $0.011\pm0.012$ \\
+V10 contextual neural & $0.698\pm0.051$ & $0.219\pm0.041$ \\
+V13 conservative hybrid & $0.710\pm0.051$ & $0.222\pm0.040$ \\
 \hline
 \end{tabular}
 \end{table}
 
-Across the five held-out document folds, the hybrid changed entity F1 by
-XX and relation F1 by XX relative to STIXnet-only. [State here whether the
-direction of the entity difference was consistent across folds.] These results
-therefore [support/do not support] the robustness of the earlier entity-level
-claim to document partitioning, while the relation-level effect was
-[consistent/split-sensitive].
+The original STIXnet literature reports entity F1 0.916 and relation F1 0.724
+under its own experimental setting. Those literature-reported values are not a
+same-split result from this repository. The available deterministic comparator
+is STIXnet-inspired and should not be described as a faithful execution of the
+complete original system.

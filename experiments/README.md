@@ -1,47 +1,56 @@
-# Document-level five-fold evaluation
+# Reviewer experiment protocol
 
-Reviewer requirement 1 is addressed with five leakage-safe document folds.
-The fold assignment is deterministic and uses entity/relation counts only to
-improve balance.  It never splits a report into multiple partitions.
+The controlled evaluation uses one official document-level manifest for every
+configuration. The split seed is `11800`; the five test folds contain 11, 11,
+10, 10, and 10 complete CTI reports.
 
-Build the manifest:
+## Build or check the manifest
 
 ```bash
 python experiments/build_document_cv.py \
-  --annotations Data/Annotations.json \
+  --annotations data/Annotations.json \
   --output-dir experiments/cv_manifest \
   --folds 5 \
-  --seed 42
+  --seed 11800
+
+python experiments/build_document_cv.py --check
 ```
 
 The generated files are:
 
-- `document_folds.json`: complete auditable manifest;
+- `document_folds.json`: full assignment, split seed, and core-type inventory;
 - `document_folds.csv`: one row per report;
-- `fold_summary.csv`: fold-level corpus counts;
-- `outer_splits/outer_fold_0.json` ... `outer_fold_4.json`: nested
-  train/validation/test assignments.
+- `fold_summary.csv`: fold-level counts;
+- `outer_splits/outer_fold_0.json` through `outer_fold_4.json`: disjoint
+  train/validation/test document identifiers.
 
-For outer fold `k`, fold `k` is test data. Five complete reports are selected
-as validation data only from the remaining four folds; all other non-test
-reports are training data. The same split manifest must be used for
-STIXnet-only and the full hybrid. Run each configuration with seeds `42`,
-`123`, `2024`, `3407`, and `777`. This produces 50 core runs:
+In outer iteration `k`, fold `k` is test data. Five validation documents are
+selected only from the other four folds. All remaining non-test reports are
+training data. Test documents are not used for model, checkpoint, decoding,
+reconciliation, or threshold selection.
 
-```
-5 outer folds x 5 model seeds x 2 systems = 50 runs
-```
+## Configuration
 
-Hyperparameters and reconciliation settings must be selected from the
-validation partition only.  Test-fold predictions must be saved for exact-
-match scoring and document-level audit.  Do not infer cross-validation results
-from the earlier single-split table.
+The canonical reviewer configuration is
+`Configs/reviewer_experiment.json`: RoBERTa, a two-layer BiGRU with hidden size
+250, eight attention heads, dropout 0.35, encoder LR `3e-5`, head LR `3e-4`,
+weight decay 0.01, joint maximum 30 epochs/patience 5, and relation refinement
+12 epochs/patience 4.
 
-After all 50 core runs have produced exact-match metrics, populate a copy of
-`cv_results_template.csv` and aggregate it with:
+The sequence tag head has 61 labels. Relation roles use a separate four-class
+head (`O`, `ROLE_1`, `ROLE_2`, `ROLE_BOTH`).
 
-```bash
-python experiments/aggregate_cv_results.py \
-  --input path/to/completed_cv_results.csv \
-  --output-dir experiments/cv_results
-```
+## Results
+
+`results/current_results.csv` is the only primary results table. It contains:
+
+- same-split rule/KB baseline: EF1 0.289, RF1 0.011;
+- V10 contextual neural: EF1 0.698, RF1 0.219;
+- V13 conservative hybrid: EF1 0.710, RF1 0.222.
+
+`results/variant_provenance.csv` retains V10--V13 lineage. V11 and V12 are
+development-stage diagnostics because later variants were informed by earlier
+experimental outcomes on the same corpus.
+
+The old 50-row results matrix and fixed-run bundle are unsupported as current
+evidence and have been moved verbatim to `archive/deprecated/`.

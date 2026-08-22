@@ -13,7 +13,7 @@ class InferenceService:
         self,
         config_path="Configs/model_config.yaml",
         mapping_path="Configs/stix_mapping.json",
-        model_weights="models_checkpoints/cyber_joint_v1/best_model (10).pt",
+        model_weights=None,
     ):
         with open(config_path, "r", encoding="utf-8") as f:
             self.model_config = yaml.safe_load(f)
@@ -31,24 +31,24 @@ class InferenceService:
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        num_labels = self.scheme.get_num_labels()
-        num_rel_types = len(
-            self.stix_mapping.get("label_mapping", {}).get("entities", [])
-        ) + 1
-
         self.model = CyberEntRelModel(
-            num_labels=num_labels,
-            num_rel_types=num_rel_types,
+            num_labels=self.scheme.get_num_labels(),
+            num_roles=self.scheme.get_num_role_labels(),
             model_config=self.model_config["model"],
         )
 
-        if os.path.exists(model_weights):
-            self.model.load_state_dict(
-                torch.load(model_weights, map_location=self.device)
+        if not model_weights:
+            raise ValueError(
+                "A reviewed checkpoint path is required; no V10-V13 checkpoint "
+                "is bundled with this repository."
             )
-            print(f"✅ Đã nạp trọng số mô hình từ: {model_weights}")
-        else:
-            print(f"⚠️ Không tìm thấy trọng số tại {model_weights}")
+        if not os.path.isfile(model_weights):
+            raise FileNotFoundError(
+                f"Reviewed checkpoint does not exist: {model_weights}"
+            )
+        self.model.load_state_dict(
+            torch.load(model_weights, map_location=self.device)
+        )
 
         self.model.to(self.device)
         self.model.eval()
@@ -68,22 +68,11 @@ class InferenceService:
 
 
         with torch.no_grad():
-            tag_ids, rel_logits = self.model(input_ids, attention_mask)
+            tag_ids, role_ids = self.model(input_ids, attention_mask)
 
         tag_ids = tag_ids[0]
-
-
-        print("\n--- DEBUG: RAW TAG IDS ---")
-        print(tag_ids)
-
-        readable_tags = [
-            self.scheme.id_to_tag.get(tid, "O") for tid in tag_ids
-        ]
-        print("\n--- DEBUG: READABLE TAGS ---")
-        print(readable_tags)
-
-
-        entities = self._decode_entities_safe(readable_tags)
+        role_ids = role_ids[0].tolist()
+        entities = self.scheme.decode_entities(tag_ids, role_ids)
 
         formatted_entities = []
         for ent in entities:
@@ -105,7 +94,6 @@ class InferenceService:
                     "role": ent["role"],
                     "start": char_start,
                     "end": char_end,
-                    "confidence": 0.95,
                 }
             )
 
@@ -117,69 +105,22 @@ class InferenceService:
             "relations": relations,
         }
 
-    def _decode_entities_safe(self, tags):
-        """
-        Decode BIEOS tags:
-        S-type_role
-        B-type_role ... E-type_role
-        """
-        entities = []
-        current = None
-
-        for i, tag in enumerate(tags):
-            if tag == "O":
-                if current:
-                    current["end"] = i - 1
-                    entities.append(current)
-                    current = None
-                continue
-
-            if "-" not in tag:
-                continue
-
-            prefix, rest = tag.split("-", 1)
-
-            if "_" not in rest:
-                continue
-
-            ent_type, role = rest.rsplit("_", 1)
-
-            if prefix == "S":
-                entities.append(
-                    {
-                        "type": ent_type,
-                        "role": role,
-                        "start": i,
-                        "end": i,
-                    }
-                )
-
-            elif prefix == "B":
-                current = {
-                    "type": ent_type,
-                    "role": role,
-                    "start": i,
-                }
-
-            elif prefix == "I":
-                continue
-
-            elif prefix == "E":
-                if current:
-                    current["end"] = i
-                    entities.append(current)
-                    current = None
-
-        return entities
-
     def _build_relations(self, entities):
-        subjects = [e for e in entities if e["role"] == "1"]
-        objects = [e for e in entities if e["role"] == "2"]
+        subjects = [
+            entity for entity in entities
+            if entity["role"] in {"ROLE_1", "ROLE_BOTH"}
+        ]
+        objects = [
+            entity for entity in entities
+            if entity["role"] in {"ROLE_2", "ROLE_BOTH"}
+        ]
 
         relations = []
 
         for s in subjects:
             for o in objects:
+                if s is o:
+                    continue
                 rel_type = self._match_relation(s["type"], o["type"])
                 if rel_type:
                     relations.append(
@@ -187,7 +128,6 @@ class InferenceService:
                             "source": s["text"],
                             "target": o["text"],
                             "relationship": rel_type,
-                            "confidence": 0.85,
                         }
                     )
 

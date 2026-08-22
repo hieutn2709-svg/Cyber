@@ -1,0 +1,4 @@
+configuration,variant,entity_f1,entity_f1_sample_sd,relation_f1,relation_f1_sample_sd,evaluation_scope,selection_scope,reporting_status
+same-split-rule-kb-baseline,baseline,0.289,0.051,0.011,0.012,document-level-five-fold,validation-only,primary
+V10-contextual-neural,V10,0.698,0.051,0.219,0.041,document-level-five-fold,validation-only,primary
+V13-conservative-hybrid,V13,0.710,0.051,0.222,0.040,document-level-five-fold,validation-only,primary

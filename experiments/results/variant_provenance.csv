@@ -1,0 +1,5 @@
+variant,name,entity_f1,relation_f1,reporting_status,selection_scope,lineage
+V10,contextual neural,0.698,0.219,primary,validation-only,starting contextual configuration
+V11,naive hybrid,0.692,0.220,development-diagnostic,validation-only,developed after V10 outcomes
+V12,per-type calibrated hybrid,0.710,0.214,development-diagnostic,validation-only,developed after V10 and V11 outcomes
+V13,conservative hybrid,0.710,0.222,primary,validation-only,final conservative variant informed by V10 through V12

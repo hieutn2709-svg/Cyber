@@ -24,6 +24,10 @@ V11 and V12 are preserved only as sequential development-stage diagnostics in
 [`experiments/results/variant_provenance.csv`](experiments/results/variant_provenance.csv);
 they are not independent confirmatory ablations.
 
+Saved fold-level counts, diagnostics, per-class metrics, and V13 test
+predictions are listed in
+[`experiments/results/README.md`](experiments/results/README.md).
+
 ### STIXnet literature result versus this reproduction
 
 The original STIXnet paper reports entity F1 0.916 and relation F1 0.724 in its
@@ -52,14 +56,38 @@ separate four-class token head:
 The optimizer uses encoder learning rate `3e-5`, task-head learning rate
 `3e-4`, and weight decay `0.01`. Joint training is capped at 30 epochs with
 patience 5. Relation refinement is capped at 12 epochs with patience 4. The
+entity/role/relation task-loss weights are `0.80/0.05/0.15`. The maximum
+sequence length is 512, the physical batch size is 2 with gradient accumulation
+2, the emission-level CE weight is 1.5, the O-class weight cap is 0.25, and the
+maximum relation distance is 96 tokens. The run seed is 42; it is distinct from
+the split seed. The
 canonical record is [`Configs/reviewer_experiment.json`](Configs/reviewer_experiment.json),
 with a human-readable mirror in [`Configs/model_config.yaml`](Configs/model_config.yaml).
 
 ## Document-level evaluation
 
-The official manifest uses `split_seed=11800` and 52 complete documents. Fold
-sizes are 11, 11, 10, 10, and 10. The controlled evaluation's core entity types
-are:
+The official run manifest uses `split_seed=11800` and 52 complete documents.
+Fold sizes are 11, 11, 10, 10, and 10. The exact archived numeric-index file is
+[`experiments/cv_manifest/fold_manifest_v4.json`](experiments/cv_manifest/fold_manifest_v4.json),
+and its stable document-ID translation is
+[`document_folds.json`](experiments/cv_manifest/document_folds.json).
+
+The earlier public `document_folds.json` was produced by a separate
+label-balancing algorithm that also received the integer 11800; it was not the
+allocation used by V10--V13. The archived run instead used the NumPy permutation
+recorded in `fold_manifest_v4.json`. Reusing a seed across different assignment
+algorithms does not produce the same folds. The checked-in derived manifest now
+maps that archived allocation to stable annotation task IDs.
+
+Raw annotation relation counts for the five actual run folds are
+`134, 106, 138, 111, 85`. Relations retained in the clean windowed evaluation
+dataset are `128, 106, 137, 110, 83`. Thus V13 fold 3 contains 138 raw
+annotations, of which 137 are evaluable after preprocessing; its reported
+23 true positives plus 114 false negatives correctly total 137. The later V10
+sanitation pass removed zero additional relations because it received the
+already-cleaned window dataset.
+
+The controlled evaluation's core entity types are:
 
 `attack-pattern`, `campaign`, `domain-name`, `identity`, `indicator`,
 `intrusion-set`, `location`, `malware`, `tool`, and `vulnerability`.
@@ -84,8 +112,8 @@ python experiments/build_document_cv.py --check
 
 The first command rejects conflicting active metrics/configuration and validates
 the tag spaces, result tables, and split topology. The second compares a fresh
-in-memory manifest against the checked-in official files without rewriting
-them.
+translation of the archived run manifest against the checked-in derived files
+without rewriting them.
 
 ## Repository status and limits
 
@@ -93,15 +121,31 @@ them.
 - The checked-in source includes prototype extraction and integration modules.
 - No new experiment was run during this audit and no synthetic result was
   generated.
-- Exact environment locks, independently verifiable run logs, checkpoints for
-  V10--V13, and per-fold prediction artifacts are not present. These remain
-  unresolved provenance limitations and are not implied by the summary tables.
+- Fold-level CSVs, gold-span/gold-pair diagnostics, per-class metrics, and saved
+  V13 test predictions are checked in under `experiments/results/`.
+- Run logs and checkpoints are linked below rather than duplicated in Git.
+- Immutable dependency/base-model revision locks and complete checkpoint hashes
+  remain unresolved provenance limitations.
 - Unsupported historical metrics, the former fixed-run bundle, the legacy
   combined-role label export, and the old notebook are explicitly deprecated in
   [`archive/deprecated/README.md`](archive/deprecated/README.md).
 
+## Large artifacts
+
+Sharing was verified on 2026-08-24 as **Anyone with the link — Viewer** for the
+[Cyber Drive folder](https://drive.google.com/drive/folders/16Vi2N4a1bxDjOjdt9APTOtxus6JT3SoT)
+and its
+[`models_checkpoints` folder](https://drive.google.com/drive/folders/1karEftjWrFmWq7gdjLwD0BhVnOL44caY).
+
+- [`stixnet_baseline_repro`](https://drive.google.com/drive/folders/1_gfJDaMibmTECF6_-2s6MPevkY8nkb8z): same-split rule/knowledge-based baseline outputs.
+- [`reviewer_v10`](https://drive.google.com/drive/folders/1Bmv6sIfThPxLz1nYlupA3uxM9HWlRV4k): archived split manifest, preflight, resolved training specification, fold logs, checkpoints, predictions, and contextual-neural results.
+- [`reviewer_v11_hybrid`](https://drive.google.com/drive/folders/1VXYI94JYkSmK-XBS8JLp-Y74B9gjPhV5): naive-hybrid fold selections and outputs.
+- [`reviewer_v12_calibrated`](https://drive.google.com/drive/folders/1r8pymvR6hR_J28stQKUKswBst4_9-1In): per-type calibrated-hybrid fold selections and outputs.
+- [`reviewer_v13_conservative`](https://drive.google.com/drive/folders/1ES3xljtU-h41xdHznnGXKKJI6PxRYNzZ): conservative-hybrid fold selections, test metrics, and saved test predictions.
+
 ## License and third-party material
 
 See [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md). The repository currently
-does not grant an open-source license. Dataset, model, paper, and third-party
-software rights remain with their respective owners.
+does not grant an open-source license. It is publicly inspectable, but it must
+not be described as open-source or as released under MIT/CC BY. Dataset, model,
+paper, and third-party software rights remain with their respective owners.

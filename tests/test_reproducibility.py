@@ -30,6 +30,15 @@ EXPECTED_RESULTS = {
     "V10-contextual-neural": (0.698, 0.219),
     "V13-conservative-hybrid": (0.710, 0.222),
 }
+EXPECTED_RUN_FOLDS = [
+    ["405", "387", "413", "417", "402", "23", "414", "415", "425", "401", "410"],
+    ["420", "423", "406", "407", "390", "388", "424", "376", "371", "396", "378"],
+    ["370", "386", "372", "419", "421", "399", "395", "412", "403", "389"],
+    ["377", "374", "381", "422", "409", "397", "398", "400", "418", "416"],
+    ["426", "373", "393", "392", "411", "408", "375", "391", "366", "365"],
+]
+EXPECTED_RAW_RELATIONS = [134, 106, 138, 111, 85]
+EXPECTED_EVALUABLE_RELATIONS = [128, 106, 137, 110, 83]
 
 
 class ReproducibilityPreflight(unittest.TestCase):
@@ -49,6 +58,17 @@ class ReproducibilityPreflight(unittest.TestCase):
         self.assertEqual(config["joint_patience"], 5)
         self.assertEqual(config["relation_refinement_epochs"], 12)
         self.assertEqual(config["relation_refinement_patience"], 4)
+        self.assertEqual(config.get("max_seq_length"), 512)
+        self.assertEqual(config.get("physical_batch_size"), 2)
+        self.assertEqual(config.get("gradient_accumulation_steps"), 2)
+        self.assertEqual(config.get("emission_ce_weight"), 1.5)
+        self.assertEqual(config.get("o_class_weight_cap"), 0.25)
+        self.assertEqual(config.get("max_relation_distance"), 96)
+        self.assertEqual(config.get("run_seed"), 42)
+        self.assertEqual(
+            config.get("task_loss_weights"),
+            {"entity": 0.80, "role": 0.05, "relation": 0.15},
+        )
         self.assertEqual(config["selection_data"], "validation_only")
 
     def test_tag_and_role_spaces_are_separate(self) -> None:
@@ -86,9 +106,25 @@ class ReproducibilityPreflight(unittest.TestCase):
         manifest_path = ROOT / "experiments" / "cv_manifest" / "document_folds.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(manifest["split_seed"], 11800)
+        self.assertEqual(manifest.get("run_seed"), 42)
         self.assertEqual(manifest["core_entity_types"], CORE_TYPES)
         self.assertEqual([len(fold["documents"]) for fold in manifest["folds"]],
                          [11, 11, 10, 10, 10])
+        self.assertEqual(
+            [fold["documents"] for fold in manifest["folds"]], EXPECTED_RUN_FOLDS
+        )
+        with (ROOT / "experiments" / "cv_manifest" / "fold_summary.csv").open(
+            newline="", encoding="utf-8"
+        ) as stream:
+            fold_summary = list(csv.DictReader(stream))
+        self.assertEqual(
+            [int(row["relation_instances"]) for row in fold_summary],
+            EXPECTED_RAW_RELATIONS,
+        )
+        self.assertEqual(
+            [int(row["evaluation_relation_instances"]) for row in fold_summary],
+            EXPECTED_EVALUABLE_RELATIONS,
+        )
         document_ids = {document["document_id"] for document in manifest["documents"]}
         held_out_ids: set[str] = set()
         for fold in range(5):
@@ -106,6 +142,42 @@ class ReproducibilityPreflight(unittest.TestCase):
             held_out_ids.update(test)
         self.assertEqual(held_out_ids, document_ids)
 
+    def test_archived_run_manifest_maps_to_stable_document_ids(self) -> None:
+        annotations = json.loads(
+            (ROOT / "data" / "Annotations.json").read_text(encoding="utf-8-sig")
+        )
+        document_ids_by_index = [str(task["id"]) for task in annotations]
+        run_manifest_path = (
+            ROOT / "experiments" / "cv_manifest" / "fold_manifest_v4.json"
+        )
+        self.assertTrue(run_manifest_path.is_file())
+        run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
+        mapped = [
+            [document_ids_by_index[int(index)] for index in fold]
+            for fold in run_manifest["folds"]
+        ]
+        self.assertEqual(run_manifest["split_seed"], 11800)
+        self.assertEqual(mapped, EXPECTED_RUN_FOLDS)
+
+        partitions_path = (
+            ROOT / "experiments" / "cv_manifest" / "run_partitions_seed_42.json"
+        )
+        self.assertTrue(partitions_path.is_file())
+        partitions = json.loads(partitions_path.read_text(encoding="utf-8"))
+        self.assertEqual(partitions["run_seed"], 42)
+        self.assertEqual(
+            partitions["dataset_sha256"],
+            "190d3136edba33d89ee58f533e2d12cc6cac2842323e3168f6e3e0e71af72c48",
+        )
+        self.assertEqual(
+            [fold["test_document_ids"] for fold in partitions["outer_folds"]],
+            EXPECTED_RUN_FOLDS,
+        )
+        self.assertEqual(
+            [fold["evaluation_relation_instances"] for fold in partitions["outer_folds"]],
+            EXPECTED_EVALUABLE_RELATIONS,
+        )
+
     def test_manifest_builder_check_mode_matches_checked_in_files(self) -> None:
         result = subprocess.run(
             [sys.executable, "experiments/build_document_cv.py", "--check"],
@@ -115,7 +187,10 @@ class ReproducibilityPreflight(unittest.TestCase):
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("matches checked-in manifest", result.stdout)
+        self.assertIn(
+            "matches archived run manifest and checked-in derived files",
+            result.stdout,
+        )
 
     def test_current_results_contain_only_supported_primary_claims(self) -> None:
         path = ROOT / "experiments" / "results" / "current_results.csv"
@@ -127,6 +202,72 @@ class ReproducibilityPreflight(unittest.TestCase):
         }
         self.assertEqual(observed, EXPECTED_RESULTS)
         self.assertTrue(all(row["selection_scope"] == "validation-only" for row in rows))
+
+    def test_fold_level_evidence_is_complete_and_consistent(self) -> None:
+        results_dir = ROOT / "experiments" / "results"
+        required = [
+            "rule_kb_baseline_per_fold.csv",
+            "contextual_neural_per_fold.csv",
+            "naive_hybrid_per_fold.csv",
+            "per_type_calibrated_hybrid_per_fold.csv",
+            "five_fold_results_conservative_hybrid.csv",
+            "five_fold_summary.csv",
+            "gold_span_diagnostic_per_fold.csv",
+            "gold_pair_type_accuracy_per_fold.csv",
+            "per_class/entity_per_class_by_fold.csv",
+            "per_class/relation_per_class_by_fold.csv",
+        ]
+        for relative_path in required:
+            self.assertTrue((results_dir / relative_path).is_file(), relative_path)
+        self.assertTrue((ROOT / "corpus_label_stats.csv").is_file())
+
+        with (results_dir / "five_fold_results_conservative_hybrid.csv").open(
+            newline="", encoding="utf-8"
+        ) as stream:
+            v13_rows = list(csv.DictReader(stream))
+        self.assertEqual([int(row["fold"]) for row in v13_rows], [1, 2, 3, 4, 5])
+        self.assertEqual(
+            [int(row["entity_tp"]) + int(row["entity_fn"]) for row in v13_rows],
+            [287, 262, 275, 250, 279],
+        )
+        self.assertEqual(
+            [int(row["relation_tp"]) + int(row["relation_fn"]) for row in v13_rows],
+            EXPECTED_EVALUABLE_RELATIONS,
+        )
+
+        for filename, prefix in [
+            ("entity_per_class_by_fold.csv", "entity"),
+            ("relation_per_class_by_fold.csv", "relation"),
+        ]:
+            with (results_dir / "per_class" / filename).open(
+                newline="", encoding="utf-8"
+            ) as stream:
+                per_class_rows = list(csv.DictReader(stream))
+            for fold_row in v13_rows:
+                fold = int(fold_row["fold"])
+                class_rows = [
+                    row for row in per_class_rows if int(row["fold"]) == fold
+                ]
+                for count_name in ("tp", "fp", "fn"):
+                    self.assertEqual(
+                        sum(int(row[count_name]) for row in class_rows),
+                        int(fold_row[f"{prefix}_{count_name}"]),
+                    )
+
+        prediction_root = results_dir / "predictions" / "conservative_hybrid"
+        for fold, expected_windows in enumerate([16, 11, 10, 11, 19], start=1):
+            prediction_path = (
+                prediction_root
+                / f"fold_{fold}_seed_42"
+                / "test_predictions.jsonl"
+            )
+            self.assertTrue(prediction_path.is_file())
+            rows = [
+                json.loads(line)
+                for line in prediction_path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            self.assertEqual(len(rows), expected_windows)
 
     def test_variant_lineage_preserves_v10_through_v13(self) -> None:
         path = ROOT / "experiments" / "results" / "variant_provenance.csv"
@@ -177,6 +318,19 @@ class ReproducibilityPreflight(unittest.TestCase):
         self.assertIn("0.724", readme)
         self.assertIn("0.289", readme)
         self.assertIn("0.011", readme)
+
+    def test_readme_links_large_artifacts_and_explains_fold_counts(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("## Large artifacts", readme)
+        self.assertIn(
+            "https://drive.google.com/drive/folders/1karEftjWrFmWq7gdjLwD0BhVnOL44caY",
+            readme,
+        )
+        self.assertIn("Anyone with the link — Viewer", readme)
+        self.assertIn("134, 106, 138, 111, 85", readme)
+        self.assertIn("128, 106, 137, 110, 83", readme)
+        self.assertIn("61 sequence tags", readme)
+        self.assertIn("separate four-class token head", readme)
 
     def test_license_and_notice_are_present(self) -> None:
         self.assertTrue((ROOT / "LICENSE").is_file())

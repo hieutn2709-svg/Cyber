@@ -1,6 +1,6 @@
-fold,documents,entity_mentions,relation_instances,characters
-0,11,304,118,22477
-1,11,275,120,13087
-2,10,281,115,27620
-3,10,268,115,14913
-4,10,274,106,13413
+fold,documents,entity_mentions,relation_instances,evaluation_entity_instances,evaluation_relation_instances,characters
+1,11,323,134,287,128,19642
+2,11,262,106,262,106,14516
+3,10,277,138,275,137,13038
+4,10,252,111,250,110,14457
+5,10,288,85,279,83,29857

@@ -1,0 +1,11 @@
+entity_type,document_support,mention_count,evaluation_status
+attack-pattern,51,194,core
+campaign,5,7,core
+domain-name,3,3,core
+identity,41,103,core
+indicator,3,3,core
+intrusion-set,51,655,core
+location,42,156,core
+malware,28,71,core
+tool,44,148,core
+vulnerability,10,13,core

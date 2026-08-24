@@ -1,0 +1,6 @@
+fold,pair_type_accuracy,gold_relations,pred_relations,schema_blocked_gold,distance_blocked_gold,selected_threshold
+1,0.940677966101695,128,117,10,0,0.6
+2,0.931372549019608,106,143,3,1,0.35
+3,0.9465648854961832,137,82,6,0,0.6
+4,0.822429906542056,110,75,2,0,0.6
+5,0.9487179487179488,83,34,3,2,0.7

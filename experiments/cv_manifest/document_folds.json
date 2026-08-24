@@ -1,6 +1,10 @@
 {
-  "protocol": "five-fold document-level cross-validation with rotating validation fold",
+  "protocol": "five-fold document-level cross-validation with saved within-run validation partitions",
   "split_seed": 11800,
+  "run_seed": 42,
+  "dataset_sha256": "190d3136edba33d89ee58f533e2d12cc6cac2842323e3168f6e3e0e71af72c48",
+  "source_run_manifest": "fold_manifest_v4.json",
+  "source_run_partitions": "run_partitions_seed_42.json",
   "core_entity_types": [
     "attack-pattern",
     "campaign",
@@ -17,142 +21,142 @@
   "number_of_documents": 52,
   "folds": [
     {
-      "fold": 0,
-      "documents": [
-        "373",
-        "381",
-        "412",
-        "402",
-        "398",
-        "426",
-        "407",
-        "424",
-        "409",
-        "23",
-        "422"
-      ],
-      "source_files": [
-        "APT19.txt",
-        "APT38.txt",
-        "Cobalt_Group.txt",
-        "GALLIUM.txt",
-        "Inception.txt",
-        "Naikon.txt",
-        "Nomadic_Octopus.txt",
-        "Silent_Librarian.txt",
-        "Stealth_Falcon.txt",
-        "test2.json",
-        "Windigo.txt"
-      ]
-    },
-    {
       "fold": 1,
       "documents": [
-        "372",
-        "375",
+        "405",
+        "387",
         "413",
-        "392",
-        "419",
-        "420",
-        "421",
-        "397",
-        "396",
-        "403",
-        "406"
+        "417",
+        "402",
+        "23",
+        "414",
+        "415",
+        "425",
+        "401",
+        "410"
       ],
       "source_files": [
-        "APT18.txt",
-        "APT3.txt",
+        "Mustang_Panda.txt",
+        "APT41.txt",
         "CopyKittens.txt",
-        "FIN7.txt",
-        "Fox_Kitten.txt",
-        "Gallmaker.txt",
-        "Leviathan.txt",
-        "MuddyWater.txt",
-        "PLATINUM.txt",
-        "Whitefly.txt",
-        "ZIRCONIUM.txt"
+        "Higaisa.txt",
+        "GALLIUM.txt",
+        "test2.json",
+        "DarkHydrus.txt",
+        "Deep_Panda.txt",
+        "Rancor.txt",
+        "Dragonfly.txt",
+        "ALLANITE.txt"
       ]
     },
     {
       "fold": 2,
       "documents": [
-        "400",
-        "387",
-        "411",
-        "415",
-        "401",
-        "417",
-        "418",
-        "425",
-        "366",
-        "423"
+        "420",
+        "423",
+        "406",
+        "407",
+        "390",
+        "388",
+        "424",
+        "376",
+        "371",
+        "396",
+        "378"
       ],
       "source_files": [
-        "Andariel.txt",
-        "APT41.txt",
-        "AXIOM.txt",
-        "Deep_Panda.txt",
-        "Dragonfly.txt",
-        "Higaisa.txt",
-        "Honeybee.txt",
-        "Rancor.txt",
-        "WinDealer.txt",
-        "Wizard_Spider.txt"
+        "Gallmaker.txt",
+        "Wizard_Spider.txt",
+        "ZIRCONIUM.txt",
+        "Nomadic_Octopus.txt",
+        "FIN5.txt",
+        "FIN10.txt",
+        "Silent_Librarian.txt",
+        "APT32.txt",
+        "APT12.txt",
+        "PLATINUM.txt",
+        "APT37.txt"
       ]
     },
     {
       "fold": 3,
       "documents": [
-        "410",
-        "371",
-        "374",
-        "376",
-        "377",
+        "370",
         "386",
+        "372",
+        "419",
+        "421",
         "399",
-        "416",
-        "390",
-        "391"
+        "395",
+        "412",
+        "403",
+        "389"
       ],
       "source_files": [
-        "ALLANITE.txt",
-        "APT12.txt",
-        "APT28.txt",
-        "APT32.txt",
-        "APT33.txt",
+        "APT1.txt",
         "APT39.txt",
+        "APT18.txt",
+        "Fox_Kitten.txt",
+        "Leviathan.txt",
         "Blue_Mockingbird.txt",
-        "Elderwood.txt",
-        "FIN5.txt",
-        "FIN6.txt"
+        "TA459.txt",
+        "Cobalt_Group.txt",
+        "Whitefly.txt",
+        "FIN4.txt"
       ]
     },
     {
       "fold": 4,
       "documents": [
-        "370",
-        "378",
-        "414",
-        "388",
-        "389",
-        "393",
-        "408",
-        "405",
-        "365",
-        "395"
+        "377",
+        "374",
+        "381",
+        "422",
+        "409",
+        "397",
+        "398",
+        "400",
+        "418",
+        "416"
       ],
       "source_files": [
-        "APT1.txt",
-        "APT37.txt",
-        "DarkHydrus.txt",
-        "FIN10.txt",
-        "FIN4.txt",
+        "APT33.txt",
+        "APT28.txt",
+        "APT38.txt",
+        "Windigo.txt",
+        "Stealth_Falcon.txt",
+        "MuddyWater.txt",
+        "Inception.txt",
+        "Andariel.txt",
+        "Honeybee.txt",
+        "Elderwood.txt"
+      ]
+    },
+    {
+      "fold": 5,
+      "documents": [
+        "426",
+        "373",
+        "393",
+        "392",
+        "411",
+        "408",
+        "375",
+        "391",
+        "366",
+        "365"
+      ],
+      "source_files": [
+        "Naikon.txt",
+        "APT19.txt",
         "FIN8.txt",
+        "FIN7.txt",
+        "AXIOM.txt",
         "LazyScripter.txt",
-        "Mustang_Panda.txt",
-        "STIXnet_Example.txt",
-        "TA459.txt"
+        "APT3.txt",
+        "FIN6.txt",
+        "WinDealer.txt",
+        "STIXnet_Example.txt"
       ]
     }
   ],
@@ -175,7 +179,7 @@
         "used-by": 2,
         "uses": 2
       },
-      "fold": 0
+      "fold": 5
     },
     {
       "document_id": "425",
@@ -194,7 +198,7 @@
         "targets": 2,
         "uses": 7
       },
-      "fold": 2
+      "fold": 1
     },
     {
       "document_id": "424",
@@ -214,7 +218,7 @@
         "used-by": 3,
         "uses": 1
       },
-      "fold": 0
+      "fold": 2
     },
     {
       "document_id": "423",
@@ -257,7 +261,7 @@
         "used-by": 4,
         "uses": 7
       },
-      "fold": 0
+      "fold": 4
     },
     {
       "document_id": "421",
@@ -280,7 +284,7 @@
         "used-by": 5,
         "uses": 11
       },
-      "fold": 1
+      "fold": 3
     },
     {
       "document_id": "420",
@@ -300,7 +304,7 @@
         "targets": 1,
         "uses": 2
       },
-      "fold": 1
+      "fold": 2
     },
     {
       "document_id": "419",
@@ -321,7 +325,7 @@
         "used-by": 1,
         "uses": 7
       },
-      "fold": 1
+      "fold": 3
     },
     {
       "document_id": "418",
@@ -341,7 +345,7 @@
         "used-by": 1,
         "uses": 3
       },
-      "fold": 2
+      "fold": 4
     },
     {
       "document_id": "417",
@@ -360,7 +364,7 @@
         "targets": 5,
         "uses": 6
       },
-      "fold": 2
+      "fold": 1
     },
     {
       "document_id": "416",
@@ -381,7 +385,7 @@
         "used-by": 3,
         "uses": 1
       },
-      "fold": 3
+      "fold": 4
     },
     {
       "document_id": "415",
@@ -404,7 +408,7 @@
         "used-by": 1,
         "uses": 9
       },
-      "fold": 2
+      "fold": 1
     },
     {
       "document_id": "414",
@@ -425,7 +429,7 @@
         "used-by": 3,
         "uses": 6
       },
-      "fold": 4
+      "fold": 1
     },
     {
       "document_id": "413",
@@ -471,7 +475,7 @@
         "used-by": 1,
         "uses": 15
       },
-      "fold": 0
+      "fold": 3
     },
     {
       "document_id": "411",
@@ -489,7 +493,7 @@
         "used-by": 2,
         "uses": 2
       },
-      "fold": 2
+      "fold": 5
     },
     {
       "document_id": "410",
@@ -508,7 +512,7 @@
         "used-by": 1,
         "uses": 2
       },
-      "fold": 3
+      "fold": 1
     },
     {
       "document_id": "409",
@@ -528,7 +532,7 @@
         "used-by": 3,
         "uses": 2
       },
-      "fold": 0
+      "fold": 4
     },
     {
       "document_id": "408",
@@ -546,7 +550,7 @@
         "targets": 2,
         "uses": 5
       },
-      "fold": 4
+      "fold": 5
     },
     {
       "document_id": "407",
@@ -568,7 +572,7 @@
         "targets": 2,
         "uses": 5
       },
-      "fold": 0
+      "fold": 2
     },
     {
       "document_id": "406",
@@ -591,7 +595,7 @@
         "used-by": 4,
         "uses": 3
       },
-      "fold": 1
+      "fold": 2
     },
     {
       "document_id": "405",
@@ -613,7 +617,7 @@
         "used-by": 2,
         "uses": 2
       },
-      "fold": 4
+      "fold": 1
     },
     {
       "document_id": "403",
@@ -634,7 +638,7 @@
         "used-by": 2,
         "uses": 3
       },
-      "fold": 1
+      "fold": 3
     },
     {
       "document_id": "402",
@@ -653,7 +657,7 @@
         "used-by": 1,
         "uses": 9
       },
-      "fold": 0
+      "fold": 1
     },
     {
       "document_id": "401",
@@ -675,7 +679,7 @@
         "used-by": 3,
         "uses": 9
       },
-      "fold": 2
+      "fold": 1
     },
     {
       "document_id": "400",
@@ -698,7 +702,7 @@
         "used-by": 2,
         "uses": 3
       },
-      "fold": 2
+      "fold": 4
     },
     {
       "document_id": "399",
@@ -742,7 +746,7 @@
         "used-by": 1,
         "uses": 1
       },
-      "fold": 0
+      "fold": 4
     },
     {
       "document_id": "397",
@@ -763,7 +767,7 @@
         "used-by": 1,
         "uses": 10
       },
-      "fold": 1
+      "fold": 4
     },
     {
       "document_id": "396",
@@ -783,7 +787,7 @@
         "used-by": 1,
         "uses": 1
       },
-      "fold": 1
+      "fold": 2
     },
     {
       "document_id": "395",
@@ -804,7 +808,7 @@
         "targets": 2,
         "uses": 1
       },
-      "fold": 4
+      "fold": 3
     },
     {
       "document_id": "393",
@@ -825,7 +829,7 @@
         "used-by": 2,
         "uses": 5
       },
-      "fold": 4
+      "fold": 5
     },
     {
       "document_id": "392",
@@ -846,7 +850,7 @@
         "used-by": 2,
         "uses": 5
       },
-      "fold": 1
+      "fold": 5
     },
     {
       "document_id": "391",
@@ -864,7 +868,7 @@
         "used-by": 1,
         "uses": 10
       },
-      "fold": 3
+      "fold": 5
     },
     {
       "document_id": "390",
@@ -885,7 +889,7 @@
         "used-by": 3,
         "uses": 7
       },
-      "fold": 3
+      "fold": 2
     },
     {
       "document_id": "388",
@@ -905,7 +909,7 @@
         "used-by": 4,
         "uses": 4
       },
-      "fold": 4
+      "fold": 2
     },
     {
       "document_id": "387",
@@ -928,7 +932,7 @@
         "used-by": 5,
         "uses": 5
       },
-      "fold": 2
+      "fold": 1
     },
     {
       "document_id": "386",
@@ -974,7 +978,7 @@
         "used-by": 1,
         "uses": 9
       },
-      "fold": 0
+      "fold": 4
     },
     {
       "document_id": "378",
@@ -995,7 +999,7 @@
         "targets": 3,
         "uses": 5
       },
-      "fold": 4
+      "fold": 2
     },
     {
       "document_id": "377",
@@ -1014,7 +1018,7 @@
       "relation_counts": {
         "uses": 8
       },
-      "fold": 3
+      "fold": 4
     },
     {
       "document_id": "376",
@@ -1037,7 +1041,7 @@
         "used-by": 2,
         "uses": 7
       },
-      "fold": 3
+      "fold": 2
     },
     {
       "document_id": "373",
@@ -1057,7 +1061,7 @@
         "used-by": 2,
         "uses": 3
       },
-      "fold": 0
+      "fold": 5
     },
     {
       "document_id": "375",
@@ -1081,7 +1085,7 @@
         "used-by": 2,
         "uses": 4
       },
-      "fold": 1
+      "fold": 5
     },
     {
       "document_id": "374",
@@ -1106,7 +1110,7 @@
         "used-in": 1,
         "uses": 9
       },
-      "fold": 3
+      "fold": 4
     },
     {
       "document_id": "372",
@@ -1124,7 +1128,7 @@
         "targets": 1,
         "uses": 3
       },
-      "fold": 1
+      "fold": 3
     },
     {
       "document_id": "371",
@@ -1146,7 +1150,7 @@
         "used-by": 1,
         "uses": 3
       },
-      "fold": 3
+      "fold": 2
     },
     {
       "document_id": "370",
@@ -1166,7 +1170,7 @@
         "used-by": 2,
         "uses": 11
       },
-      "fold": 4
+      "fold": 3
     },
     {
       "document_id": "366",
@@ -1189,7 +1193,7 @@
         "targets": 2,
         "uses": 2
       },
-      "fold": 2
+      "fold": 5
     },
     {
       "document_id": "365",
@@ -1213,7 +1217,7 @@
         "targets": 4,
         "uses": 7
       },
-      "fold": 4
+      "fold": 5
     },
     {
       "document_id": "23",
@@ -1240,7 +1244,7 @@
         "targets": 5,
         "uses": 2
       },
-      "fold": 0
+      "fold": 1
     },
     {
       "document_id": "389",
@@ -1262,7 +1266,7 @@
         "used-by": 2,
         "uses": 5
       },
-      "fold": 4
+      "fold": 3
     }
   ]
 }

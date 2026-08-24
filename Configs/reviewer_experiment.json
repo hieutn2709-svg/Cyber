@@ -5,13 +5,24 @@
   "bigru_layers": 2,
   "attention_heads": 8,
   "dropout": 0.35,
+  "max_seq_length": 512,
   "encoder_learning_rate": 0.00003,
   "head_learning_rate": 0.0003,
   "weight_decay": 0.01,
+  "physical_batch_size": 2,
+  "gradient_accumulation_steps": 2,
   "joint_max_epochs": 30,
   "joint_patience": 5,
   "relation_refinement_epochs": 12,
   "relation_refinement_patience": 4,
+  "emission_ce_weight": 1.5,
+  "o_class_weight_cap": 0.25,
+  "max_relation_distance": 96,
+  "task_loss_weights": {
+    "entity": 0.80,
+    "role": 0.05,
+    "relation": 0.15
+  },
   "sequence_tag_count": 61,
   "role_labels": [
     "O",
@@ -20,5 +31,6 @@
     "ROLE_BOTH"
   ],
   "split_seed": 11800,
+  "run_seed": 42,
   "selection_data": "validation_only"
 }

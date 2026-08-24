@@ -1,0 +1,96 @@
+{
+  "version": "reviewer-v4-fixed-1",
+  "split_seed": 11800,
+  "split_objective": 5.62787552422059,
+  "coverage_safe_candidates": "forced_historical_v8_split",
+  "folds": [
+    [
+      21,
+      36,
+      13,
+      9,
+      23,
+      50,
+      12,
+      11,
+      1,
+      24,
+      16
+    ],
+    [
+      6,
+      3,
+      20,
+      19,
+      34,
+      35,
+      2,
+      41,
+      46,
+      29,
+      39
+    ],
+    [
+      47,
+      37,
+      45,
+      7,
+      5,
+      26,
+      30,
+      14,
+      22,
+      51
+    ],
+    [
+      40,
+      44,
+      38,
+      4,
+      17,
+      28,
+      27,
+      25,
+      8,
+      10
+    ],
+    [
+      0,
+      42,
+      31,
+      32,
+      15,
+      18,
+      43,
+      33,
+      48,
+      49
+    ]
+  ],
+  "fold_sizes": [
+    11,
+    11,
+    10,
+    10,
+    10
+  ],
+  "core_types": [
+    "attack-pattern",
+    "campaign",
+    "domain-name",
+    "identity",
+    "indicator",
+    "intrusion-set",
+    "location",
+    "malware",
+    "tool",
+    "vulnerability"
+  ],
+  "seeds": [
+    42,
+    123,
+    2024,
+    3407,
+    777
+  ]
+}

@@ -23,11 +23,25 @@ training:
   joint_patience: 5
   relation_refinement_epochs: 12
   relation_refinement_patience: 4
+  physical_batch_size: 2
+  gradient_accumulation_steps: 2
+  run_seed: 42
   selection_data: "validation_only"
 
-multi_task_weight:
-  ner_loss_weight: 0.8
-  rel_loss_weight: 0.2
+task_loss_weights:
+  entity: 0.80
+  role: 0.05
+  relation: 0.15
+
+loss_details:
+  emission_ce_weight: 1.5
+  o_class_weight_cap: 0.25
+
+relation:
+  max_relation_distance: 96
+
+evaluation:
+  split_seed: 11800
 
 tagging:
   scheme: "BIEOS"

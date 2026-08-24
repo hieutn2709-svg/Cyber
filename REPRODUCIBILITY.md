@@ -49,6 +49,11 @@ algorithm that also used the integer 11800. It was not the run allocation and
 has been replaced. A seed identifies a pseudorandom stream only together with
 its algorithm and input ordering.
 
+Both manifests cover the same 52 reports, but no former fold 0--4 is identical
+to any V13 run fold 1--5, so the run folds cannot be obtained by renumbering the
+former folds. V13 fold `k` is the archived numeric fold at index `k-1`; the
+corrected derived split is stored as `outer_splits/outer_fold_{k-1}.json`.
+
 The actual run-fold raw relation counts are `134, 106, 138, 111, 85`; clean
 evaluable counts are `128, 106, 137, 110, 83`. Fold 3 therefore has 138 raw
 relations and 137 retained by the clean windowed dataset. V13's 23 TP and 114

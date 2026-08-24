@@ -332,6 +332,19 @@ class ReproducibilityPreflight(unittest.TestCase):
         self.assertIn("61 sequence tags", readme)
         self.assertIn("separate four-class token head", readme)
 
+    def test_readme_explains_old_and_run_fold_numbering(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        normalized = " ".join(readme.split())
+        self.assertIn("same 52-document universe", normalized)
+        self.assertIn(
+            "no old fold has the same document set as any run fold", normalized
+        )
+        self.assertIn(
+            "V13 fold `k` (1--5) is `fold_manifest_v4.json[\"folds\"][k-1]`",
+            normalized,
+        )
+        self.assertIn("`outer_splits/outer_fold_{k-1}.json`", readme)
+
     def test_license_and_notice_are_present(self) -> None:
         self.assertTrue((ROOT / "LICENSE").is_file())
         notice_path = ROOT / "NOTICE.md"

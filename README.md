@@ -79,6 +79,28 @@ recorded in `fold_manifest_v4.json`. Reusing a seed across different assignment
 algorithms does not produce the same folds. The checked-in derived manifest now
 maps that archived allocation to stable annotation task IDs.
 
+The two allocations contain the same 52-document universe exactly once, but
+they do **not** assign those documents to the same folds: no old fold has the
+same document set as any run fold. The previous public file itself declared
+`split_seed=11800`; the value 42 is the model/evaluation run seed recorded with
+the saved partitions, not a second name for that old split. Intersections
+between each V13 run fold (rows) and the former public folds 0--4 (columns) are:
+
+| V13 run fold | old 0 | old 1 | old 2 | old 3 | old 4 |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 2 | 1 | 5 | 1 | 2 |
+| 2 | 2 | 3 | 1 | 3 | 2 |
+| 3 | 1 | 4 | 0 | 2 | 3 |
+| 4 | 4 | 1 | 2 | 3 | 0 |
+| 5 | 2 | 2 | 2 | 1 | 3 |
+
+Consequently there is no content-preserving renumbering from the old folds to
+the run folds. In the corrected artifact, V13 fold `k` (1--5) is
+`fold_manifest_v4.json["folds"][k-1]` and is written to
+`outer_splits/outer_fold_{k-1}.json`. The `k-1` relation is only a 1-based to
+0-based filename convention; the old outer-fold contents have been replaced
+by the archived run allocation.
+
 Raw annotation relation counts for the five actual run folds are
 `134, 106, 138, 111, 85`. Relations retained in the clean windowed evaluation
 dataset are `128, 106, 137, 110, 83`. Thus V13 fold 3 contains 138 raw

@@ -14,6 +14,7 @@
       3407,
       777
     ],
+    "seeds_note": "The seeds [42, 123, 2024, 3407, 777] were the planned seed list; the archived pilot run records used only seed 42.",
     "paper_config": {
       "bigru_hidden": 250,
       "bigru_layers": 2,
@@ -49,7 +50,7 @@
       "relation_refine_label_smoothing": 0.05,
       "batch_size": 2,
       "grad_accum": 2,
-      "max_epochs": 30,
+      "max_epochs": 12,
       "patience": 5,
       "emission_ce_weight": 1.5
     },

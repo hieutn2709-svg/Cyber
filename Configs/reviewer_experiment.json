@@ -11,7 +11,7 @@
   "weight_decay": 0.01,
   "physical_batch_size": 2,
   "gradient_accumulation_steps": 2,
-  "joint_max_epochs": 30,
+  "joint_max_epochs": 12,
   "joint_patience": 5,
   "relation_refinement_epochs": 12,
   "relation_refinement_patience": 4,

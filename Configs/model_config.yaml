@@ -19,7 +19,7 @@ training:
   encoder_learning_rate: 3.0e-5
   head_learning_rate: 3.0e-4
   weight_decay: 0.01
-  joint_max_epochs: 30
+  joint_max_epochs: 12
   joint_patience: 5
   relation_refinement_epochs: 12
   relation_refinement_patience: 4

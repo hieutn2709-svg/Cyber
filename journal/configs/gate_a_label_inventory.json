@@ -1,0 +1,36 @@
+{
+  "primary_entity_types": [
+    "attack-pattern",
+    "campaign",
+    "domain-name",
+    "identity",
+    "indicator",
+    "intrusion-set",
+    "location",
+    "malware",
+    "tool",
+    "vulnerability"
+  ],
+  "auxiliary_entity_types": [
+    "file-paths",
+    "sha256s",
+    "tactic",
+    "threat-actor",
+    "url"
+  ],
+  "relation_types": [
+    "attributed-to",
+    "authored-by",
+    "deliver",
+    "drops",
+    "have",
+    "indicates",
+    "located-at",
+    "originates-from",
+    "targeted-by",
+    "targets",
+    "used-by",
+    "used-in",
+    "uses"
+  ]
+}

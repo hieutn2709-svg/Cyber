@@ -1,0 +1,15 @@
+{
+  "experiment_name": "gate_a_plain_spanpair_roberta",
+  "schema_mode": "none",
+  "encoder_model": "FacebookAI/roberta-base",
+  "encoder_revision": "c2a5e573587885ce23744cf330ee7c402f0df16f",
+  "split_seed": 11800,
+  "seed": 42,
+  "fold": 1,
+  "span_width_coverage": 0.995,
+  "max_span_candidates": 128,
+  "min_entity_score": 0.05,
+  "max_relation_token_distance": 96,
+  "relation_negative_ratio": 6,
+  "output_dir": "journal/runs/gate_a_plain_spanpair"
+}

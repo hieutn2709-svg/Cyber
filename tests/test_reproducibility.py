@@ -54,7 +54,7 @@ class ReproducibilityPreflight(unittest.TestCase):
         self.assertEqual(config["encoder_learning_rate"], 3e-5)
         self.assertEqual(config["head_learning_rate"], 3e-4)
         self.assertEqual(config["weight_decay"], 0.01)
-        self.assertEqual(config["joint_max_epochs"], 30)
+        self.assertEqual(config["joint_max_epochs"], 12)
         self.assertEqual(config["joint_patience"], 5)
         self.assertEqual(config["relation_refinement_epochs"], 12)
         self.assertEqual(config["relation_refinement_patience"], 4)

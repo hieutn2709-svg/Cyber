@@ -1,10 +1,13 @@
-# Prototype inference defaults only. These values were not used to select or
-# score the reviewer experiments. Reported experiment thresholds and model
-# variants were selected on each outer fold's validation partition, frozen,
-# and then applied once to its held-out test partition.
+# Prototype inference defaults only for the legacy hybrid pipeline. The
+# deterministic branch is STIXnet-inspired; this file does not describe a
+# faithful reimplementation of the complete original STIXnet system.
+# These values were not used to select or score the reviewer experiments.
+# Reported experiment thresholds and model variants were selected on each
+# outer fold's validation partition, frozen, and then applied once to its
+# held-out test partition.
 
 pipeline:
-  name: "STIXnet + CyberEntRel Augmented Pipeline"
+  name: "CTI Hybrid Prototype - Legacy Inference Defaults"
   version: "2.1"
   experiment_selection:
     scope: "validation_only"
@@ -13,28 +16,27 @@ pipeline:
 # Ngưỡng tin cậy (Confidence Thresholds)
 
   thresholds:
-    global_acceptance: 0.5           
-    
+    global_acceptance: 0.5
+
     # Ngưỡng cụ thể cho thực thể (SDO)
     entity_extraction:
-      deep_learning_min_conf: 0.5   
-      kb_matcher_weight: 1.0         
-      ioc_regex_weight: 1.0          
+      deep_learning_min_conf: 0.5
+      kb_matcher_weight: 1.0
+      ioc_regex_weight: 1.0
 
     # Ngưỡng cụ thể cho quan hệ (SRO)
     relation_extraction:
-      rule_based_min_sim: 0.5        # Độ tương đồng Wu-Palmer tối thiểu 
-      sbert_cosine_min_sim: 0.5      # Độ tương đồng Cosine tối thiểu từ mô hình SBERT 
-      joint_model_min_conf: 0.5      # Ngưỡng tin cậy từ lõi CyberEntRel 
+      rule_based_min_sim: 0.5        # Độ tương đồng Wu-Palmer tối thiểu
+      sbert_cosine_min_sim: 0.5      # Độ tương đồng Cosine tối thiểu từ mô hình SBERT
+      joint_model_min_conf: 0.5      # Ngưỡng tin cậy từ lõi CyberEntRel
 
 # Chiến lược hợp nhất (Merge Strategy)
   merger:
     priority_order:
-      - "ioc_finder"                 # Ưu tiên 1: Regex cho độ chính xác cao nhất 
-      - "kb_matcher"                 # Ưu tiên 2: Các thực thể đã biết trong Knowledge Base 
-      - "joint_model"                # Ưu tiên 3: Trích xuất liên hợp cho thực thể mới/quan hệ phức tạp 
-      - "ttp_extractor"              # Ưu tiên 4: Kỹ thuật ẩn ý từ Bosch dataset 
+      - "ioc_finder"                 # Ưu tiên 1: Regex cho độ chính xác cao nhất
+      - "kb_matcher"                 # Ưu tiên 2: Các thực thể đã biết trong Knowledge Base
+      - "joint_model"                # Ưu tiên 3: Trích xuất liên hợp cho thực thể mới/quan hệ phức tạp
+      - "ttp_extractor"              # Ưu tiên 4: Kỹ thuật ẩn ý từ Bosch dataset
 
-    handle_conflicts: "highest_confidence" # Nếu trùng lặp, chọn cái có điểm tin cậy cao hơn 
-    allow_novel_entities: true             # Cho phép thêm thực thể mới nếu vượt ngưỡng 
-
+    handle_conflicts: "highest_confidence" # Nếu trùng lặp, chọn cái có điểm tin cậy cao hơn
+    allow_novel_entities: true             # Cho phép thêm thực thể mới nếu vượt ngưỡng

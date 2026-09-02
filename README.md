@@ -54,7 +54,7 @@ separate four-class token head:
 - `ROLE_BOTH`
 
 The optimizer uses encoder learning rate `3e-5`, task-head learning rate
-`3e-4`, and weight decay `0.01`. Joint training is capped at 30 epochs with
+`3e-4`, and weight decay `0.01`. Joint training is capped at 12 epochs with
 patience 5. Relation refinement is capped at 12 epochs with patience 4. The
 entity/role/relation task-loss weights are `0.80/0.05/0.15`. The maximum
 sequence length is 512, the physical batch size is 2 with gradient accumulation

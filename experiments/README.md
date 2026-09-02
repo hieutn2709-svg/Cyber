@@ -36,7 +36,7 @@ checkpoint, decoding, reconciliation, or threshold selection.
 The canonical reviewer configuration is
 `Configs/reviewer_experiment.json`: RoBERTa, a two-layer BiGRU with hidden size
 250, eight attention heads, dropout 0.35, encoder LR `3e-5`, head LR `3e-4`,
-weight decay 0.01, joint maximum 30 epochs/patience 5, and relation refinement
+weight decay 0.01, joint maximum 12 epochs/patience 5, and relation refinement
 12 epochs/patience 4. It also records sequence length 512, physical batch 2,
 gradient accumulation 2, emission CE weight 1.5, O-class cap 0.25, relation
 distance 96, and entity/role/relation task weights 0.80/0.05/0.15.

@@ -2,17 +2,25 @@ import json
 import uuid
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import List, Dict
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
 
 class STIXMapper:
 
-    def __init__(self, mapping_path="configs/stix_mapping.json"):
-        if not os.path.exists(mapping_path):
+    def __init__(self, mapping_path=None):
+        if mapping_path is None:
+            mapping_path = ROOT / "Configs" / "stix_mapping.json"
+        mapping_path = Path(mapping_path)
+        if not mapping_path.exists():
             raise FileNotFoundError(f"Không tìm thấy file ánh xạ tại {mapping_path}")
-            
-        with open(mapping_path, 'r', encoding='utf-8') as f:
+
+        with mapping_path.open('r', encoding='utf-8') as f:
             self.mapping_data = json.load(f)
-        
+
         self.stix_version = self.mapping_data.get("stix_version", "2.1")
         self.entity_map = self.mapping_data["label_mapping"]["entities"]
 
@@ -20,14 +28,14 @@ class STIXMapper:
 
         bundle_id = f"bundle--{uuid.uuid4()}"
         stix_objects = []
- 
+
         value_to_id = {}
 
         for ent in entities:
             stix_type = self.entity_map.get(ent['type'], ent['type'])
-            
+
             object_id = f"{stix_type}--{uuid.uuid4()}"
-            
+
             sdo = {
                 "type": stix_type,
                 "spec_version": self.stix_version,
@@ -46,14 +54,14 @@ class STIXMapper:
                     "source_name": "cve",
                     "external_id": ent['value']
                 })
-            
+
             stix_objects.append(sdo)
             value_to_id[ent['value']] = object_id
 
         for rel in relations:
             source_ref = value_to_id.get(rel['source'])
             target_ref = value_to_id.get(rel['target'])
-            
+
             if source_ref and target_ref:
                 sro = {
                     "type": "relationship",
@@ -77,10 +85,10 @@ class STIXMapper:
     def save_to_file(self, bundle: Dict, output_dir="output/stix_json/"):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-            
+
         filename = f"cti_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         path = os.path.join(output_dir, filename)
-        
+
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(bundle, f, indent=4, ensure_ascii=False)
         return path
@@ -88,9 +96,10 @@ class STIXMapper:
     def _get_timestamp(self):
         return datetime.utcnow().isoformat() + "Z"
 
+
 if __name__ == "__main__":
     mapper = STIXMapper()
-    
+
     merged_entities = [
         {"type": "APT_group", "value": "OceanLotus", "confidence": 1.0, "source": "kb_matcher"},
         {"type": "vulnerability", "value": "CVE-2021-26855", "confidence": 1.0, "source": "ioc_finder"}
@@ -98,10 +107,10 @@ if __name__ == "__main__":
     merged_relations = [
         {"source": "OceanLotus", "target": "CVE-2021-26855", "relationship": "exploits", "confidence": 0.9}
     ]
-    
+
     bundle = mapper.generate_bundle(merged_entities, merged_relations)
     output_path = mapper.save_to_file(bundle)
-    
+
     print(f"✅ Đã xuất báo cáo STIX 2.1 thành công!")
     print(f"📍 Đường dẫn: {output_path}")
     print(f"📊 Tổng số đối tượng: {len(bundle['objects'])}")

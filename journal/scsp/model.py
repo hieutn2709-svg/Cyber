@@ -34,25 +34,34 @@ class SpanPooler(nn.Module):
         if spans.numel() == 0:
             return token_states.new_empty((0, self.output_dim))
 
-        reps: list[torch.Tensor] = []
+        spans = spans.long()
+        starts = spans[:, 0]
+        ends = spans[:, 1]
         token_count = token_states.shape[0]
-        for start_tensor, end_tensor in spans.long():
-            start = int(start_tensor.item())
-            end = int(end_tensor.item())
-            if start < 0 or end < start or end >= token_count:
-                raise ValueError(f"invalid span [{start}, {end}] for {token_count} tokens")
-            segment = token_states[start : end + 1]
-            weights = torch.softmax(self.attention(segment).squeeze(-1), dim=0)
-            pooled = torch.sum(segment * weights.unsqueeze(-1), dim=0)
-            width = min(end - start + 1, self.max_width)
-            width_index = torch.tensor(width, device=token_states.device)
-            width_rep = self.width_embedding(width_index)
-            reps.append(
-                torch.cat(
-                    (token_states[start], token_states[end], pooled, width_rep), dim=-1
-                )
-            )
-        return torch.stack(reps, dim=0)
+        invalid = (starts < 0) | (ends < starts) | (ends >= token_count)
+        if bool(invalid.any()):
+            raise ValueError("invalid span boundary")
+
+        widths = ends - starts + 1
+        max_actual_width = int(widths.max().item())
+        offsets = torch.arange(max_actual_width, device=token_states.device)
+        positions = starts.unsqueeze(1) + offsets.unsqueeze(0)
+        mask = offsets.unsqueeze(0) < widths.unsqueeze(1)
+        segment_states = token_states[positions.clamp(max=token_count - 1)]
+        scores = self.attention(segment_states).squeeze(-1)
+        scores = scores.masked_fill(~mask, torch.finfo(scores.dtype).min)
+        weights = torch.softmax(scores, dim=1)
+        pooled = torch.sum(segment_states * weights.unsqueeze(-1), dim=1)
+        width_rep = self.width_embedding(widths.clamp(max=self.max_width))
+        return torch.cat(
+            (
+                token_states[starts],
+                token_states[ends],
+                pooled,
+                width_rep,
+            ),
+            dim=-1,
+        )
 
 
 class SpanEntityHead(nn.Module):

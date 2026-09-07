@@ -32,22 +32,36 @@ The primary development comparison uses:
 The controlled dataset itself is not committed to the public repository. Supply
 it explicitly at execution time.
 
+The controlled Gate A training inventory contains 15 trainable entity labels
+plus `NONE`: 10 primary/core labels used for the main Entity F1 report and 5
+auxiliary endpoint labels retained so annotated relations are not made
+structurally impossible. See `DATA_SCOPE_DECISION.md`.
+
 ## What is implemented
 
 The Gate A foundation contains:
 
 - immutable no-schema experiment configuration;
 - fixed-manifest loading and train/validation/test leakage guards;
+- verified clean-window dataset adapter and aggregate audit;
 - training-derived span-width policy;
-- exhaustive span proposal and deterministic score-based pruning;
+- content-only exhaustive span proposal and deterministic score-based pruning;
+- training-only gold-span injection for relation supervision;
 - strict typed span recall diagnostics, including entity-type and width buckets;
 - directional ordered entity-pair generation;
+- training pair sampling that preserves all gold positives while applying the
+  inference distance cutoff only to negatives;
 - pair recall, class-balance, relation-type, and token-distance diagnostics;
-- PyTorch span pooling, entity typing, pair representation, relation-existence,
-  and relation-type heads;
+- pinned RoBERTa runtime encoder;
+- vectorized span attention pooling and between-span context pooling;
+- PyTorch entity typing, pair representation, relation-existence, and
+  relation-type heads;
 - imbalance-aware relation losses;
+- validation-only checkpoint and relation-threshold selection;
+- multi-window local-to-document-global artifact aggregation;
 - JSONL prediction artifacts with run/data/config provenance;
 - independent strict entity/relation rescoring from saved predictions;
+- primary/core scoped reporting in addition to all-evaluable metrics;
 - preflight checks for immutable encoder revision, manifest consistency,
   dataset hash, and validation-only model selection.
 
@@ -83,43 +97,92 @@ python journal/scripts/run_gate_a.py \
   --output-dir journal/runs/gate_a_plain_spanpair/fold_1_seed_42
 ```
 
-The command refuses a file whose SHA-256 differs from the manifest. Before any
-training is allowed, it writes:
+The command refuses a file whose SHA-256 differs from the manifest and writes
+`resolved_config.json` plus `provenance.json` before model execution.
 
-```text
-resolved_config.json
-provenance.json
+## Training execution modes
+
+The journal training driver is `journal/scripts/train_gate_a.py`. Execution is
+staged deliberately so test labels cannot influence debugging or selection.
+
+### E1: one-window overfit diagnostic
+
+```bash
+python journal/scripts/train_gate_a.py \
+  --mode overfit \
+  --dataset /path/to/train_multitask_v4_clean_windows.json \
+  --fold 1 \
+  --seed 42 \
+  --output-dir /path/to/runs/fold_1_seed_42_overfit
 ```
 
-The current runner stops at `preflight_complete_training_not_started`. This is
-intentional: the exact dataset adapter/training driver is added only after its
-input schema has been verified against the controlled dataset. No placeholder
-metric or synthetic journal result is emitted.
+`overfit` selects one positive training window and never evaluates validation or
+test. Its purpose is to detect broken gradients, labels, pair construction, or
+loss wiring before a fold run.
+
+### E2: two-epoch smoke run
+
+```bash
+python journal/scripts/train_gate_a.py \
+  --mode smoke \
+  --dataset /path/to/train_multitask_v4_clean_windows.json \
+  --fold 1 \
+  --seed 42 \
+  --output-dir /path/to/runs/fold_1_seed_42_smoke
+```
+
+`smoke` trains for `smoke_epochs` from `gate_a_training.json`, evaluates only the
+fixed validation partition, and writes validation logits/predictions,
+checkpointing metadata, and candidate diagnostics. It does **not** evaluate the
+test partition.
+
+### E3: frozen full Fold-1 run
+
+Run this only after E1 and E2 have been inspected:
+
+```bash
+python journal/scripts/train_gate_a.py \
+  --mode full \
+  --dataset /path/to/train_multitask_v4_clean_windows.json \
+  --fold 1 \
+  --seed 42 \
+  --output-dir /path/to/runs/fold_1_seed_42_full
+```
+
+`full` selects the best checkpoint and relation threshold from validation only.
+The fixed test partition is evaluated once after checkpoint and threshold are
+frozen.
 
 ## Artifact contract for real runs
 
-A completed Gate A training run must additionally preserve:
+A completed Gate A training run preserves, as applicable:
 
-- raw test predictions in JSONL;
-- validation logits used for any validation-only selection;
-- span proposal recall before pruning;
-- span recall after pruning;
+- `resolved_config.json` and `provenance.json`;
+- `environment.json` and `training_run_config.json`;
+- `training_history.json` and `best_model.pt`;
+- validation logits and validation prediction JSONL;
+- validation-only threshold selection;
+- span proposal and post-pruning diagnostics;
 - pair recall before and after distance filtering;
-- relation-existence metrics;
-- relation-type metrics conditioned on gold pairs;
-- gold-span relation metrics;
-- per-document strict TP/FP/FN;
-- model/config/data hashes and the exact Git commit;
-- runtime environment and hardware metadata.
+- per-document strict TP/FP/FN-derived metrics;
+- raw test prediction JSONL for a full run;
+- all-evaluable relation metrics and core-to-core relation metrics;
+- primary/core Entity F1 and all-trainable-label diagnostics;
+- model/config/data hashes and exact Git commit.
 
 The saved JSONL must be sufficient for an independent evaluator to reproduce the
 reported strict entity and typed-endpoint relation counts without importing the
 training loop.
 
+Relation-existence metrics, relation-type metrics conditioned on gold pairs, and
+gold-span relation diagnostics remain mandatory Gate A analysis outputs before
+a journal result is treated as scientifically complete.
+
 ## Gate A acceptance rule
 
-The foundation code is not equivalent to a completed Gate A experiment. Gate A
+The code foundation is not equivalent to a completed Gate A experiment. Gate A
 is scientifically complete only after at least one real fold/seed trains
-end-to-end on the hash-verified controlled dataset and the saved prediction
-artifact can be independently rescored. Until then, no new F1 result should be
-quoted in the journal manuscript.
+end-to-end on the hash-verified controlled dataset, the saved prediction
+artifact can be independently rescored, and the mandatory bottleneck
+diagnostics have been reviewed. Until then, no new F1 result should be quoted in
+the journal manuscript.

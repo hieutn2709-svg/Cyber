@@ -408,6 +408,197 @@ def infer_window(
     )
 
 
+def infer_gold_span_pairs(
+    model,
+    window: WindowExample,
+    *,
+    base_config,
+    relation_chunk_size: int,
+    device: torch.device,
+) -> tuple[ScoredRelationPair, ...]:
+    """Score relation candidates using gold entity endpoints for diagnostics.
+
+    This path is diagnostic-only: it bypasses entity proposal, typing, and span
+    pruning, while retaining the configured relation-distance constraint and the
+    learned relation heads. It must never be used to construct normal model
+    predictions.
+    """
+    if relation_chunk_size < 1:
+        raise ValueError("relation_chunk_size must be >= 1")
+
+    gold_spans = tuple(
+        SpanCandidate(
+            gold.document_id,
+            gold.start,
+            gold.end,
+            label=gold.label,
+            entity_score=1.0,
+            proposal_source="gold-diagnostic",
+        )
+        for gold in window.gold_spans
+    )
+    pairs = generate_ordered_pairs(
+        gold_spans,
+        max_token_distance=base_config.max_relation_token_distance,
+    )
+    if not pairs:
+        return ()
+
+    input_ids, attention_mask = _window_tensors(window, device)
+    model.eval()
+    with torch.no_grad():
+        token_states = model.encode(input_ids, attention_mask)[0]
+        span_reps = model.span_pooler(
+            token_states,
+            _span_tensor(gold_spans, device),
+        )
+        index_by_key = {
+            span.typed_key: index for index, span in enumerate(gold_spans)
+        }
+        scored_pairs: list[ScoredRelationPair] = []
+        for start in range(0, len(pairs), relation_chunk_size):
+            chunk = pairs[start : start + relation_chunk_size]
+            source_indices = torch.tensor(
+                [index_by_key[pair.source.typed_key] for pair in chunk],
+                dtype=torch.long,
+                device=device,
+            )
+            target_indices = torch.tensor(
+                [index_by_key[pair.target.typed_key] for pair in chunk],
+                dtype=torch.long,
+                device=device,
+            )
+            endpoint_tensor = torch.tensor(
+                [
+                    [
+                        pair.source.start,
+                        pair.source.end,
+                        pair.target.start,
+                        pair.target.end,
+                    ]
+                    for pair in chunk
+                ],
+                dtype=torch.long,
+                device=device,
+            )
+            context = model.context_pooler(token_states, endpoint_tensor)
+            distances = torch.tensor(
+                [pair.token_distance for pair in chunk],
+                dtype=torch.long,
+                device=device,
+            )
+            pair_reps = model.heads.pair_representation(
+                span_reps[source_indices],
+                span_reps[target_indices],
+                context,
+                distances,
+            )
+            existence_logits = model.heads.existence_head(pair_reps)
+            type_logits = model.heads.type_head(pair_reps)
+            for pair, existence_logit, relation_logits in zip(
+                chunk,
+                existence_logits.detach().cpu().tolist(),
+                type_logits.detach().cpu().tolist(),
+            ):
+                scored_pairs.append(
+                    ScoredRelationPair(
+                        pair=pair,
+                        existence_logit=float(existence_logit),
+                        type_logits=tuple(float(x) for x in relation_logits),
+                    )
+                )
+    return tuple(scored_pairs)
+
+
+def _prf_counts(tp: int, fp: int, fn: int) -> dict[str, float | int]:
+    precision = tp / (tp + fp) if tp + fp else 1.0
+    recall = tp / (tp + fn) if tp + fn else 1.0
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision + recall
+        else 0.0
+    )
+    return {
+        "tp": int(tp),
+        "fp": int(fp),
+        "fn": int(fn),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+    }
+
+
+def relation_head_diagnostics(
+    scored_pairs: Sequence[ScoredRelationPair],
+    gold_relations,
+    *,
+    relation_types: Sequence[str],
+    threshold: float,
+) -> dict[str, object]:
+    """Separate relation existence, type, and gold-span end-to-end quality."""
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("threshold must be in [0, 1]")
+    if not relation_types:
+        raise ValueError("relation_types must be non-empty")
+
+    gold_relations = tuple(gold_relations)
+    gold_endpoint_keys = {relation.endpoint_key for relation in gold_relations}
+    predicted_positive_endpoints = {
+        scored.pair.ordered_key
+        for scored in scored_pairs
+        if scored.existence_probability >= threshold
+    }
+    existence_tp = len(gold_endpoint_keys & predicted_positive_endpoints)
+    existence_fp = len(predicted_positive_endpoints - gold_endpoint_keys)
+    existence_fn = len(gold_endpoint_keys - predicted_positive_endpoints)
+
+    scored_by_endpoint = {
+        scored.pair.ordered_key: scored for scored in scored_pairs
+    }
+    type_correct = 0
+    type_total = 0
+    for relation in gold_relations:
+        scored = scored_by_endpoint.get(relation.endpoint_key)
+        if scored is None:
+            continue
+        predicted_key = _predicted_relation_key(scored, relation_types)
+        type_total += 1
+        if predicted_key[4] == relation.label:
+            type_correct += 1
+
+    gold_strict = {
+        _gold_relation_strict_key(relation) for relation in gold_relations
+    }
+    predicted_strict = {
+        _predicted_relation_key(scored, relation_types)
+        for scored in scored_pairs
+        if scored.existence_probability >= threshold
+    }
+    strict_tp = len(gold_strict & predicted_strict)
+    strict_fp = len(predicted_strict - gold_strict)
+    strict_fn = len(gold_strict - predicted_strict)
+
+    return {
+        "existence": _prf_counts(
+            existence_tp,
+            existence_fp,
+            existence_fn,
+        ),
+        "type_on_gold_pairs": {
+            "correct": int(type_correct),
+            "total": int(type_total),
+            "accuracy": (
+                float(type_correct / type_total) if type_total else 1.0
+            ),
+        },
+        "gold_span_relation": _prf_counts(
+            strict_tp,
+            strict_fp,
+            strict_fn,
+        ),
+    }
+
+
 def _gold_relation_strict_key(relation) -> tuple[object, ...]:
     return (
         relation.source.document_id,

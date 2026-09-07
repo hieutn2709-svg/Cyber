@@ -514,6 +514,33 @@ def _candidate_diagnostics(inferences, base_config) -> dict[str, Any]:
     }
 
 
+def build_history_row(
+    *,
+    epoch: int,
+    seconds: float,
+    train_metrics: dict[str, Any],
+    selected: dict[str, float],
+    candidate_diagnostics: dict[str, Any],
+) -> dict[str, Any]:
+    """Build one immutable-by-convention development history record."""
+    recall_keys = (
+        "span_proposal",
+        "span_post_pruning_typed",
+        "pair_pre_distance",
+        "pair_post_distance",
+    )
+    return {
+        "epoch": int(epoch),
+        "seconds": float(seconds),
+        "train": dict(train_metrics),
+        "validation": dict(selected),
+        "candidate_recall": {
+            key: float(candidate_diagnostics[key]["recall"])
+            for key in recall_keys
+        },
+    }
+
+
 def _write_validation_logits(path: Path, inferences) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
@@ -786,18 +813,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             seed=args.seed,
         )
         selected = threshold_selection["best"]
-        row = {
-            "epoch": epoch,
-            "seconds": time.time() - start_time,
-            "train": train_metrics,
-            "validation": selected,
-        }
+        candidate_diagnostics = _candidate_diagnostics(
+            validation_inferences, base_config
+        )
+        row = build_history_row(
+            epoch=epoch,
+            seconds=time.time() - start_time,
+            train_metrics=train_metrics,
+            selected=selected,
+            candidate_diagnostics=candidate_diagnostics,
+        )
         history.append(row)
         _write_json(output_dir / "training_history.json", history)
+        recall = row["candidate_recall"]
         print(
             f"epoch={epoch:02d} train_loss={train_metrics['total_loss']:.6f} "
             f"val_RF1={selected['relation_f1']:.6f} "
             f"val_EF1_primary={selected['primary_entity_f1']:.6f} "
+            f"spanR={recall['span_post_pruning_typed']:.4f} "
+            f"pairR={recall['pair_post_distance']:.4f} "
             f"threshold={selected['threshold']:.2f} "
             f"time={row['seconds'] / 60:.1f}m",
             flush=True,
@@ -903,8 +937,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         inventory,
     )
 
+    status = "smoke_complete" if args.mode == "smoke" else "training_complete"
+    if args.mode == "dev":
+        status = "dev_complete"
     summary: dict[str, Any] = {
-        "status": "smoke_complete" if args.mode == "smoke" else "training_complete",
+        "status": status,
         "mode": args.mode,
         "fold": args.fold,
         "seed": args.seed,

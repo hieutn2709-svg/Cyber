@@ -98,11 +98,22 @@ class TrainingConfigUtilsTests(unittest.TestCase):
                 [0.0, 2.0, 1.0],
             ]
         )
+        probabilities = torch.softmax(logits, dim=-1)
         scored = scored_entity_candidates(
             candidates, logits, ("malware", "tool")
         )
         self.assertEqual(scored[0].label, "tool")
         self.assertEqual(scored[1].label, "malware")
+        self.assertAlmostEqual(
+            scored[0].entity_score,
+            float(1.0 - probabilities[0, 0]),
+            places=6,
+        )
+        self.assertAlmostEqual(
+            scored[1].entity_score,
+            float(1.0 - probabilities[1, 0]),
+            places=6,
+        )
         self.assertGreater(scored[1].entity_score, scored[0].entity_score)
 
 

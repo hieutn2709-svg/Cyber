@@ -35,6 +35,7 @@ class TrainGateACliTests(unittest.TestCase):
         module = load_module()
         self.assertFalse(module.mode_evaluates_test("overfit"))
         self.assertFalse(module.mode_evaluates_test("smoke"))
+        self.assertFalse(module.mode_evaluates_test("dev"))
         self.assertTrue(module.mode_evaluates_test("full"))
 
     def test_mode_epoch_budget_uses_training_config(self) -> None:
@@ -45,6 +46,7 @@ class TrainGateACliTests(unittest.TestCase):
             smoke_epochs = 2
 
         self.assertEqual(module.mode_epoch_budget("smoke", Config()), 2)
+        self.assertEqual(module.mode_epoch_budget("dev", Config()), 12)
         self.assertEqual(module.mode_epoch_budget("full", Config()), 12)
         self.assertEqual(
             module.mode_epoch_budget("overfit", Config(), overfit_epochs=20),

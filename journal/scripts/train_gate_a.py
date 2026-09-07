@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import random
 import subprocess
@@ -22,6 +23,10 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
+
+# cuBLAS requires one of these workspace configurations for deterministic
+# CUDA matrix multiplication when deterministic algorithms are enforced.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -154,8 +159,13 @@ def _resolve_device(requested: str):
 
 
 def _set_seed(seed: int) -> None:
+    # Keep the cuBLAS setting here as well so direct calls to this helper have
+    # the same strict deterministic contract as the CLI entrypoint.
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
     import torch
 
+    torch.use_deterministic_algorithms(True)
     random.seed(seed)
     try:
         import numpy as np
@@ -169,6 +179,11 @@ def _set_seed(seed: int) -> None:
     if hasattr(torch.backends, "cudnn"):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+        if hasattr(torch.backends.cudnn, "allow_tf32"):
+            torch.backends.cudnn.allow_tf32 = False
+    if hasattr(torch.backends, "cuda") and hasattr(torch.backends.cuda, "matmul"):
+        if hasattr(torch.backends.cuda.matmul, "allow_tf32"):
+            torch.backends.cuda.matmul.allow_tf32 = False
 
 
 def _environment(device) -> dict[str, Any]:
@@ -713,8 +728,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         f"{base_config.experiment_name}-f{args.fold}-s{args.seed}-"
         f"{args.mode}-{commit[:8]}"
     )
-    device = _resolve_device(args.device)
     _set_seed(args.seed)
+    device = _resolve_device(args.device)
     _write_json(output_dir / "environment.json", _environment(device))
     _write_json(
         output_dir / "training_run_config.json",

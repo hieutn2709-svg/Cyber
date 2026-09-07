@@ -529,6 +529,102 @@ def _candidate_diagnostics(inferences, base_config) -> dict[str, Any]:
     }
 
 
+def _prf_from_counts(tp: int, fp: int, fn: int) -> dict[str, float | int]:
+    precision = tp / (tp + fp) if tp + fp else 1.0
+    recall = tp / (tp + fn) if tp + fn else 1.0
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision + recall
+        else 0.0
+    )
+    return {
+        "tp": int(tp),
+        "fp": int(fp),
+        "fn": int(fn),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+    }
+
+
+def _relation_head_diagnostics_for_split(
+    model,
+    windows,
+    inventory,
+    *,
+    threshold: float,
+    base_config,
+    training_config,
+    device,
+) -> dict[str, Any]:
+    """Micro-aggregate gold-span relation diagnostics over model windows.
+
+    Aggregation is intentionally window-level because the relation heads consume
+    window-local span coordinates. This keeps overlapping-window opportunities
+    distinct while avoiding coordinate collisions across windows.
+    """
+    from journal.scsp.training import (
+        infer_gold_span_pairs,
+        relation_head_diagnostics,
+    )
+
+    window_list = tuple(windows)
+    existence_tp = existence_fp = existence_fn = 0
+    strict_tp = strict_fp = strict_fn = 0
+    type_correct = type_total = 0
+
+    for window in window_list:
+        scored_pairs = infer_gold_span_pairs(
+            model,
+            window,
+            base_config=base_config,
+            relation_chunk_size=training_config.relation_inference_chunk_size,
+            device=device,
+        )
+        diagnostic = relation_head_diagnostics(
+            scored_pairs,
+            window.gold_relations,
+            relation_types=inventory.relation_types,
+            threshold=threshold,
+        )
+        existence = diagnostic["existence"]
+        existence_tp += int(existence["tp"])
+        existence_fp += int(existence["fp"])
+        existence_fn += int(existence["fn"])
+
+        typed = diagnostic["type_on_gold_pairs"]
+        type_correct += int(typed["correct"])
+        type_total += int(typed["total"])
+
+        strict = diagnostic["gold_span_relation"]
+        strict_tp += int(strict["tp"])
+        strict_fp += int(strict["fp"])
+        strict_fn += int(strict["fn"])
+
+    return {
+        "aggregation_scope": "window_micro",
+        "window_count": len(window_list),
+        "threshold": float(threshold),
+        "existence": _prf_from_counts(
+            existence_tp,
+            existence_fp,
+            existence_fn,
+        ),
+        "type_on_gold_pairs": {
+            "correct": int(type_correct),
+            "total": int(type_total),
+            "accuracy": (
+                float(type_correct / type_total) if type_total else 1.0
+            ),
+        },
+        "gold_span_relation": _prf_from_counts(
+            strict_tp,
+            strict_fp,
+            strict_fn,
+        ),
+    }
+
+
 def build_history_row(
     *,
     epoch: int,
@@ -946,6 +1042,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         output_dir / "validation_candidate_diagnostics.json",
         _candidate_diagnostics(validation_inferences, base_config),
     )
+    validation_relation_head_diagnostics = _relation_head_diagnostics_for_split(
+        model,
+        validation_windows,
+        inventory,
+        threshold=frozen_threshold,
+        base_config=base_config,
+        training_config=training_config,
+        device=device,
+    )
+    _write_json(
+        output_dir / "validation_relation_head_diagnostics.json",
+        validation_relation_head_diagnostics,
+    )
     _write_per_document_metrics(
         output_dir / "validation_per_document_metrics.json",
         validation_records,
@@ -999,6 +1108,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         _write_json(
             output_dir / "test_candidate_diagnostics.json",
             _candidate_diagnostics(test_inferences, base_config),
+        )
+        test_relation_head_diagnostics = _relation_head_diagnostics_for_split(
+            model,
+            test_windows,
+            inventory,
+            threshold=frozen_threshold,
+            base_config=base_config,
+            training_config=training_config,
+            device=device,
+        )
+        _write_json(
+            output_dir / "test_relation_head_diagnostics.json",
+            test_relation_head_diagnostics,
         )
         _write_per_document_metrics(
             output_dir / "test_per_document_metrics.json",

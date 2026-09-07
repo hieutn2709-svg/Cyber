@@ -82,6 +82,13 @@ def scored_entity_candidates(
     logits: torch.Tensor,
     entity_types: Sequence[str],
 ) -> tuple[SpanCandidate, ...]:
+    """Assign the best entity type and probability of being any non-NONE entity.
+
+    The class label is the argmax among non-NONE entity types.  The pruning score
+    is P(entity) = 1 - P(NONE), matching the Gate A design specification.  Using
+    the maximum single entity-class probability as the pruning score can retain
+    many spans whose total probability mass still strongly favors NONE.
+    """
     if logits.ndim != 2 or logits.shape[0] != len(candidates):
         raise ValueError("entity logits must have shape [candidates, classes]")
     if logits.shape[1] != len(entity_types) + 1:
@@ -92,11 +99,12 @@ def scored_entity_candidates(
         return ()
     probabilities = torch.softmax(logits.detach(), dim=-1)
     non_none = probabilities[:, 1:]
-    best_scores, best_indices = torch.max(non_none, dim=-1)
+    _, best_indices = torch.max(non_none, dim=-1)
+    non_none_scores = 1.0 - probabilities[:, 0]
     result: list[SpanCandidate] = []
     for candidate, score, type_index in zip(
         candidates,
-        best_scores.tolist(),
+        non_none_scores.tolist(),
         best_indices.tolist(),
     ):
         result.append(

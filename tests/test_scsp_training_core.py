@@ -11,9 +11,9 @@ except ImportError:  # pragma: no cover
     nn = None
 
 from journal.scsp.data import LabelInventory, WindowExample
-from journal.scsp.pairs import GoldRelation
+from journal.scsp.pairs import GoldRelation, PairCandidate
 from journal.scsp.runtime_model import GateASpanPairModel
-from journal.scsp.structures import GoldSpan
+from journal.scsp.structures import GoldSpan, SpanCandidate
 
 
 @unittest.skipIf(torch is None, "PyTorch not installed")
@@ -32,6 +32,9 @@ class TrainingCoreTests(unittest.TestCase):
         min_entity_score = 0.0
         max_relation_token_distance = 2
         relation_negative_ratio = 2
+
+    class DiagnosticConfig:
+        max_relation_token_distance = 10
 
     class TrainConfig:
         entity_negative_ratio = 2
@@ -81,7 +84,7 @@ class TrainingCoreTests(unittest.TestCase):
             width_embedding_dim=4,
             context_dim=5,
             distance_embedding_dim=3,
-            max_distance=2,
+            max_distance=10,
         )
 
     def test_training_window_loss_is_finite_and_keeps_distant_gold_positive(self):
@@ -132,6 +135,105 @@ class TrainingCoreTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "validation"):
             select_relation_threshold((), (0.5,), split="test")
+
+    def test_gold_span_diagnostic_inference_scores_gold_endpoints(self):
+        import journal.scsp.training as training
+
+        self.assertTrue(
+            hasattr(training, "infer_gold_span_pairs"),
+            "gold-span relation diagnostic inference is required",
+        )
+        scored = training.infer_gold_span_pairs(
+            self._model(),
+            self._window(),
+            base_config=self.DiagnosticConfig(),
+            relation_chunk_size=4,
+            device=torch.device("cpu"),
+        )
+        self.assertEqual(len(scored), 2)
+        self.assertTrue(
+            all(
+                item.pair.source.proposal_source == "gold-diagnostic"
+                and item.pair.target.proposal_source == "gold-diagnostic"
+                for item in scored
+            )
+        )
+
+    def test_relation_head_diagnostics_separate_existence_type_and_full_relation(self):
+        import journal.scsp.training as training
+
+        self.assertTrue(
+            hasattr(training, "relation_head_diagnostics"),
+            "relation-head diagnostic metrics are required",
+        )
+        a = GoldSpan("d", 1, 1, "intrusion-set")
+        b = GoldSpan("d", 2, 2, "malware")
+        c = GoldSpan("d", 3, 3, "malware")
+        gold = (
+            GoldRelation(a, b, "uses"),
+            GoldRelation(b, a, "targets"),
+        )
+
+        def candidate(span: GoldSpan) -> SpanCandidate:
+            return SpanCandidate(
+                span.document_id,
+                span.start,
+                span.end,
+                label=span.label,
+                entity_score=1.0,
+                proposal_source="gold-diagnostic",
+            )
+
+        ca, cb, cc = candidate(a), candidate(b), candidate(c)
+        scored = (
+            training.ScoredRelationPair(
+                PairCandidate(ca, cb, 0),
+                existence_logit=3.0,
+                type_logits=(4.0, 0.0),
+            ),
+            training.ScoredRelationPair(
+                PairCandidate(cb, ca, 0),
+                existence_logit=3.0,
+                type_logits=(4.0, 0.0),
+            ),
+            training.ScoredRelationPair(
+                PairCandidate(ca, cc, 1),
+                existence_logit=3.0,
+                type_logits=(4.0, 0.0),
+            ),
+        )
+        result = training.relation_head_diagnostics(
+            scored,
+            gold,
+            relation_types=("uses", "targets"),
+            threshold=0.5,
+        )
+        self.assertEqual(
+            result["existence"],
+            {
+                "tp": 2,
+                "fp": 1,
+                "fn": 0,
+                "precision": 2 / 3,
+                "recall": 1.0,
+                "f1": 0.8,
+            },
+        )
+        self.assertEqual(
+            result["type_on_gold_pairs"],
+            {"correct": 1, "total": 2, "accuracy": 0.5},
+        )
+        self.assertEqual(
+            result["gold_span_relation"],
+            {
+                "tp": 1,
+                "fp": 2,
+                "fn": 1,
+                "precision": 1 / 3,
+                "recall": 0.5,
+                "f1": 0.4,
+            },
+        )
 
 
 if __name__ == "__main__":

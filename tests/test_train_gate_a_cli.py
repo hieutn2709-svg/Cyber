@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 import unittest
@@ -82,6 +83,39 @@ class TrainGateACliTests(unittest.TestCase):
                 "pair_post_distance": 0.40,
             },
         )
+
+    def test_seed_setup_enables_strict_deterministic_torch_runtime(self) -> None:
+        import torch
+
+        module = load_module()
+        old_deterministic = torch.are_deterministic_algorithms_enabled()
+        old_benchmark = torch.backends.cudnn.benchmark
+        old_cudnn_deterministic = torch.backends.cudnn.deterministic
+        old_cudnn_tf32 = getattr(torch.backends.cudnn, "allow_tf32", None)
+        old_matmul_tf32 = getattr(torch.backends.cuda.matmul, "allow_tf32", None)
+        old_cublas = os.environ.get("CUBLAS_WORKSPACE_CONFIG")
+        try:
+            module._set_seed(42)
+            self.assertTrue(torch.are_deterministic_algorithms_enabled())
+            self.assertTrue(torch.backends.cudnn.deterministic)
+            self.assertFalse(torch.backends.cudnn.benchmark)
+            self.assertEqual(os.environ.get("CUBLAS_WORKSPACE_CONFIG"), ":4096:8")
+            if hasattr(torch.backends.cudnn, "allow_tf32"):
+                self.assertFalse(torch.backends.cudnn.allow_tf32)
+            if hasattr(torch.backends.cuda.matmul, "allow_tf32"):
+                self.assertFalse(torch.backends.cuda.matmul.allow_tf32)
+        finally:
+            torch.use_deterministic_algorithms(old_deterministic)
+            torch.backends.cudnn.benchmark = old_benchmark
+            torch.backends.cudnn.deterministic = old_cudnn_deterministic
+            if old_cudnn_tf32 is not None:
+                torch.backends.cudnn.allow_tf32 = old_cudnn_tf32
+            if old_matmul_tf32 is not None:
+                torch.backends.cuda.matmul.allow_tf32 = old_matmul_tf32
+            if old_cublas is None:
+                os.environ.pop("CUBLAS_WORKSPACE_CONFIG", None)
+            else:
+                os.environ["CUBLAS_WORKSPACE_CONFIG"] = old_cublas
 
 
 if __name__ == "__main__":

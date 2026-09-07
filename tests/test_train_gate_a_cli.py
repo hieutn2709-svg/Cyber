@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import os
 import subprocess
 import sys
@@ -116,6 +117,24 @@ class TrainGateACliTests(unittest.TestCase):
                 os.environ.pop("CUBLAS_WORKSPACE_CONFIG", None)
             else:
                 os.environ["CUBLAS_WORKSPACE_CONFIG"] = old_cublas
+
+    def test_driver_wires_split_relation_head_diagnostic_artifacts(self) -> None:
+        module = load_module()
+        self.assertTrue(
+            hasattr(module, "_relation_head_diagnostics_for_split"),
+            "driver must aggregate gold-span relation diagnostics per split",
+        )
+        run_source = inspect.getsource(module.run)
+        self.assertIn(
+            "validation_relation_head_diagnostics.json",
+            run_source,
+            "validation diagnostics artifact must always be written after checkpoint freeze",
+        )
+        self.assertIn(
+            "test_relation_head_diagnostics.json",
+            run_source,
+            "full mode must write test diagnostics with the frozen validation threshold",
+        )
 
 
 if __name__ == "__main__":

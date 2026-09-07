@@ -53,6 +53,36 @@ class TrainGateACliTests(unittest.TestCase):
             20,
         )
 
+    def test_history_row_records_candidate_recall_curve(self) -> None:
+        module = load_module()
+        diagnostics = {
+            "span_proposal": {"recall": 0.98},
+            "span_post_pruning_typed": {"recall": 0.61},
+            "pair_pre_distance": {"recall": 0.42},
+            "pair_post_distance": {"recall": 0.40},
+        }
+        row = module.build_history_row(
+            epoch=3,
+            seconds=12.5,
+            train_metrics={"total_loss": 1.25},
+            selected={
+                "relation_f1": 0.2,
+                "primary_entity_f1": 0.3,
+                "threshold": 0.5,
+            },
+            candidate_diagnostics=diagnostics,
+        )
+        self.assertEqual(row["epoch"], 3)
+        self.assertEqual(
+            row["candidate_recall"],
+            {
+                "span_proposal": 0.98,
+                "span_post_pruning_typed": 0.61,
+                "pair_pre_distance": 0.42,
+                "pair_post_distance": 0.40,
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

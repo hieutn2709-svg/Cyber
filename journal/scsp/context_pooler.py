@@ -31,42 +31,62 @@ class BetweenSpanContextPooler(nn.Module):
         if endpoint_spans.numel() == 0:
             return token_states.new_empty((0, self.output_dim))
 
+        endpoints = endpoint_spans.long()
         token_count = token_states.shape[0]
-        outputs: list[torch.Tensor] = []
-        for values in endpoint_spans.long():
-            source_start, source_end, target_start, target_end = [
-                int(value.item()) for value in values
-            ]
-            for start, end in (
-                (source_start, source_end),
-                (target_start, target_end),
-            ):
-                if start < 0 or end < start or end >= token_count:
-                    raise ValueError(
-                        f"invalid endpoint span [{start}, {end}] for "
-                        f"{token_count} tokens"
-                    )
+        source_start = endpoints[:, 0]
+        source_end = endpoints[:, 1]
+        target_start = endpoints[:, 2]
+        target_end = endpoints[:, 3]
 
-            if source_end < target_start:
-                between_start = source_end + 1
-                between_end = target_start - 1
-            elif target_end < source_start:
-                between_start = target_end + 1
-                between_end = source_start - 1
-            else:
-                between_start = 1
-                between_end = 0
-
-            if between_start > between_end:
-                outputs.append(self.empty_context)
-                continue
-
-            segment = token_states[between_start : between_end + 1]
-            weights = torch.softmax(
-                self.attention(segment).squeeze(-1),
-                dim=0,
+        invalid = (
+            (source_start < 0)
+            | (source_end < source_start)
+            | (source_end >= token_count)
+            | (target_start < 0)
+            | (target_end < target_start)
+            | (target_end >= token_count)
+        )
+        if bool(invalid.any()):
+            index = int(torch.nonzero(invalid, as_tuple=False)[0, 0].item())
+            values = endpoints[index].detach().cpu().tolist()
+            raise ValueError(
+                "invalid endpoint spans "
+                f"[{values[0]}, {values[1]}] and "
+                f"[{values[2]}, {values[3]}] for {token_count} tokens"
             )
-            pooled = torch.sum(segment * weights.unsqueeze(-1), dim=0)
-            outputs.append(self.projection(pooled))
 
-        return torch.stack(outputs, dim=0)
+        source_before_target = source_end < target_start
+        target_before_source = target_end < source_start
+        separated = source_before_target | target_before_source
+
+        between_start = torch.where(
+            source_before_target,
+            source_end + 1,
+            target_end + 1,
+        )
+        between_end = torch.where(
+            source_before_target,
+            target_start - 1,
+            source_start - 1,
+        )
+        nonempty = separated & (between_start <= between_end)
+
+        positions = torch.arange(token_count, device=token_states.device)
+        between_mask = (
+            nonempty.unsqueeze(1)
+            & (positions.unsqueeze(0) >= between_start.unsqueeze(1))
+            & (positions.unsqueeze(0) <= between_end.unsqueeze(1))
+        )
+
+        token_scores = self.attention(token_states).squeeze(-1)
+        scores = token_scores.unsqueeze(0).expand(endpoints.shape[0], -1)
+        masked_scores = scores.masked_fill(
+            ~between_mask,
+            torch.finfo(scores.dtype).min,
+        )
+        weights = torch.softmax(masked_scores, dim=1)
+        pooled = weights @ token_states
+        projected = self.projection(pooled)
+
+        empty = self.empty_context.unsqueeze(0).expand(endpoints.shape[0], -1)
+        return torch.where(nonempty.unsqueeze(1), projected, empty)

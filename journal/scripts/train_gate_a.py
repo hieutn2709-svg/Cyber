@@ -4,6 +4,7 @@
 Modes deliberately separate diagnostic execution from the publishable run:
 - overfit: one positive training window only; no validation/test evaluation.
 - smoke: configured smoke epochs on train + validation; test is never evaluated.
+- dev: full max-epoch train + validation development; test is never evaluated.
 - full: validation-only checkpoint/threshold selection followed by one frozen test pass.
 
 Transformers is imported lazily by ``GateASpanPairModel.from_pretrained`` so
@@ -26,7 +27,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
-_VALID_MODES = ("overfit", "smoke", "full")
+_VALID_MODES = ("overfit", "smoke", "dev", "full")
 
 
 def mode_evaluates_test(mode: str) -> bool:
@@ -47,7 +48,7 @@ def mode_epoch_budget(
         return int(overfit_epochs)
     if mode == "smoke":
         return int(training_config.smoke_epochs)
-    if mode == "full":
+    if mode in {"dev", "full"}:
         return int(training_config.max_epochs)
     raise ValueError(f"unsupported Gate A mode: {mode}")
 
@@ -58,7 +59,10 @@ def _parser() -> argparse.ArgumentParser:
         "--mode",
         choices=_VALID_MODES,
         default="smoke",
-        help="overfit diagnostic, smoke train/validation, or frozen full test run",
+        help=(
+            "overfit diagnostic, smoke train/validation, validation-only dev, "
+            "or frozen full test run"
+        ),
     )
     parser.add_argument(
         "--config",

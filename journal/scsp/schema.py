@@ -103,4 +103,6 @@ def is_profile_compatible(
     profile: TaskRelationshipProfile,
 ) -> bool | None:
     relation = canonicalize_relation(relation_label, canonicalization)
+    if relation.status == "unresolved":
+        return None
     return (source_type, relation.label, target_type) in profile.allowed_triples

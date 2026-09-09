@@ -43,7 +43,7 @@ A relationship outside this task profile is not automatically called “invalid 
 
 Training labels and the dataset are not rewritten. Canonicalization is applied only for compatibility checks and reporting.
 
-The versioned canonicalization rules are:
+The versioned relationship canonicalization rules are:
 
 | Project label | Canonical relationship | Endpoint action | Status |
 | --- | --- | --- | --- |
@@ -67,14 +67,25 @@ The versioned canonicalization rules are:
 
 This is deliberate: a single training-side instance is insufficient evidence for a safe global inverse/canonical mapping, and the mapping must not be inferred from validation or test labels.
 
+### Entity endpoint resolution
+
+The project inventory contains three labels that do not have a safe one-to-one STIX 2.1 object-type interpretation for this experiment: `file-paths`, `sha256s`, and `tactic`. Hard Profile does **not** invent global mappings such as `file-paths -> file`, `sha256s -> file`, or `tactic -> attack-pattern`.
+
+The task-profile file therefore records two disjoint endpoint sets:
+
+- **resolved endpoint types:** `attack-pattern`, `campaign`, `domain-name`, `identity`, `indicator`, `intrusion-set`, `location`, `malware`, `threat-actor`, `tool`, `url`, `vulnerability`;
+- **unresolved/pass-through endpoint types:** `file-paths`, `sha256s`, `tactic`.
+
+If either predicted endpoint has an unresolved type, Hard Profile returns an unresolved compatibility state for every relation class on that pair and leaves the relation-type logits unchanged. These cases are reported separately. This prevents a project-specific auxiliary label from being treated as proof of STIX incompatibility.
+
 ## 5. Task relationship profile
 
-`task_relationship_profile_v1.json` stores the allowed canonical triples over the entity types supported by this project.
+`task_relationship_profile_v1.json` stores the allowed canonical triples over the resolved entity types supported by this project, together with the resolved and unresolved endpoint-type sets.
 
-The initial profile is the intersection of:
+The initial triple set is the intersection of:
 
-- relationship triples defined by the STIX 2.1 specification; and
-- entity types present in the project inventory.
+- relationship triples defined by the OASIS STIX 2.1 specification; and
+- resolved entity types present in the project inventory.
 
 The profile is versioned data, not executable logic. Every entry must contain a short rationale/source note. Project-specific or unresolved relationships are not added merely to improve validation or test scores.
 
@@ -107,12 +118,13 @@ Hard Profile operates on the relation-type decision after Gate A has produced re
 For each ordered candidate pair:
 
 1. take the top-1 predicted entity type for each endpoint;
-2. consider each project relation label in the relation-type logits;
-3. canonicalize that label and, if required, canonicalize endpoint direction for the compatibility lookup;
-4. if the canonical triple is allowed by `task_relationship_profile_v1`, keep the relation logit unchanged;
-5. if the canonical triple is resolved and incompatible, mask that relation class before relation-type argmax;
-6. if the relation label is explicitly unresolved (`used-in` in v1), leave it unmasked;
-7. if every resolved class is masked and no unresolved class remains available, return a deterministic “no compatible relation type” outcome rather than inventing a class.
+2. if either endpoint type is unresolved/pass-through, leave every relation-type logit unchanged and report the pair as endpoint-unresolved;
+3. otherwise consider each project relation label in the relation-type logits;
+4. canonicalize that label and, if required, canonicalize endpoint direction for the compatibility lookup;
+5. if the canonical triple is allowed by `task_relationship_profile_v1`, keep the relation logit unchanged;
+6. if the canonical triple is resolved and incompatible, mask that relation class before relation-type argmax;
+7. if the relation label is explicitly unresolved (`used-in` in v1), leave it unmasked;
+8. if every resolved class is masked and no unresolved class remains available, return a deterministic “no compatible relation type” outcome rather than inventing a class.
 
 The relation-existence score is not altered by Hard Profile. The entity predictions are not altered. Candidate generation is not altered.
 
@@ -134,20 +146,22 @@ The no-schema and hard-profile variants therefore use identical learned model ca
 
 ## 8. Files and responsibilities
 
-Create:
+Create for the standalone schema unit:
 
 - `journal/configs/stix/stix_2_1_normative_notes.json` — compact provenance notes and terminology guardrails.
 - `journal/configs/stix/relation_canonicalization_v1.json` — project-label to canonical-label/direction mapping.
-- `journal/configs/stix/task_relationship_profile_v1.json` — allowed canonical triples.
+- `journal/configs/stix/task_relationship_profile_v1.json` — resolved/unresolved endpoint sets plus allowed canonical triples.
 - `journal/configs/stix/README.md` — explains normative-vs-task-profile distinction and versioning policy.
 - `journal/scsp/schema.py` — pure loading, validation, canonicalization, compatibility, and hard-mask utilities.
-- `tests/test_scsp_schema.py` — unit tests for all Gate B schema behavior.
+- `tests/test_scsp_schema.py` — unit tests for all standalone Gate B schema behavior.
 
 The first implementation must avoid modifying `journal/scsp/training.py` or Gate A losses. Driver integration comes only after the standalone schema unit passes its TDD cycle.
 
+At driver-integration time, Gate B must persist split-specific scored-pair artifacts containing endpoint types, existence logits, and ordered relation-type logits. Gate A already exposes these values in `ScoredRelationPair` and writes them for validation as `validation_logits.jsonl`, but `PredictionRecord` does not contain relation-type logits and the Gate A full path does not currently write an equivalent `test_logits.jsonl`. Gate B must not assume those missing artifacts already exist.
+
 ## 9. Pure interfaces
 
-The standalone schema unit uses immutable, CPU-side structures so it can be tested without loading the encoder or CUDA runtime. Gate A relation-type logits are already serialized as ordered float tuples at decoding/artifact boundaries, so these utilities do not need a PyTorch dependency.
+The standalone schema unit uses immutable, CPU-side structures so it can be tested without loading the encoder or CUDA runtime. The hard-mask utility consumes ordered numeric logits and therefore does not require a PyTorch dependency.
 
 ```python
 from dataclasses import dataclass
@@ -172,6 +186,8 @@ class CanonicalizationTable:
 @dataclass(frozen=True, slots=True)
 class TaskRelationshipProfile:
     allowed_triples: frozenset[tuple[str, str, str]]
+    resolved_entity_types: frozenset[str]
+    unresolved_entity_types: frozenset[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -190,7 +206,7 @@ def load_relation_canonicalization(
 def load_task_relationship_profile(
     path: str | Path,
 ) -> TaskRelationshipProfile:
-    """Load and validate one explicit set of allowed canonical triples."""
+    """Load and validate endpoint-status sets plus explicit allowed triples."""
 
 
 def canonicalize_relation(
@@ -223,7 +239,7 @@ def hard_profile_mask(
     """Mask resolved incompatible relation classes and select the best survivor."""
 ```
 
-`hard_profile_mask` must preserve input order, must return one compatibility state per relation class, and must use negative infinity only for resolved incompatible logits. `selected_index` is the deterministic argmax among unmasked classes, with the lowest index winning exact ties. It is `None` only if no class remains available.
+`hard_profile_mask` must preserve input order, must return one compatibility state per relation class, and must use negative infinity only for resolved incompatible logits. If either endpoint type is unresolved, every compatibility state is `None` and every logit is preserved. `selected_index` is the deterministic argmax among unmasked classes, with the lowest index winning exact ties. It is `None` only if no class remains available.
 
 ## 10. Diagnostics and artifacts
 
@@ -232,9 +248,10 @@ Every Hard Profile evaluation must record enough information to reproduce the ma
 At minimum report:
 
 - candidate relation count;
+- endpoint-unresolved/pass-through pair count;
 - resolved compatible class opportunities;
 - resolved blocked class opportunities;
-- unresolved/pass-through opportunities;
+- unresolved relation-label/pass-through opportunities;
 - emitted relation count;
 - emitted task-profile-compatible count;
 - emitted unresolved count;
@@ -254,6 +271,7 @@ The following are hard constraints:
 - Validation labels may be used only for the already-prespecified model-selection/evaluation protocol, not to invent new allowed triples.
 - Test labels must not be used to add, remove, reverse, or rename profile relations.
 - `used-in` remains unresolved for v1 regardless of Gate B validation/test behavior.
+- `file-paths`, `sha256s`, and `tactic` remain endpoint-unresolved/pass-through in v1 regardless of Gate B validation/test behavior.
 - No rescue rules are introduced in Gate B.
 - No probabilistic compatibility term is introduced until the Hard Profile variant is frozen and evaluated.
 
@@ -267,13 +285,14 @@ Before driver integration, unit tests must prove:
 4. `used-in` returns unresolved/pass-through status;
 5. allowed triples return `True`;
 6. resolved incompatible triples return `False`;
-7. unresolved triples return `None`;
-8. hard masking preserves logits for compatible labels;
-9. hard masking removes resolved incompatible labels from argmax consideration;
-10. unresolved `used-in` remains available;
-11. profile/config loaders reject duplicate or malformed entries;
-12. profile logic is deterministic, including exact-logit ties;
-13. no Gate A schema-disabled behavior changes when schema utilities are unused.
+7. unresolved relation labels return `None`;
+8. unresolved endpoint types return `None` for every relation class and preserve all logits;
+9. hard masking preserves logits for compatible labels;
+10. hard masking removes resolved incompatible labels from argmax consideration;
+11. unresolved `used-in` remains available;
+12. profile/config loaders reject duplicate, overlapping, unknown-status, or malformed entries;
+13. profile logic is deterministic, including exact-logit ties;
+14. no Gate A schema-disabled behavior changes when schema utilities are unused.
 
 After standalone unit tests pass, integration tests must verify that no-schema and hard-profile evaluation use the same model outputs before masking and that only relation-type decoding changes.
 
@@ -284,7 +303,7 @@ Hard Profile is ready for evaluation only when:
 - canonicalization and task-profile files are versioned and validated;
 - all schema unit tests pass;
 - no-schema behavior remains unchanged;
-- profile decisions can be reproduced from saved prediction/logit artifacts;
+- profile decisions can be reproduced from saved split-specific scored-pair/logit artifacts;
 - validation/test separation is preserved;
 - no profile rule was introduced from test-label inspection.
 

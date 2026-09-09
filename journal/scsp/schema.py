@@ -88,6 +88,11 @@ def load_task_relationship_profile(
     triples = frozenset(triple_list)
     if len(triples) != len(triple_list):
         raise ValueError("duplicate task-profile triple")
+    declared_entity_types = resolved_entity_types | unresolved_entity_types
+    for source_type, _, target_type in triple_list:
+        for entity_type in (source_type, target_type):
+            if entity_type not in declared_entity_types:
+                raise ValueError(f"undeclared entity type: {entity_type}")
     return TaskRelationshipProfile(
         allowed_triples=triples,
         resolved_entity_types=resolved_entity_types,

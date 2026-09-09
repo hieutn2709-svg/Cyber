@@ -15,6 +15,12 @@ _REQUIRED_CANONICALIZATION_FIELDS = (
     "swap_endpoints",
     "status",
 )
+_REQUIRED_PROFILE_FIELDS = (
+    "version",
+    "resolved_entity_types",
+    "unresolved_entity_types",
+    "allowed_triples",
+)
 _REQUIRED_PROFILE_TRIPLE_FIELDS = (
     "source_type",
     "relation_type",
@@ -77,6 +83,10 @@ def load_task_relationship_profile(
     path: str | Path,
 ) -> TaskRelationshipProfile:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    for field in _REQUIRED_PROFILE_FIELDS:
+        if field not in payload:
+            raise ValueError(f"missing required field: {field}")
+
     resolved_entity_types = frozenset(payload["resolved_entity_types"])
     unresolved_entity_types = frozenset(payload["unresolved_entity_types"])
     overlap = resolved_entity_types & unresolved_entity_types

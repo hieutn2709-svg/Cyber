@@ -65,6 +65,24 @@ class SchemaTests(unittest.TestCase):
                 self.assertTrue(result.swap_endpoints)
                 self.assertEqual(result.status, "inverse")
 
+    def test_versioned_canonicalization_marks_used_in_unresolved(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+        self.assertIsNotNone(canonicalize_relation)
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "journal"
+            / "configs"
+            / "stix"
+            / "relation_canonicalization_v1.json"
+        )
+        table = load_relation_canonicalization(path)
+
+        result = canonicalize_relation("used-in", table)
+        self.assertIsNone(result.label)
+        self.assertFalse(result.swap_endpoints)
+        self.assertEqual(result.status, "unresolved")
+
 
 if __name__ == "__main__":
     unittest.main()

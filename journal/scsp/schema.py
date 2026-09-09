@@ -9,6 +9,12 @@ from typing import Literal, Mapping
 
 RelationStatus = Literal["direct", "alias", "inverse", "unresolved"]
 _VALID_RELATION_STATUSES = {"direct", "alias", "inverse", "unresolved"}
+_REQUIRED_CANONICALIZATION_FIELDS = (
+    "project_label",
+    "canonical_label",
+    "swap_endpoints",
+    "status",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,6 +35,10 @@ def load_relation_canonicalization(
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     rules: dict[str, CanonicalRelation] = {}
     for item in payload["rules"]:
+        for field in _REQUIRED_CANONICALIZATION_FIELDS:
+            if field not in item:
+                raise ValueError(f"missing required field: {field}")
+
         project_label = item["project_label"]
         if project_label in rules:
             raise ValueError(f"duplicate project_label: {project_label}")

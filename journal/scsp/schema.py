@@ -47,6 +47,13 @@ class TaskRelationshipProfile:
     unresolved_entity_types: frozenset[str]
 
 
+@dataclass(frozen=True, slots=True)
+class HardProfileMaskResult:
+    masked_logits: tuple[float, ...]
+    compatibility: tuple[bool | None, ...]
+    selected_index: int | None
+
+
 def load_relation_canonicalization(
     path: str | Path,
 ) -> CanonicalizationTable:
@@ -158,3 +165,43 @@ def is_profile_compatible(
         else (source_type, target_type)
     )
     return (lookup_source, relation.label, lookup_target) in profile.allowed_triples
+
+
+def hard_profile_mask(
+    relation_logits: list[float] | tuple[float, ...],
+    *,
+    source_type: str,
+    target_type: str,
+    relation_types: list[str] | tuple[str, ...],
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
+) -> HardProfileMaskResult:
+    logits = tuple(float(value) for value in relation_logits)
+    labels = tuple(relation_types)
+    compatibility = tuple(
+        is_profile_compatible(
+            source_type,
+            label,
+            target_type,
+            canonicalization=canonicalization,
+            profile=profile,
+        )
+        for label in labels
+    )
+    masked_logits = tuple(
+        float("-inf") if state is False else logit
+        for logit, state in zip(logits, compatibility)
+    )
+    survivors = [
+        index for index, state in enumerate(compatibility) if state is not False
+    ]
+    selected_index = (
+        max(survivors, key=lambda index: masked_logits[index])
+        if survivors
+        else None
+    )
+    return HardProfileMaskResult(
+        masked_logits=masked_logits,
+        compatibility=compatibility,
+        selected_index=selected_index,
+    )

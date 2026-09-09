@@ -110,6 +110,12 @@ def is_profile_compatible(
         or target_type in profile.unresolved_entity_types
     ):
         return None
+    known_entity_types = (
+        profile.resolved_entity_types | profile.unresolved_entity_types
+    )
+    for entity_type in (source_type, target_type):
+        if entity_type not in known_entity_types:
+            raise ValueError(f"unknown entity type: {entity_type}")
     lookup_source, lookup_target = (
         (target_type, source_type)
         if relation.swap_endpoints

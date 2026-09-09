@@ -29,6 +29,13 @@ class CanonicalizationTable:
     by_project_label: Mapping[str, CanonicalRelation]
 
 
+@dataclass(frozen=True, slots=True)
+class TaskRelationshipProfile:
+    allowed_triples: frozenset[tuple[str, str, str]]
+    resolved_entity_types: frozenset[str]
+    unresolved_entity_types: frozenset[str]
+
+
 def load_relation_canonicalization(
     path: str | Path,
 ) -> CanonicalizationTable:
@@ -61,8 +68,39 @@ def load_relation_canonicalization(
     return CanonicalizationTable(by_project_label=rules)
 
 
+def load_task_relationship_profile(
+    path: str | Path,
+) -> TaskRelationshipProfile:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    triples = frozenset(
+        (
+            item["source_type"],
+            item["relation_type"],
+            item["target_type"],
+        )
+        for item in payload["allowed_triples"]
+    )
+    return TaskRelationshipProfile(
+        allowed_triples=triples,
+        resolved_entity_types=frozenset(payload["resolved_entity_types"]),
+        unresolved_entity_types=frozenset(payload["unresolved_entity_types"]),
+    )
+
+
 def canonicalize_relation(
     label: str,
     canonicalization: CanonicalizationTable,
 ) -> CanonicalRelation:
     return canonicalization.by_project_label[label]
+
+
+def is_profile_compatible(
+    source_type: str,
+    relation_label: str,
+    target_type: str,
+    *,
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
+) -> bool | None:
+    relation = canonicalize_relation(relation_label, canonicalization)
+    return (source_type, relation.label, target_type) in profile.allowed_triples

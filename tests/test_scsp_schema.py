@@ -106,6 +106,32 @@ class SchemaTests(unittest.TestCase):
             set(inventory["relation_types"]),
         )
 
+    def test_canonicalization_loader_rejects_duplicate_project_label(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": False,
+                    "status": "direct",
+                },
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": False,
+                    "status": "direct",
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "canonicalization.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "duplicate project_label"):
+                load_relation_canonicalization(path)
+
 
 if __name__ == "__main__":
     unittest.main()

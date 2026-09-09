@@ -145,28 +145,59 @@ Create:
 
 The first implementation must avoid modifying `journal/scsp/training.py` or Gate A losses. Driver integration comes only after the standalone schema unit passes its TDD cycle.
 
-## 9. Proposed pure interfaces
+## 9. Pure interfaces
 
-The implementation plan should preserve small, testable interfaces equivalent to:
+The standalone schema unit uses immutable, CPU-side structures so it can be tested without loading the encoder or CUDA runtime. Gate A relation-type logits are already serialized as ordered float tuples at decoding/artifact boundaries, so these utilities do not need a PyTorch dependency.
 
 ```python
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal, Mapping, Sequence
+
+RelationStatus = Literal["direct", "alias", "inverse", "unresolved"]
+
+
 @dataclass(frozen=True, slots=True)
 class CanonicalRelation:
     label: str | None
     swap_endpoints: bool
-    status: str
+    status: RelationStatus
 
 
-def load_relation_canonicalization(path: str | Path) -> ...:
-    ...
+@dataclass(frozen=True, slots=True)
+class CanonicalizationTable:
+    by_project_label: Mapping[str, CanonicalRelation]
 
 
-def load_task_relationship_profile(path: str | Path) -> ...:
-    ...
+@dataclass(frozen=True, slots=True)
+class TaskRelationshipProfile:
+    allowed_triples: frozenset[tuple[str, str, str]]
 
 
-def canonicalize_relation(label: str, canonicalization) -> CanonicalRelation:
-    ...
+@dataclass(frozen=True, slots=True)
+class HardProfileMaskResult:
+    masked_logits: tuple[float, ...]
+    compatibility: tuple[bool | None, ...]
+    selected_index: int | None
+
+
+def load_relation_canonicalization(
+    path: str | Path,
+) -> CanonicalizationTable:
+    """Load and validate one complete project-label canonicalization table."""
+
+
+def load_task_relationship_profile(
+    path: str | Path,
+) -> TaskRelationshipProfile:
+    """Load and validate one explicit set of allowed canonical triples."""
+
+
+def canonicalize_relation(
+    label: str,
+    canonicalization: CanonicalizationTable,
+) -> CanonicalRelation:
+    """Return the versioned canonicalization rule for one project label."""
 
 
 def is_profile_compatible(
@@ -174,26 +205,25 @@ def is_profile_compatible(
     relation_label: str,
     target_type: str,
     *,
-    canonicalization,
-    profile,
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
 ) -> bool | None:
     """True=allowed, False=resolved but blocked, None=unresolved/pass-through."""
-    ...
 
 
 def hard_profile_mask(
-    relation_logits,
+    relation_logits: Sequence[float],
     *,
     source_type: str,
     target_type: str,
-    relation_types: tuple[str, ...],
-    canonicalization,
-    profile,
-):
-    ...
+    relation_types: Sequence[str],
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
+) -> HardProfileMaskResult:
+    """Mask resolved incompatible relation classes and select the best survivor."""
 ```
 
-The exact container types may be refined in the implementation plan, but the semantics above are fixed.
+`hard_profile_mask` must preserve input order, must return one compatibility state per relation class, and must use negative infinity only for resolved incompatible logits. `selected_index` is the deterministic argmax among unmasked classes, with the lowest index winning exact ties. It is `None` only if no class remains available.
 
 ## 10. Diagnostics and artifacts
 
@@ -242,7 +272,7 @@ Before driver integration, unit tests must prove:
 9. hard masking removes resolved incompatible labels from argmax consideration;
 10. unresolved `used-in` remains available;
 11. profile/config loaders reject duplicate or malformed entries;
-12. profile logic is deterministic;
+12. profile logic is deterministic, including exact-logit ties;
 13. no Gate A schema-disabled behavior changes when schema utilities are unused.
 
 After standalone unit tests pass, integration tests must verify that no-schema and hard-profile evaluation use the same model outputs before masking and that only relation-type decoding changes.

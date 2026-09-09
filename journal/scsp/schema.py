@@ -72,6 +72,11 @@ def load_task_relationship_profile(
     path: str | Path,
 ) -> TaskRelationshipProfile:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    resolved_entity_types = frozenset(payload["resolved_entity_types"])
+    unresolved_entity_types = frozenset(payload["unresolved_entity_types"])
+    overlap = resolved_entity_types & unresolved_entity_types
+    if overlap:
+        raise ValueError(f"endpoint status overlap: {sorted(overlap)}")
     triples = frozenset(
         (
             item["source_type"],
@@ -82,8 +87,8 @@ def load_task_relationship_profile(
     )
     return TaskRelationshipProfile(
         allowed_triples=triples,
-        resolved_entity_types=frozenset(payload["resolved_entity_types"]),
-        unresolved_entity_types=frozenset(payload["unresolved_entity_types"]),
+        resolved_entity_types=resolved_entity_types,
+        unresolved_entity_types=unresolved_entity_types,
     )
 
 

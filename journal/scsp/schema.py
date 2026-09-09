@@ -77,14 +77,17 @@ def load_task_relationship_profile(
     overlap = resolved_entity_types & unresolved_entity_types
     if overlap:
         raise ValueError(f"endpoint status overlap: {sorted(overlap)}")
-    triples = frozenset(
+    triple_list = [
         (
             item["source_type"],
             item["relation_type"],
             item["target_type"],
         )
         for item in payload["allowed_triples"]
-    )
+    ]
+    triples = frozenset(triple_list)
+    if len(triples) != len(triple_list):
+        raise ValueError("duplicate task-profile triple")
     return TaskRelationshipProfile(
         allowed_triples=triples,
         resolved_entity_types=resolved_entity_types,

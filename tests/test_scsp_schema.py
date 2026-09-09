@@ -380,6 +380,55 @@ class SchemaTests(unittest.TestCase):
                 )
                 self.assertIsNone(result)
 
+    def test_profile_compatibility_swaps_inverse_relation_endpoints(self) -> None:
+        self.assertIsNotNone(load_task_relationship_profile)
+        self.assertIsNotNone(is_profile_compatible)
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        canonicalization_payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "used-by",
+                    "canonical_label": "uses",
+                    "swap_endpoints": True,
+                    "status": "inverse",
+                }
+            ],
+        }
+        profile_payload = {
+            "version": 1,
+            "resolved_entity_types": ["intrusion-set", "malware"],
+            "unresolved_entity_types": [],
+            "allowed_triples": [
+                {
+                    "source_type": "intrusion-set",
+                    "relation_type": "uses",
+                    "target_type": "malware",
+                    "source_note": "STIX 2.1 Appendix B",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            canonicalization_path = root / "canonicalization.json"
+            profile_path = root / "profile.json"
+            canonicalization_path.write_text(
+                json.dumps(canonicalization_payload), encoding="utf-8"
+            )
+            profile_path.write_text(json.dumps(profile_payload), encoding="utf-8")
+            canonicalization = load_relation_canonicalization(canonicalization_path)
+            profile = load_task_relationship_profile(profile_path)
+
+        result = is_profile_compatible(
+            "malware",
+            "used-by",
+            "intrusion-set",
+            canonicalization=canonicalization,
+            profile=profile,
+        )
+        self.assertIs(result, True)
+
 
 if __name__ == "__main__":
     unittest.main()

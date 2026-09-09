@@ -110,4 +110,9 @@ def is_profile_compatible(
         or target_type in profile.unresolved_entity_types
     ):
         return None
-    return (source_type, relation.label, target_type) in profile.allowed_triples
+    lookup_source, lookup_target = (
+        (target_type, source_type)
+        if relation.swap_endpoints
+        else (source_type, target_type)
+    )
+    return (lookup_source, relation.label, lookup_target) in profile.allowed_triples

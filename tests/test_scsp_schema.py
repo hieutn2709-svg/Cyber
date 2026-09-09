@@ -41,6 +41,30 @@ class SchemaTests(unittest.TestCase):
         self.assertFalse(result.swap_endpoints)
         self.assertEqual(result.status, "alias")
 
+    def test_versioned_canonicalization_defines_inverse_project_labels(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+        self.assertIsNotNone(canonicalize_relation)
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "journal"
+            / "configs"
+            / "stix"
+            / "relation_canonicalization_v1.json"
+        )
+        table = load_relation_canonicalization(path)
+
+        expected = {
+            "targeted-by": "targets",
+            "used-by": "uses",
+        }
+        for project_label, canonical_label in expected.items():
+            with self.subTest(project_label=project_label):
+                result = canonicalize_relation(project_label, table)
+                self.assertEqual(result.label, canonical_label)
+                self.assertTrue(result.swap_endpoints)
+                self.assertEqual(result.status, "inverse")
+
 
 if __name__ == "__main__":
     unittest.main()

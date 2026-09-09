@@ -152,6 +152,34 @@ class SchemaTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "invalid status"):
                 load_relation_canonicalization(path)
 
+    def test_canonicalization_loader_rejects_inconsistent_canonical_label(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        invalid_rules = (
+            {
+                "project_label": "used-in",
+                "canonical_label": "uses",
+                "swap_endpoints": False,
+                "status": "unresolved",
+            },
+            {
+                "project_label": "uses",
+                "canonical_label": None,
+                "swap_endpoints": False,
+                "status": "direct",
+            },
+        )
+        for rule in invalid_rules:
+            with self.subTest(rule=rule):
+                payload = {"version": 1, "rules": [rule]}
+                with tempfile.TemporaryDirectory() as td:
+                    path = Path(td) / "canonicalization.json"
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaisesRegex(
+                        ValueError, "canonical_label"
+                    ):
+                        load_relation_canonicalization(path)
+
 
 if __name__ == "__main__":
     unittest.main()

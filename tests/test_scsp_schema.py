@@ -83,6 +83,29 @@ class SchemaTests(unittest.TestCase):
         self.assertFalse(result.swap_endpoints)
         self.assertEqual(result.status, "unresolved")
 
+    def test_versioned_canonicalization_covers_relation_inventory(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        repo_root = Path(__file__).resolve().parents[1]
+        canonicalization_path = (
+            repo_root
+            / "journal"
+            / "configs"
+            / "stix"
+            / "relation_canonicalization_v1.json"
+        )
+        inventory_path = (
+            repo_root / "journal" / "configs" / "gate_a_label_inventory.json"
+        )
+
+        table = load_relation_canonicalization(canonicalization_path)
+        inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            set(table.by_project_label),
+            set(inventory["relation_types"]),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

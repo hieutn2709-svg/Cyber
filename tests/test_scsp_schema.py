@@ -180,6 +180,26 @@ class SchemaTests(unittest.TestCase):
                     ):
                         load_relation_canonicalization(path)
 
+    def test_canonicalization_loader_rejects_non_boolean_swap_endpoints(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": "false",
+                    "status": "direct",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "canonicalization.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "swap_endpoints"):
+                load_relation_canonicalization(path)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -105,4 +105,9 @@ def is_profile_compatible(
     relation = canonicalize_relation(relation_label, canonicalization)
     if relation.status == "unresolved":
         return None
+    if (
+        source_type in profile.unresolved_entity_types
+        or target_type in profile.unresolved_entity_types
+    ):
+        return None
     return (source_type, relation.label, target_type) in profile.allowed_triples

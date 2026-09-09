@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Literal, Mapping
 
 RelationStatus = Literal["direct", "alias", "inverse", "unresolved"]
+_VALID_RELATION_STATUSES = {"direct", "alias", "inverse", "unresolved"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,10 +32,13 @@ def load_relation_canonicalization(
         project_label = item["project_label"]
         if project_label in rules:
             raise ValueError(f"duplicate project_label: {project_label}")
+        status = item["status"]
+        if status not in _VALID_RELATION_STATUSES:
+            raise ValueError(f"invalid status: {status}")
         rules[project_label] = CanonicalRelation(
             label=item["canonical_label"],
             swap_endpoints=bool(item["swap_endpoints"]),
-            status=item["status"],
+            status=status,
         )
     return CanonicalizationTable(by_project_label=rules)
 

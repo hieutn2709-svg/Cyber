@@ -2,10 +2,64 @@
   "version": 1,
   "rules": [
     {
+      "project_label": "attributed-to",
+      "canonical_label": "attributed-to",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
+      "project_label": "authored-by",
+      "canonical_label": "authored-by",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
+      "project_label": "deliver",
+      "canonical_label": "delivers",
+      "swap_endpoints": false,
+      "status": "alias"
+    },
+    {
+      "project_label": "drops",
+      "canonical_label": "drops",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
+      "project_label": "have",
+      "canonical_label": "has",
+      "swap_endpoints": false,
+      "status": "alias"
+    },
+    {
+      "project_label": "indicates",
+      "canonical_label": "indicates",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
+      "project_label": "located-at",
+      "canonical_label": "located-at",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
+      "project_label": "originates-from",
+      "canonical_label": "originates-from",
+      "swap_endpoints": false,
+      "status": "direct"
+    },
+    {
       "project_label": "targeted-by",
       "canonical_label": "targets",
       "swap_endpoints": true,
       "status": "inverse"
+    },
+    {
+      "project_label": "targets",
+      "canonical_label": "targets",
+      "swap_endpoints": false,
+      "status": "direct"
     },
     {
       "project_label": "used-by",
@@ -18,6 +72,12 @@
       "canonical_label": null,
       "swap_endpoints": false,
       "status": "unresolved"
+    },
+    {
+      "project_label": "uses",
+      "canonical_label": "uses",
+      "swap_endpoints": false,
+      "status": "direct"
     }
   ]
 }

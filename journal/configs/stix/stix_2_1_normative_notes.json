@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "specification": {
+    "title": "STIX Version 2.1",
+    "publisher": "OASIS",
+    "source_url": "https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html",
+    "relationship_summary": "Appendix B Relationship Summary"
+  },
+  "terminology": {
+    "normative_relationship": "STIX 2.1 specification-defined relationship triple",
+    "task_profile_allowed": "task-profile compatible",
+    "task_profile_blocked": "task-profile incompatible"
+  },
+  "guardrails": [
+    "A task-profile-incompatible triple is not automatically described as invalid STIX.",
+    "Project relation labels are canonicalized only for compatibility checks and reporting; training labels are not rewritten.",
+    "used-in is unresolved/pass-through in v1.",
+    "file-paths, sha256s, and tactic are endpoint-unresolved/pass-through in v1.",
+    "Profile rules are derived from the OASIS STIX 2.1 relationship summary and training-side audit evidence only; validation/test labels do not create or revise rules."
+  ]
+}

@@ -325,6 +325,61 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertIsNone(result)
 
+    def test_profile_compatibility_returns_none_for_unresolved_endpoint(self) -> None:
+        self.assertIsNotNone(load_task_relationship_profile)
+        self.assertIsNotNone(is_profile_compatible)
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        canonicalization_payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": False,
+                    "status": "direct",
+                }
+            ],
+        }
+        profile_payload = {
+            "version": 1,
+            "resolved_entity_types": ["intrusion-set", "malware"],
+            "unresolved_entity_types": ["tactic"],
+            "allowed_triples": [
+                {
+                    "source_type": "intrusion-set",
+                    "relation_type": "uses",
+                    "target_type": "malware",
+                    "source_note": "STIX 2.1 Appendix B",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            canonicalization_path = root / "canonicalization.json"
+            profile_path = root / "profile.json"
+            canonicalization_path.write_text(
+                json.dumps(canonicalization_payload), encoding="utf-8"
+            )
+            profile_path.write_text(json.dumps(profile_payload), encoding="utf-8")
+            canonicalization = load_relation_canonicalization(canonicalization_path)
+            profile = load_task_relationship_profile(profile_path)
+
+        endpoint_pairs = (
+            ("tactic", "malware"),
+            ("intrusion-set", "tactic"),
+        )
+        for source_type, target_type in endpoint_pairs:
+            with self.subTest(source_type=source_type, target_type=target_type):
+                result = is_profile_compatible(
+                    source_type,
+                    "uses",
+                    target_type,
+                    canonicalization=canonicalization,
+                    profile=profile,
+                )
+                self.assertIsNone(result)
+
 
 if __name__ == "__main__":
     unittest.main()

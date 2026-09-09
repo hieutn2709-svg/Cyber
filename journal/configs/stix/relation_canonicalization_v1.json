@@ -12,6 +12,12 @@
       "canonical_label": "uses",
       "swap_endpoints": true,
       "status": "inverse"
+    },
+    {
+      "project_label": "used-in",
+      "canonical_label": null,
+      "swap_endpoints": false,
+      "status": "unresolved"
     }
   ]
 }

@@ -15,6 +15,11 @@ _REQUIRED_CANONICALIZATION_FIELDS = (
     "swap_endpoints",
     "status",
 )
+_REQUIRED_PROFILE_TRIPLE_FIELDS = (
+    "source_type",
+    "relation_type",
+    "target_type",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,14 +82,20 @@ def load_task_relationship_profile(
     overlap = resolved_entity_types & unresolved_entity_types
     if overlap:
         raise ValueError(f"endpoint status overlap: {sorted(overlap)}")
-    triple_list = [
-        (
-            item["source_type"],
-            item["relation_type"],
-            item["target_type"],
+
+    triple_list: list[tuple[str, str, str]] = []
+    for item in payload["allowed_triples"]:
+        for field in _REQUIRED_PROFILE_TRIPLE_FIELDS:
+            if field not in item:
+                raise ValueError(f"missing required field: {field}")
+        triple_list.append(
+            (
+                item["source_type"],
+                item["relation_type"],
+                item["target_type"],
+            )
         )
-        for item in payload["allowed_triples"]
-    ]
+
     triples = frozenset(triple_list)
     if len(triples) != len(triple_list):
         raise ValueError("duplicate task-profile triple")

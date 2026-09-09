@@ -58,13 +58,22 @@ def load_relation_canonicalization(
     path: str | Path,
 ) -> CanonicalizationTable:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("version") != 1:
+        raise ValueError(f"unsupported canonicalization version: {payload.get('version')}")
+    if not isinstance(payload.get("rules"), list):
+        raise ValueError("canonicalization rules must be a list")
+
     rules: dict[str, CanonicalRelation] = {}
     for item in payload["rules"]:
+        if not isinstance(item, dict):
+            raise ValueError("canonicalization rule must be an object")
         for field in _REQUIRED_CANONICALIZATION_FIELDS:
             if field not in item:
                 raise ValueError(f"missing required field: {field}")
 
         project_label = item["project_label"]
+        if not isinstance(project_label, str) or not project_label.strip():
+            raise ValueError("project_label must be a non-empty string")
         if project_label in rules:
             raise ValueError(f"duplicate project_label: {project_label}")
         status = item["status"]
@@ -73,11 +82,15 @@ def load_relation_canonicalization(
         canonical_label = item["canonical_label"]
         if status == "unresolved" and canonical_label is not None:
             raise ValueError("canonical_label must be null for unresolved status")
-        if status != "unresolved" and canonical_label is None:
+        if status != "unresolved" and (
+            not isinstance(canonical_label, str) or not canonical_label.strip()
+        ):
             raise ValueError("canonical_label must be defined for resolved status")
         swap_endpoints = item["swap_endpoints"]
         if not isinstance(swap_endpoints, bool):
             raise ValueError("swap_endpoints must be boolean")
+        if status == "unresolved" and swap_endpoints:
+            raise ValueError("unresolved relations cannot swap endpoints")
         rules[project_label] = CanonicalRelation(
             label=canonical_label,
             swap_endpoints=swap_endpoints,
@@ -96,24 +109,45 @@ def load_task_relationship_profile(
     if payload["version"] != 1:
         raise ValueError(f"unsupported profile version: {payload['version']}")
 
-    resolved_entity_types = frozenset(payload["resolved_entity_types"])
-    unresolved_entity_types = frozenset(payload["unresolved_entity_types"])
+    resolved_raw = payload["resolved_entity_types"]
+    unresolved_raw = payload["unresolved_entity_types"]
+    if not isinstance(resolved_raw, list) or not isinstance(unresolved_raw, list):
+        raise ValueError("entity type status sets must be lists")
+    if not resolved_raw:
+        raise ValueError("resolved_entity_types must be non-empty")
+    if any(not isinstance(value, str) or not value.strip() for value in resolved_raw):
+        raise ValueError("resolved_entity_types must contain non-empty strings")
+    if any(not isinstance(value, str) or not value.strip() for value in unresolved_raw):
+        raise ValueError("unresolved_entity_types must contain non-empty strings")
+    if len(set(resolved_raw)) != len(resolved_raw):
+        raise ValueError("resolved_entity_types must be unique")
+    if len(set(unresolved_raw)) != len(unresolved_raw):
+        raise ValueError("unresolved_entity_types must be unique")
+
+    resolved_entity_types = frozenset(resolved_raw)
+    unresolved_entity_types = frozenset(unresolved_raw)
     overlap = resolved_entity_types & unresolved_entity_types
     if overlap:
         raise ValueError(f"endpoint status overlap: {sorted(overlap)}")
 
+    allowed_raw = payload["allowed_triples"]
+    if not isinstance(allowed_raw, list):
+        raise ValueError("allowed_triples must be a list")
     triple_list: list[tuple[str, str, str]] = []
-    for item in payload["allowed_triples"]:
+    for item in allowed_raw:
+        if not isinstance(item, dict):
+            raise ValueError("task-profile triple must be an object")
         for field in _REQUIRED_PROFILE_TRIPLE_FIELDS:
             if field not in item:
                 raise ValueError(f"missing required field: {field}")
-        triple_list.append(
-            (
-                item["source_type"],
-                item["relation_type"],
-                item["target_type"],
-            )
+        triple = (
+            item["source_type"],
+            item["relation_type"],
+            item["target_type"],
         )
+        if any(not isinstance(value, str) or not value.strip() for value in triple):
+            raise ValueError("task-profile triple fields must be non-empty strings")
+        triple_list.append(triple)
 
     triples = frozenset(triple_list)
     if len(triples) != len(triple_list):
@@ -134,7 +168,10 @@ def canonicalize_relation(
     label: str,
     canonicalization: CanonicalizationTable,
 ) -> CanonicalRelation:
-    return canonicalization.by_project_label[label]
+    try:
+        return canonicalization.by_project_label[label]
+    except KeyError as exc:
+        raise ValueError(f"unknown project relation label: {label}") from exc
 
 
 def is_profile_compatible(
@@ -145,20 +182,22 @@ def is_profile_compatible(
     canonicalization: CanonicalizationTable,
     profile: TaskRelationshipProfile,
 ) -> bool | None:
-    relation = canonicalize_relation(relation_label, canonicalization)
-    if relation.status == "unresolved":
-        return None
-    if (
-        source_type in profile.unresolved_entity_types
-        or target_type in profile.unresolved_entity_types
-    ):
-        return None
     known_entity_types = (
         profile.resolved_entity_types | profile.unresolved_entity_types
     )
     for entity_type in (source_type, target_type):
         if entity_type not in known_entity_types:
             raise ValueError(f"unknown entity type: {entity_type}")
+
+    if (
+        source_type in profile.unresolved_entity_types
+        or target_type in profile.unresolved_entity_types
+    ):
+        return None
+
+    relation = canonicalize_relation(relation_label, canonicalization)
+    if relation.status == "unresolved":
+        return None
     lookup_source, lookup_target = (
         (target_type, source_type)
         if relation.swap_endpoints
@@ -180,6 +219,8 @@ def hard_profile_mask(
     labels = tuple(relation_types)
     if len(logits) != len(labels):
         raise ValueError("relation_logits and relation_types must have the same length")
+    if not labels:
+        raise ValueError("relation_logits and relation_types must be non-empty")
     compatibility = tuple(
         is_profile_compatible(
             source_type,
@@ -198,7 +239,7 @@ def hard_profile_mask(
         index for index, state in enumerate(compatibility) if state is not False
     ]
     selected_index = (
-        max(survivors, key=lambda index: masked_logits[index])
+        max(survivors, key=lambda index: (masked_logits[index], -index))
         if survivors
         else None
     )

@@ -178,6 +178,8 @@ def hard_profile_mask(
 ) -> HardProfileMaskResult:
     logits = tuple(float(value) for value in relation_logits)
     labels = tuple(relation_types)
+    if len(logits) != len(labels):
+        raise ValueError("relation_logits and relation_types must have the same length")
     compatibility = tuple(
         is_profile_compatible(
             source_type,

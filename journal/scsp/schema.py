@@ -86,6 +86,8 @@ def load_task_relationship_profile(
     for field in _REQUIRED_PROFILE_FIELDS:
         if field not in payload:
             raise ValueError(f"missing required field: {field}")
+    if payload["version"] != 1:
+        raise ValueError(f"unsupported profile version: {payload['version']}")
 
     resolved_entity_types = frozenset(payload["resolved_entity_types"])
     unresolved_entity_types = frozenset(payload["unresolved_entity_types"])

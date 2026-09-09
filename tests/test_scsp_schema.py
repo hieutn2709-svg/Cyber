@@ -14,6 +14,15 @@ except ImportError:
     canonicalize_relation = None
     load_relation_canonicalization = None
 
+try:
+    from journal.scsp.schema import (
+        is_profile_compatible,
+        load_task_relationship_profile,
+    )
+except ImportError:
+    is_profile_compatible = None
+    load_task_relationship_profile = None
+
 
 class SchemaTests(unittest.TestCase):
     def test_relation_canonicalization_maps_deliver_alias(self) -> None:
@@ -224,6 +233,55 @@ class SchemaTests(unittest.TestCase):
                     path.write_text(json.dumps(payload), encoding="utf-8")
                     with self.assertRaisesRegex(ValueError, "missing required field"):
                         load_relation_canonicalization(path)
+
+    def test_profile_compatibility_allows_explicit_canonical_triple(self) -> None:
+        self.assertIsNotNone(load_task_relationship_profile)
+        self.assertIsNotNone(is_profile_compatible)
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        canonicalization_payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": False,
+                    "status": "direct",
+                }
+            ],
+        }
+        profile_payload = {
+            "version": 1,
+            "resolved_entity_types": ["intrusion-set", "malware", "tool"],
+            "unresolved_entity_types": ["tactic"],
+            "allowed_triples": [
+                {
+                    "source_type": "intrusion-set",
+                    "relation_type": "uses",
+                    "target_type": "malware",
+                    "source_note": "STIX 2.1 Appendix B",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            canonicalization_path = root / "canonicalization.json"
+            profile_path = root / "profile.json"
+            canonicalization_path.write_text(
+                json.dumps(canonicalization_payload), encoding="utf-8"
+            )
+            profile_path.write_text(json.dumps(profile_payload), encoding="utf-8")
+            canonicalization = load_relation_canonicalization(canonicalization_path)
+            profile = load_task_relationship_profile(profile_path)
+
+        result = is_profile_compatible(
+            "intrusion-set",
+            "uses",
+            "malware",
+            canonicalization=canonicalization,
+            profile=profile,
+        )
+        self.assertIs(result, True)
 
 
 if __name__ == "__main__":

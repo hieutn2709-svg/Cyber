@@ -35,8 +35,13 @@ def load_relation_canonicalization(
         status = item["status"]
         if status not in _VALID_RELATION_STATUSES:
             raise ValueError(f"invalid status: {status}")
+        canonical_label = item["canonical_label"]
+        if status == "unresolved" and canonical_label is not None:
+            raise ValueError("canonical_label must be null for unresolved status")
+        if status != "unresolved" and canonical_label is None:
+            raise ValueError("canonical_label must be defined for resolved status")
         rules[project_label] = CanonicalRelation(
-            label=item["canonical_label"],
+            label=canonical_label,
             swap_endpoints=bool(item["swap_endpoints"]),
             status=status,
         )

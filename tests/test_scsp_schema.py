@@ -283,6 +283,48 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertIs(result, True)
 
+    def test_profile_compatibility_returns_none_for_unresolved_relation(self) -> None:
+        self.assertIsNotNone(load_task_relationship_profile)
+        self.assertIsNotNone(is_profile_compatible)
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        canonicalization_payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "used-in",
+                    "canonical_label": None,
+                    "swap_endpoints": False,
+                    "status": "unresolved",
+                }
+            ],
+        }
+        profile_payload = {
+            "version": 1,
+            "resolved_entity_types": ["intrusion-set", "malware"],
+            "unresolved_entity_types": [],
+            "allowed_triples": [],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            canonicalization_path = root / "canonicalization.json"
+            profile_path = root / "profile.json"
+            canonicalization_path.write_text(
+                json.dumps(canonicalization_payload), encoding="utf-8"
+            )
+            profile_path.write_text(json.dumps(profile_payload), encoding="utf-8")
+            canonicalization = load_relation_canonicalization(canonicalization_path)
+            profile = load_task_relationship_profile(profile_path)
+
+        result = is_profile_compatible(
+            "intrusion-set",
+            "used-in",
+            "malware",
+            canonicalization=canonicalization,
+            profile=profile,
+        )
+        self.assertIsNone(result)
+
 
 if __name__ == "__main__":
     unittest.main()

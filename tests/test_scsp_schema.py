@@ -200,6 +200,31 @@ class SchemaTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "swap_endpoints"):
                 load_relation_canonicalization(path)
 
+    def test_canonicalization_loader_rejects_missing_required_field(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        valid_rule = {
+            "project_label": "uses",
+            "canonical_label": "uses",
+            "swap_endpoints": False,
+            "status": "direct",
+        }
+        for missing_field in (
+            "project_label",
+            "canonical_label",
+            "swap_endpoints",
+            "status",
+        ):
+            with self.subTest(missing_field=missing_field):
+                rule = dict(valid_rule)
+                del rule[missing_field]
+                payload = {"version": 1, "rules": [rule]}
+                with tempfile.TemporaryDirectory() as td:
+                    path = Path(td) / "canonicalization.json"
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "missing required field"):
+                        load_relation_canonicalization(path)
+
 
 if __name__ == "__main__":
     unittest.main()

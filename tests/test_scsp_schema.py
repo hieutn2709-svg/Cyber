@@ -132,6 +132,26 @@ class SchemaTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "duplicate project_label"):
                 load_relation_canonicalization(path)
 
+    def test_canonicalization_loader_rejects_invalid_status(self) -> None:
+        self.assertIsNotNone(load_relation_canonicalization)
+
+        payload = {
+            "version": 1,
+            "rules": [
+                {
+                    "project_label": "uses",
+                    "canonical_label": "uses",
+                    "swap_endpoints": False,
+                    "status": "renamed",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "canonicalization.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid status"):
+                load_relation_canonicalization(path)
+
 
 if __name__ == "__main__":
     unittest.main()

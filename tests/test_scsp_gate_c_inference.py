@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -12,6 +13,11 @@ try:
 except ImportError:
     gate_c_inference = None
     infer_gate_c_window = None
+
+try:
+    from journal.scsp.gate_c_inference import infer_gate_c_split
+except ImportError:
+    infer_gate_c_split = None
 
 from journal.scsp.data import LabelInventory, WindowExample
 from journal.scsp.structures import SpanCandidate
@@ -131,6 +137,42 @@ class GateCInferenceTests(unittest.TestCase):
         base = self._base(label="malware", entity_score=0.7)
         with self.assertRaisesRegex(ValueError, "entity-score parity"):
             self._run(base, [[0.20, 0.70, 0.10]])
+
+    def test_split_preserves_window_order_and_calls_window_inference_once_each(self) -> None:
+        self.assertIsNotNone(
+            infer_gate_c_split,
+            "Gate C split posterior-extraction API must exist",
+        )
+        second = replace(
+            self.window,
+            doc_seq_index=1,
+            doc_id="doc-2",
+            window_index=1,
+        )
+        expected = ("result-doc-1", "result-doc-2")
+
+        def fake_infer(model, window, inventory, **kwargs):
+            return f"result-{window.doc_id}"
+
+        with patch.object(
+            gate_c_inference,
+            "infer_gate_c_window",
+            side_effect=fake_infer,
+        ) as delegated:
+            result = infer_gate_c_split(
+                object(),
+                (self.window, second),
+                self.inventory,
+                width_cap=4,
+                base_config=self.base_config,
+                training_config=self.training_config,
+                device=self.device,
+            )
+
+        self.assertEqual(result, expected)
+        self.assertEqual(delegated.call_count, 2)
+        self.assertIs(delegated.call_args_list[0].args[1], self.window)
+        self.assertIs(delegated.call_args_list[1].args[1], second)
 
 
 if __name__ == "__main__":

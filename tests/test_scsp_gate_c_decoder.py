@@ -9,6 +9,7 @@ try:
 except ImportError:
     build_probabilistic_prediction_records = None
 
+from journal.scsp.artifacts import build_prediction_records
 from journal.scsp.candidates import local_to_global_candidate
 from journal.scsp.data import WindowExample
 from journal.scsp.gate_c import conditional_non_none_posterior
@@ -107,7 +108,7 @@ class GateCDecoderTests(unittest.TestCase):
             unresolved_entity_types=frozenset(),
         )
 
-    def _records(self, *, beta: float, inference=None):
+    def _records(self, *, beta: float, inference=None, threshold: float = 0.90):
         self.assertIsNotNone(
             build_probabilistic_prediction_records,
             "Gate C probabilistic document decoder must exist",
@@ -117,7 +118,7 @@ class GateCDecoderTests(unittest.TestCase):
             (selected_inference,),
             self.RELATION_TYPES,
             beta=beta,
-            threshold=0.90,
+            threshold=threshold,
             canonicalization=self.canonicalization,
             profile=self.profile,
             run_id="gate-c-test",
@@ -178,7 +179,7 @@ class GateCDecoderTests(unittest.TestCase):
 
         try:
             self._records(beta=1.0, inference=missing_source)
-        except Exception as exc:  # RED: current implementation leaks KeyError.
+        except Exception as exc:
             self.assertIsInstance(exc, ValueError)
             self.assertIn("missing posterior", str(exc).lower())
         else:
@@ -208,6 +209,24 @@ class GateCDecoderTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "posterior entity inventory"):
             self._records(beta=1.0, inference=mismatched)
+
+    def test_beta_zero_exactly_matches_gate_a_records_at_frozen_thresholds(self) -> None:
+        for threshold in (0.85, 0.96, 0.99):
+            with self.subTest(threshold=threshold):
+                gate_a = build_prediction_records(
+                    (self.base,),
+                    self.RELATION_TYPES,
+                    threshold,
+                    run_id="gate-c-test",
+                    git_commit="commit",
+                    dataset_sha256="dataset",
+                    config_sha256="config",
+                    fold=1,
+                    seed=42,
+                    split="validation",
+                )
+                gate_c = self._records(beta=0.0, threshold=threshold)
+                self.assertEqual(gate_c, gate_a)
 
 
 if __name__ == "__main__":

@@ -271,12 +271,21 @@ def build_probabilistic_prediction_records(
             if len(scored_pair.type_logits) != len(relation_labels):
                 raise ValueError("relation logit count does not match inventory")
 
-            source_posterior = inference.posterior_by_typed_key[
-                scored_pair.pair.source.typed_key
-            ]
-            target_posterior = inference.posterior_by_typed_key[
-                scored_pair.pair.target.typed_key
-            ]
+            source_key = scored_pair.pair.source.typed_key
+            target_key = scored_pair.pair.target.typed_key
+            missing_keys = tuple(
+                key
+                for key in (source_key, target_key)
+                if key not in inference.posterior_by_typed_key
+            )
+            if missing_keys:
+                raise ValueError(
+                    "missing posterior for Gate C relation endpoint: "
+                    f"{missing_keys!r}"
+                )
+
+            source_posterior = inference.posterior_by_typed_key[source_key]
+            target_posterior = inference.posterior_by_typed_key[target_key]
             compatibility = probabilistic_compatibility(
                 source_posterior,
                 target_posterior,

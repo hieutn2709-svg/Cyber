@@ -9,6 +9,7 @@ try:
 except ImportError:
     build_probabilistic_prediction_records = None
 
+from journal.scsp.candidates import local_to_global_candidate
 from journal.scsp.data import WindowExample
 from journal.scsp.gate_c import conditional_non_none_posterior
 from journal.scsp.gate_c_inference import GateCWindowInference
@@ -138,8 +139,14 @@ class GateCDecoderTests(unittest.TestCase):
             1.0 / (1.0 + math.exp(-3.0)),
             places=12,
         )
-        self.assertEqual(relation.source.typed_key, self.source.typed_key)
-        self.assertEqual(relation.target.typed_key, self.target.typed_key)
+        self.assertEqual(
+            relation.source,
+            local_to_global_candidate(self.window, self.source),
+        )
+        self.assertEqual(
+            relation.target,
+            local_to_global_candidate(self.window, self.target),
+        )
 
     def test_positive_beta_changes_only_relation_type(self) -> None:
         baseline = self._records(beta=0.0)[0]

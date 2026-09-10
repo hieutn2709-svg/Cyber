@@ -5,6 +5,7 @@ or test-set selection logic.
 """
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -149,3 +150,42 @@ def probabilistic_compatibility(
         scores.append(min(1.0, max(0.0, float(score))))
 
     return tuple(scores)
+
+
+def adjust_relation_type_logits(
+    raw_logits: Sequence[float],
+    compatibility_scores: Sequence[float],
+    *,
+    beta: float,
+    epsilon: float = 1e-8,
+) -> tuple[float, ...]:
+    """Apply the frozen probabilistic-profile penalty to relation-type logits."""
+    logits = tuple(float(value) for value in raw_logits)
+    scores = tuple(float(value) for value in compatibility_scores)
+
+    if not logits or len(logits) != len(scores):
+        raise ValueError(
+            "relation logits and compatibility scores must align and be non-empty"
+        )
+    if beta < 0.0:
+        raise ValueError("beta must be >= 0")
+    if epsilon <= 0.0:
+        raise ValueError("epsilon must be > 0")
+    if any(score < 0.0 or score > 1.0 for score in scores):
+        raise ValueError("compatibility scores must lie in [0, 1]")
+
+    if beta == 0.0:
+        return logits
+
+    return tuple(
+        logit + float(beta) * math.log(max(score, epsilon))
+        for logit, score in zip(logits, scores)
+    )
+
+
+def select_relation_type(adjusted_logits: Sequence[float]) -> int:
+    """Select the largest adjusted logit, breaking exact ties by inventory order."""
+    values = tuple(float(value) for value in adjusted_logits)
+    if not values:
+        raise ValueError("adjusted logits must be non-empty")
+    return max(range(len(values)), key=lambda index: (values[index], -index))

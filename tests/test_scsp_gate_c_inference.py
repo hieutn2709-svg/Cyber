@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -63,6 +62,16 @@ class GateCInferenceTests(unittest.TestCase):
         self.training_config = SimpleNamespace(relation_chunk_size=32)
         self.device = torch.device("cpu")
 
+    def _assert_api(self) -> None:
+        self.assertIsNotNone(
+            gate_c_inference,
+            "Gate C posterior-extraction module must exist",
+        )
+        self.assertIsNotNone(
+            infer_gate_c_window,
+            "Gate C posterior-extraction API must exist",
+        )
+
     def _base(self, *, label: str = "malware", entity_score: float = 0.8) -> WindowInference:
         span = SpanCandidate(
             document_id="doc-1",
@@ -82,14 +91,6 @@ class GateCInferenceTests(unittest.TestCase):
         )
 
     def _run(self, base: WindowInference, probabilities: list[list[float]]):
-        self.assertIsNotNone(
-            infer_gate_c_window,
-            "Gate C posterior-extraction API must exist",
-        )
-        self.assertIsNotNone(
-            gate_c_inference,
-            "Gate C posterior-extraction module must exist",
-        )
         model = _FakeModel(probabilities)
         with patch.object(gate_c_inference, "infer_window", return_value=base) as delegated:
             result = infer_gate_c_window(
@@ -104,6 +105,7 @@ class GateCInferenceTests(unittest.TestCase):
         return result, delegated, model
 
     def test_delegates_authoritative_candidates_to_gate_a_and_extracts_posteriors(self) -> None:
+        self._assert_api()
         base = self._base()
         result, delegated, model = self._run(base, [[0.20, 0.70, 0.10]])
 
@@ -119,11 +121,13 @@ class GateCInferenceTests(unittest.TestCase):
         self.assertEqual(model.asserted_span_count, 1)
 
     def test_rejects_top1_parity_mismatch(self) -> None:
+        self._assert_api()
         base = self._base(label="tool", entity_score=0.8)
         with self.assertRaisesRegex(ValueError, "top-1 parity"):
             self._run(base, [[0.20, 0.70, 0.10]])
 
     def test_rejects_entity_score_parity_mismatch(self) -> None:
+        self._assert_api()
         base = self._base(label="malware", entity_score=0.7)
         with self.assertRaisesRegex(ValueError, "entity-score parity"):
             self._run(base, [[0.20, 0.70, 0.10]])

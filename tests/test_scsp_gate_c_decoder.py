@@ -74,12 +74,12 @@ class GateCDecoderTests(unittest.TestCase):
             proposal_matched_count=0,
             post_pruning_typed_matched_count=0,
         )
-        source_posterior = conditional_non_none_posterior(
+        self.source_posterior = conditional_non_none_posterior(
             [0.0, 1.0, 0.0],
             self.ENTITY_TYPES,
             span_key=self.source.typed_key,
         )
-        target_posterior = conditional_non_none_posterior(
+        self.target_posterior = conditional_non_none_posterior(
             [0.0, 0.0, 1.0],
             self.ENTITY_TYPES,
             span_key=self.target.typed_key,
@@ -88,8 +88,8 @@ class GateCDecoderTests(unittest.TestCase):
             base=self.base,
             posterior_by_typed_key=MappingProxyType(
                 {
-                    self.source.typed_key: source_posterior,
-                    self.target.typed_key: target_posterior,
+                    self.source.typed_key: self.source_posterior,
+                    self.target.typed_key: self.target_posterior,
                 }
             ),
         )
@@ -107,13 +107,14 @@ class GateCDecoderTests(unittest.TestCase):
             unresolved_entity_types=frozenset(),
         )
 
-    def _records(self, *, beta: float):
+    def _records(self, *, beta: float, inference=None):
         self.assertIsNotNone(
             build_probabilistic_prediction_records,
             "Gate C probabilistic document decoder must exist",
         )
+        selected_inference = self.inference if inference is None else inference
         return build_probabilistic_prediction_records(
-            (self.inference,),
+            (selected_inference,),
             self.RELATION_TYPES,
             beta=beta,
             threshold=0.90,
@@ -166,6 +167,47 @@ class GateCDecoderTests(unittest.TestCase):
         self.assertEqual(gate_c_relation.target, base_relation.target)
         self.assertEqual(base_relation.label, "uses")
         self.assertEqual(gate_c_relation.label, "targets")
+
+    def test_missing_endpoint_posterior_is_explicit_value_error(self) -> None:
+        missing_source = GateCWindowInference(
+            base=self.base,
+            posterior_by_typed_key=MappingProxyType(
+                {self.target.typed_key: self.target_posterior}
+            ),
+        )
+
+        try:
+            self._records(beta=1.0, inference=missing_source)
+        except Exception as exc:  # RED: current implementation leaks KeyError.
+            self.assertIsInstance(exc, ValueError)
+            self.assertIn("missing posterior", str(exc).lower())
+        else:
+            self.fail("missing endpoint posterior must fail explicitly")
+
+    def test_posterior_inventory_mismatch_is_rejected_without_fallback(self) -> None:
+        expanded_types = ("intrusion-set", "identity", "tool")
+        source = conditional_non_none_posterior(
+            [0.0, 1.0, 0.0, 0.0],
+            expanded_types,
+            span_key=self.source.typed_key,
+        )
+        target = conditional_non_none_posterior(
+            [0.0, 0.0, 1.0, 0.0],
+            expanded_types,
+            span_key=self.target.typed_key,
+        )
+        mismatched = GateCWindowInference(
+            base=self.base,
+            posterior_by_typed_key=MappingProxyType(
+                {
+                    self.source.typed_key: source,
+                    self.target.typed_key: target,
+                }
+            ),
+        )
+
+        with self.assertRaisesRegex(ValueError, "posterior entity inventory"):
+            self._records(beta=1.0, inference=mismatched)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import math
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,14 @@ def _write_jsonl(path: str | Path, rows: Sequence[dict[str, Any]]) -> None:
                 )
             )
             handle.write("\n")
+
+
+def _sigmoid(value: float) -> float:
+    if value >= 0.0:
+        z = math.exp(-value)
+        return 1.0 / (1.0 + z)
+    z = math.exp(value)
+    return z / (1.0 + z)
 
 
 def build_gate_c_span_rows(
@@ -182,3 +191,152 @@ def write_gate_c_scored_pair_jsonl(
     )
     _write_jsonl(path, rows)
     return rows
+
+
+def build_gate_c_diagnostics(
+    inferences: Sequence[object],
+    relation_types: Sequence[str],
+    *,
+    beta: float,
+    threshold: float,
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
+    epsilon: float = 1e-8,
+) -> dict[str, Any]:
+    """Build deterministic Gate C diagnostics from prediction state only."""
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("relation threshold must lie in [0, 1]")
+    labels = tuple(str(label) for label in relation_types)
+    if not labels:
+        raise ValueError("relation_types must be non-empty")
+
+    retained_span_count = 0
+    top1_mismatch_count = 0
+    posterior_max_normalization_deviation = 0.0
+    entity_score_parity_max_abs_difference = 0.0
+
+    for inference in inferences:
+        for span in inference.base.predicted_spans:
+            retained_span_count += 1
+            key = span.typed_key
+            if key not in inference.posterior_by_typed_key:
+                raise ValueError(f"missing posterior for retained span {key!r}")
+            posterior = inference.posterior_by_typed_key[key]
+            if posterior.top1_entity_type != span.label:
+                top1_mismatch_count += 1
+            posterior_max_normalization_deviation = max(
+                posterior_max_normalization_deviation,
+                abs(sum(posterior.conditional_probabilities) - 1.0),
+            )
+            entity_score_parity_max_abs_difference = max(
+                entity_score_parity_max_abs_difference,
+                abs(float(posterior.entity_probability) - float(span.entity_score)),
+            )
+
+    pair_rows = build_gate_c_scored_pair_rows(
+        inferences,
+        labels,
+        beta=beta,
+        canonicalization=canonicalization,
+        profile=profile,
+        epsilon=epsilon,
+    )
+
+    compatibility_values = {label: [] for label in labels}
+    transition_counts: Counter[str] = Counter()
+    candidate_relation_count = len(pair_rows)
+    argmax_change_count = 0
+    above_threshold_pair_count = 0
+    above_threshold_change_count = 0
+    emitted_relation_count = 0
+    unresolved_source_masses: list[float] = []
+    unresolved_target_masses: list[float] = []
+
+    row_index = 0
+    for inference in inferences:
+        for scored in inference.base.scored_pairs:
+            row = pair_rows[row_index]
+            row_index += 1
+
+            for label, score in zip(labels, row["compatibility_scores"]):
+                compatibility_values[label].append(float(score))
+
+            raw_index = select_relation_type(row["raw_relation_type_logits"])
+            selected_index = int(row["selected_index"])
+            changed = raw_index != selected_index
+            if changed:
+                argmax_change_count += 1
+                transition_counts[
+                    f"{labels[raw_index]}->{labels[selected_index]}"
+                ] += 1
+
+            probability = _sigmoid(float(row["existence_logit"]))
+            if probability >= threshold:
+                above_threshold_pair_count += 1
+                emitted_relation_count += 1
+                if changed:
+                    above_threshold_change_count += 1
+
+            source_key = scored.pair.source.typed_key
+            target_key = scored.pair.target.typed_key
+            source_posterior = inference.posterior_by_typed_key[source_key]
+            target_posterior = inference.posterior_by_typed_key[target_key]
+            unresolved_source_masses.append(
+                sum(
+                    float(probability)
+                    for entity_type, probability in zip(
+                        source_posterior.entity_types,
+                        source_posterior.conditional_probabilities,
+                    )
+                    if entity_type in profile.unresolved_entity_types
+                )
+            )
+            unresolved_target_masses.append(
+                sum(
+                    float(probability)
+                    for entity_type, probability in zip(
+                        target_posterior.entity_types,
+                        target_posterior.conditional_probabilities,
+                    )
+                    if entity_type in profile.unresolved_entity_types
+                )
+            )
+
+    compatibility_summary = {}
+    for label in labels:
+        values = compatibility_values[label]
+        compatibility_summary[label] = {
+            "count": len(values),
+            "mean": float(sum(values) / len(values)) if values else 0.0,
+            "min": float(min(values)) if values else 0.0,
+            "max": float(max(values)) if values else 0.0,
+        }
+
+    return {
+        "retained_span_count": retained_span_count,
+        "posterior_top1_parity_mismatch_count": top1_mismatch_count,
+        "posterior_max_normalization_deviation": float(
+            posterior_max_normalization_deviation
+        ),
+        "entity_score_parity_max_abs_difference": float(
+            entity_score_parity_max_abs_difference
+        ),
+        "compatibility_summary_by_project_relation": compatibility_summary,
+        "mean_unresolved_source_posterior_mass": float(
+            sum(unresolved_source_masses) / len(unresolved_source_masses)
+        ) if unresolved_source_masses else 0.0,
+        "mean_unresolved_target_posterior_mass": float(
+            sum(unresolved_target_masses) / len(unresolved_target_masses)
+        ) if unresolved_target_masses else 0.0,
+        "candidate_relation_count": candidate_relation_count,
+        "argmax_change_count_vs_gate_a": argmax_change_count,
+        "argmax_change_rate_vs_gate_a": float(
+            argmax_change_count / candidate_relation_count
+        ) if candidate_relation_count else 0.0,
+        "above_threshold_pair_count": above_threshold_pair_count,
+        "above_threshold_argmax_change_count_vs_gate_a": (
+            above_threshold_change_count
+        ),
+        "transition_counts": dict(sorted(transition_counts.items())),
+        "emitted_relation_count": emitted_relation_count,
+    }

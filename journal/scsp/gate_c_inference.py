@@ -6,7 +6,7 @@ already-retained spans to recover full entity-type posteriors.
 """
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
 
@@ -87,4 +87,31 @@ def infer_gate_c_window(
     return GateCWindowInference(
         base=base,
         posterior_by_typed_key=MappingProxyType(posterior_by_typed_key),
+    )
+
+
+def infer_gate_c_split(
+    model,
+    windows: Sequence[WindowExample],
+    inventory: LabelInventory,
+    *,
+    width_cap: int,
+    base_config,
+    training_config,
+    device: torch.device,
+    parity_tolerance: float = 1e-8,
+) -> tuple[GateCWindowInference, ...]:
+    """Infer Gate C windows in input order, exactly once per supplied window."""
+    return tuple(
+        infer_gate_c_window(
+            model,
+            window,
+            inventory,
+            width_cap=width_cap,
+            base_config=base_config,
+            training_config=training_config,
+            device=device,
+            parity_tolerance=parity_tolerance,
+        )
+        for window in windows
     )

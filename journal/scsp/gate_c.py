@@ -8,6 +8,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from .schema import (
+    CanonicalizationTable,
+    TaskRelationshipProfile,
+    canonicalize_relation,
+)
+
 
 @dataclass(frozen=True, slots=True)
 class EntityTypePosterior:
@@ -65,3 +71,81 @@ def conditional_non_none_posterior(
         entity_probability=float(entity_probability),
         top1_entity_type=labels[top1_index],
     )
+
+
+def probabilistic_compatibility(
+    source: EntityTypePosterior,
+    target: EntityTypePosterior,
+    relation_types: Sequence[str],
+    *,
+    canonicalization: CanonicalizationTable,
+    profile: TaskRelationshipProfile,
+    tolerance: float = 1e-12,
+) -> tuple[float, ...]:
+    """Return C_ijr for each project relation label.
+
+    Resolved endpoint/relation combinations use the frozen Gate B task profile.
+    Unresolved endpoint types and unresolved relation labels are neutral (M=1),
+    representing unknown compatibility rather than incompatibility.
+    """
+    labels = tuple(str(label) for label in relation_types)
+    if not labels:
+        raise ValueError("relation_types must be non-empty")
+    if tolerance < 0.0:
+        raise ValueError("tolerance must be >= 0")
+    if source.entity_types != target.entity_types:
+        raise ValueError("source and target posterior entity inventories must match")
+
+    entity_types = source.entity_types
+    known_entity_types = profile.resolved_entity_types | profile.unresolved_entity_types
+    if set(entity_types) != known_entity_types:
+        raise ValueError("posterior entity inventory must match task profile")
+
+    for posterior in (source, target):
+        if len(posterior.conditional_probabilities) != len(entity_types):
+            raise ValueError("posterior probability count must match entity inventory")
+        total = sum(posterior.conditional_probabilities)
+        if abs(total - 1.0) > tolerance:
+            raise ValueError("conditional entity posterior must sum to one")
+        if any(
+            value < -tolerance or value > 1.0 + tolerance
+            for value in posterior.conditional_probabilities
+        ):
+            raise ValueError("conditional entity posterior must lie in [0, 1]")
+
+    scores: list[float] = []
+    for relation_label in labels:
+        rule = canonicalize_relation(relation_label, canonicalization)
+        score = 0.0
+        for source_type, q_source in zip(
+            entity_types,
+            source.conditional_probabilities,
+        ):
+            for target_type, q_target in zip(
+                entity_types,
+                target.conditional_probabilities,
+            ):
+                if rule.status == "unresolved":
+                    compatible = 1.0
+                elif (
+                    source_type in profile.unresolved_entity_types
+                    or target_type in profile.unresolved_entity_types
+                ):
+                    compatible = 1.0
+                else:
+                    lookup_source, lookup_target = (
+                        (target_type, source_type)
+                        if rule.swap_endpoints
+                        else (source_type, target_type)
+                    )
+                    compatible = float(
+                        (lookup_source, rule.label, lookup_target)
+                        in profile.allowed_triples
+                    )
+                score += float(q_source) * float(q_target) * compatible
+
+        if score < -tolerance or score > 1.0 + tolerance:
+            raise ValueError("probabilistic compatibility must lie in [0, 1]")
+        scores.append(min(1.0, max(0.0, float(score))))
+
+    return tuple(scores)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import unittest
 
 try:
@@ -11,6 +12,15 @@ try:
     from journal.scsp.gate_c import probabilistic_compatibility
 except ImportError:
     probabilistic_compatibility = None
+
+try:
+    from journal.scsp.gate_c import (
+        adjust_relation_type_logits,
+        select_relation_type,
+    )
+except ImportError:
+    adjust_relation_type_logits = None
+    select_relation_type = None
 
 from journal.scsp.schema import (
     CanonicalRelation,
@@ -136,8 +146,6 @@ class GateCCompatibilityMathTests(unittest.TestCase):
             probabilistic_compatibility,
             "Gate C probabilistic compatibility API must exist",
         )
-        # intrusion-set -> identity is incompatible for "uses", while any
-        # hypothetical endpoint assignment involving unresolved tactic is neutral.
         source = self.posterior([0.5, 0.0, 0.0, 0.5], "source")
         target = self.posterior([0.0, 0.0, 1.0, 0.0], "target")
         scores = probabilistic_compatibility(
@@ -154,8 +162,6 @@ class GateCCompatibilityMathTests(unittest.TestCase):
             probabilistic_compatibility,
             "Gate C probabilistic compatibility API must exist",
         )
-        # identity --targeted-by--> intrusion-set canonicalizes for lookup to
-        # intrusion-set --targets--> identity.
         source = self.posterior([0.0, 0.0, 1.0, 0.0], "source")
         target = self.posterior([1.0, 0.0, 0.0, 0.0], "target")
         scores = probabilistic_compatibility(
@@ -166,6 +172,75 @@ class GateCCompatibilityMathTests(unittest.TestCase):
             profile=self.profile,
         )
         self.assertEqual(scores, (1.0,))
+
+
+class GateCLogitAdjustmentTests(unittest.TestCase):
+    def test_beta_zero_returns_raw_logits_exactly(self) -> None:
+        self.assertIsNotNone(
+            adjust_relation_type_logits,
+            "Gate C logit adjustment API must exist",
+        )
+        raw = (2.0, -1.0, 0.25)
+        adjusted = adjust_relation_type_logits(
+            raw,
+            (0.0, 0.5, 1.0),
+            beta=0.0,
+        )
+        self.assertEqual(adjusted, raw)
+
+    def test_positive_beta_adds_log_compatibility_penalty(self) -> None:
+        self.assertIsNotNone(
+            adjust_relation_type_logits,
+            "Gate C logit adjustment API must exist",
+        )
+        adjusted = adjust_relation_type_logits(
+            [2.0],
+            [0.25],
+            beta=1.0,
+        )
+        self.assertAlmostEqual(
+            adjusted[0],
+            2.0 + math.log(0.25),
+            places=12,
+        )
+
+    def test_zero_compatibility_uses_epsilon_floor(self) -> None:
+        self.assertIsNotNone(
+            adjust_relation_type_logits,
+            "Gate C logit adjustment API must exist",
+        )
+        adjusted = adjust_relation_type_logits(
+            [0.0],
+            [0.0],
+            beta=1.0,
+            epsilon=1e-8,
+        )
+        self.assertAlmostEqual(adjusted[0], math.log(1e-8), places=12)
+
+    def test_exact_tie_selects_lowest_inventory_index(self) -> None:
+        self.assertIsNotNone(
+            select_relation_type,
+            "Gate C deterministic relation selector must exist",
+        )
+        self.assertEqual(select_relation_type([3.0, 3.0, 2.0]), 0)
+
+    def test_invalid_adjustment_inputs_are_rejected(self) -> None:
+        self.assertIsNotNone(
+            adjust_relation_type_logits,
+            "Gate C logit adjustment API must exist",
+        )
+        cases = (
+            (([1.0], [1.0]), {"beta": -0.1}),
+            (([1.0], [1.0]), {"beta": 1.0, "epsilon": 0.0}),
+            (([1.0, 2.0], [1.0]), {"beta": 1.0}),
+            (([], []), {"beta": 1.0}),
+            (([1.0], [-0.1]), {"beta": 1.0}),
+            (([1.0], [1.1]), {"beta": 1.0}),
+        )
+        for args, kwargs in cases:
+            with self.subTest(args=args, kwargs=kwargs):
+                with self.assertRaises(ValueError):
+                    adjust_relation_type_logits(*args, **kwargs)
 
 
 if __name__ == "__main__":

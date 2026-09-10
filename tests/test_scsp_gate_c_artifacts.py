@@ -4,7 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from types import MappingProxyType
+from types import MappingProxyType, SimpleNamespace
 
 try:
     from journal.scsp.gate_c_artifacts import (
@@ -18,6 +18,11 @@ except ImportError:
     build_gate_c_span_rows = None
     write_gate_c_scored_pair_jsonl = None
     write_gate_c_span_jsonl = None
+
+try:
+    from journal.scsp.gate_c_artifacts import build_gate_c_diagnostics
+except ImportError:
+    build_gate_c_diagnostics = None
 
 from journal.scsp.data import WindowExample
 from journal.scsp.gate_c import conditional_non_none_posterior
@@ -70,7 +75,7 @@ class GateCArtifactTests(unittest.TestCase):
             proposal_source="predicted",
         )
         pair = PairCandidate(self.source, self.target, token_distance=1)
-        scored_pair = ScoredRelationPair(
+        self.scored_pair = ScoredRelationPair(
             pair=pair,
             existence_logit=3.0,
             type_logits=(5.0, 4.0),
@@ -78,17 +83,17 @@ class GateCArtifactTests(unittest.TestCase):
         base = WindowInference(
             window=self.window,
             predicted_spans=(self.source, self.target),
-            scored_pairs=(scored_pair,),
+            scored_pairs=(self.scored_pair,),
             proposal_gold_count=0,
             proposal_matched_count=0,
             post_pruning_typed_matched_count=0,
         )
-        source_posterior = conditional_non_none_posterior(
+        self.source_posterior = conditional_non_none_posterior(
             [0.2, 0.7, 0.1],
             self.ENTITY_TYPES,
             span_key=self.source.typed_key,
         )
-        target_posterior = conditional_non_none_posterior(
+        self.target_posterior = conditional_non_none_posterior(
             [0.1, 0.2, 0.7],
             self.ENTITY_TYPES,
             span_key=self.target.typed_key,
@@ -97,8 +102,8 @@ class GateCArtifactTests(unittest.TestCase):
             base=base,
             posterior_by_typed_key=MappingProxyType(
                 {
-                    self.source.typed_key: source_posterior,
-                    self.target.typed_key: target_posterior,
+                    self.source.typed_key: self.source_posterior,
+                    self.target.typed_key: self.target_posterior,
                 }
             ),
         )
@@ -124,6 +129,21 @@ class GateCArtifactTests(unittest.TestCase):
             write_gate_c_scored_pair_jsonl,
         ):
             self.assertIsNotNone(api, "Gate C artifact API must exist")
+
+    def _diagnostics(self, inference=None):
+        self.assertIsNotNone(
+            build_gate_c_diagnostics,
+            "Gate C prediction-side diagnostics API must exist",
+        )
+        selected = self.inference if inference is None else inference
+        return build_gate_c_diagnostics(
+            (selected,),
+            self.RELATION_TYPES,
+            beta=2.0,
+            threshold=0.90,
+            canonicalization=self.canonicalization,
+            profile=self.profile,
+        )
 
     def test_span_rows_have_exact_schema_and_normalized_posterior(self) -> None:
         self._assert_api()
@@ -195,7 +215,10 @@ class GateCArtifactTests(unittest.TestCase):
             epsilon=row["epsilon"],
         )
         self.assertEqual(row["adjusted_relation_type_logits"], list(expected))
-        self.assertEqual(row["selected_project_label"], self.RELATION_TYPES[row["selected_index"]])
+        self.assertEqual(
+            row["selected_project_label"],
+            self.RELATION_TYPES[row["selected_index"]],
+        )
 
     def test_jsonl_writers_are_byte_deterministic_and_strict_json(self) -> None:
         self._assert_api()
@@ -229,13 +252,102 @@ class GateCArtifactTests(unittest.TestCase):
                     self.assertIsInstance(payload, dict)
                     self.assertNotIn("NaN", line)
                     self.assertNotIn("Infinity", line)
-                    self.assertEqual(line, json.dumps(
-                        payload,
-                        sort_keys=True,
-                        ensure_ascii=False,
-                        allow_nan=False,
-                        separators=(",", ":"),
-                    ))
+                    self.assertEqual(
+                        line,
+                        json.dumps(
+                            payload,
+                            sort_keys=True,
+                            ensure_ascii=False,
+                            allow_nan=False,
+                            separators=(",", ":"),
+                        ),
+                    )
+
+    def test_diagnostics_have_required_prediction_side_fields_and_counts(self) -> None:
+        diagnostics = self._diagnostics()
+        required = {
+            "retained_span_count",
+            "posterior_top1_parity_mismatch_count",
+            "posterior_max_normalization_deviation",
+            "entity_score_parity_max_abs_difference",
+            "compatibility_summary_by_project_relation",
+            "mean_unresolved_source_posterior_mass",
+            "mean_unresolved_target_posterior_mass",
+            "candidate_relation_count",
+            "argmax_change_count_vs_gate_a",
+            "argmax_change_rate_vs_gate_a",
+            "above_threshold_pair_count",
+            "above_threshold_argmax_change_count_vs_gate_a",
+            "transition_counts",
+            "emitted_relation_count",
+        }
+        self.assertTrue(required.issubset(diagnostics))
+        self.assertEqual(diagnostics["retained_span_count"], 2)
+        self.assertEqual(diagnostics["posterior_top1_parity_mismatch_count"], 0)
+        self.assertAlmostEqual(
+            diagnostics["posterior_max_normalization_deviation"], 0.0, places=12
+        )
+        self.assertAlmostEqual(
+            diagnostics["entity_score_parity_max_abs_difference"], 0.0, places=12
+        )
+        self.assertEqual(diagnostics["candidate_relation_count"], 1)
+        self.assertEqual(diagnostics["argmax_change_count_vs_gate_a"], 1)
+        self.assertEqual(diagnostics["argmax_change_rate_vs_gate_a"], 1.0)
+        self.assertEqual(diagnostics["above_threshold_pair_count"], 1)
+        self.assertEqual(
+            diagnostics["above_threshold_argmax_change_count_vs_gate_a"], 1
+        )
+        self.assertEqual(diagnostics["transition_counts"], {"uses->targets": 1})
+        self.assertEqual(diagnostics["emitted_relation_count"], 1)
+        self.assertEqual(
+            set(diagnostics["compatibility_summary_by_project_relation"]),
+            set(self.RELATION_TYPES),
+        )
+        self.assertEqual(
+            diagnostics["compatibility_summary_by_project_relation"]["uses"]["count"],
+            1,
+        )
+        self.assertAlmostEqual(
+            diagnostics["compatibility_summary_by_project_relation"]["uses"]["mean"],
+            0.0,
+            places=12,
+        )
+        self.assertAlmostEqual(
+            diagnostics["mean_unresolved_source_posterior_mass"], 0.0, places=12
+        )
+        self.assertAlmostEqual(
+            diagnostics["mean_unresolved_target_posterior_mass"], 0.0, places=12
+        )
+
+    def test_diagnostics_do_not_read_gold_fields(self) -> None:
+        class PredictionOnlyWindow:
+            doc_id = "doc-1"
+            window_index = 2
+
+            @property
+            def gold_spans(self):
+                raise AssertionError("diagnostics must not read gold_spans")
+
+            @property
+            def gold_relations(self):
+                raise AssertionError("diagnostics must not read gold_relations")
+
+        prediction_only = SimpleNamespace(
+            base=SimpleNamespace(
+                window=PredictionOnlyWindow(),
+                predicted_spans=(self.source, self.target),
+                scored_pairs=(self.scored_pair,),
+            ),
+            posterior_by_typed_key=MappingProxyType(
+                {
+                    self.source.typed_key: self.source_posterior,
+                    self.target.typed_key: self.target_posterior,
+                }
+            ),
+        )
+        diagnostics = self._diagnostics(prediction_only)
+        self.assertEqual(diagnostics["retained_span_count"], 2)
+        self.assertEqual(diagnostics["candidate_relation_count"], 1)
 
 
 if __name__ == "__main__":

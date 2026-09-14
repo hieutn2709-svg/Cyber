@@ -70,7 +70,10 @@ class GateCProbabilisticProfileBetaZeroParityIntegrationTests(unittest.TestCase)
             "_build_validation_run_artifacts",
             return_value={"bundle": True},
         ):
-            with self.assertRaisesRegex(ValueError, "beta=0.*parity"):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"^Gate C beta=0 parity failure$",
+            ):
                 gate_c_cli._evaluate_validation(prepared, validation_windows)
 
         parity_mock.assert_called_once_with(prepared, inferences)

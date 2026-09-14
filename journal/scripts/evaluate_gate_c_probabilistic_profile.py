@@ -545,6 +545,7 @@ def _build_validation_run_artifacts(
     threshold: float,
     mode: str,
     parity: dict[str, Any] | None = None,
+    diagnostics_by_beta: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the frozen validation-only journal artifact bundle in memory."""
     prediction_rows = tuple(_record_to_dict(record) for record in records)
@@ -622,6 +623,9 @@ def _build_validation_run_artifacts(
     if parity is not None:
         artifacts["validation_beta_zero_parity.json"] = parity
         summary["beta_zero_parity"] = parity
+    if diagnostics_by_beta is not None:
+        artifacts["validation_beta_diagnostics.json"] = diagnostics_by_beta
+        summary["diagnostics_by_beta"] = diagnostics_by_beta
     return artifacts
 
 

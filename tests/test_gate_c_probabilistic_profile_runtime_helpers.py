@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 
 import journal.scripts.evaluate_gate_c_probabilistic_profile as gate_c_cli
@@ -24,6 +27,44 @@ class GateCProbabilisticProfileRuntimeHelperTests(unittest.TestCase):
             [(window.doc_id, window.window_index) for window in selected],
             [("val-doc", 0), ("val-doc", 1)],
         )
+
+    def test_write_artifacts_creates_deterministic_json_files(self) -> None:
+        writer = getattr(gate_c_cli, "_write_artifacts", None)
+        self.assertIsNotNone(writer, "Gate C artifact writer must exist")
+
+        artifacts = {
+            "validation_metrics.json": {
+                "z": 1,
+                "a": {"f1": 0.5},
+            },
+            "run_summary.json": {
+                "test_evaluated": False,
+                "status": "dev_complete",
+            },
+        }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp) / "nested" / "gate-c"
+            writer(output_dir, artifacts)
+
+            self.assertTrue(output_dir.is_dir())
+            self.assertEqual(
+                {path.name for path in output_dir.iterdir()},
+                set(artifacts),
+            )
+            for name, payload in artifacts.items():
+                path = output_dir / name
+                self.assertEqual(json.loads(path.read_text(encoding="utf-8")), payload)
+                self.assertEqual(
+                    path.read_text(encoding="utf-8"),
+                    json.dumps(
+                        payload,
+                        indent=2,
+                        sort_keys=True,
+                        ensure_ascii=False,
+                    )
+                    + "\n",
+                )
 
 
 if __name__ == "__main__":

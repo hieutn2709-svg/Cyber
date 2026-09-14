@@ -48,6 +48,7 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             "all_relation": {"f1": 0.55},
             "primary_entity": {"f1": 0.66},
         }
+        artifact_bundle = {"validation_bundle": True}
 
         with patch.object(
             gate_c_cli,
@@ -66,7 +67,11 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             gate_c_cli,
             "_score_records",
             return_value=metrics,
-        ) as score_mock:
+        ) as score_mock, patch.object(
+            gate_c_cli,
+            "_build_validation_run_artifacts",
+            return_value=artifact_bundle,
+        ):
             result = evaluate(prepared, validation_windows)
 
         infer_mock.assert_called_once_with(
@@ -115,13 +120,7 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
         self.assertEqual(result["validation"], selection["best"])
         self.assertEqual(result["validation_metrics"], metrics)
         self.assertFalse(result["test_evaluated"])
-        self.assertEqual(
-            result["artifacts"],
-            {
-                "validation_decoder_selection.json": selection,
-                "validation_metrics.json": metrics,
-            },
-        )
+        self.assertIs(result["artifacts"], artifact_bundle)
 
     def test_prepare_context_loads_frozen_checkpoint_and_uses_train_only_for_width(self) -> None:
         prepare = getattr(gate_c_cli, "_prepare_evaluation_context", None)

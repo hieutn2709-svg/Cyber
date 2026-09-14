@@ -59,6 +59,10 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
             "prediction_parity": True,
             "mismatch_count": 0,
         }
+        diagnostics_by_beta = {
+            "selected_threshold": 0.96,
+            "by_beta": [],
+        }
 
         with patch.object(
             gate_c_cli,
@@ -82,6 +86,10 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
             return_value=metrics,
         ), patch.object(
             gate_c_cli,
+            "_build_diagnostics_by_beta",
+            return_value=diagnostics_by_beta,
+        ), patch.object(
+            gate_c_cli,
             "_build_validation_run_artifacts",
             return_value=artifact_bundle,
         ) as artifact_mock:
@@ -98,6 +106,7 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
             threshold=0.96,
             mode="dev",
             parity=parity_report,
+            diagnostics_by_beta=diagnostics_by_beta,
         )
         self.assertIs(result["artifacts"], artifact_bundle)
         self.assertEqual(result["beta"], 0.25)

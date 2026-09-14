@@ -678,6 +678,15 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         epsilon=_EPSILON,
     )
     metrics = _score_records(records, prepared.inventory)
+    diagnostics_by_beta = _build_diagnostics_by_beta(
+        inferences,
+        prepared.inventory.relation_types,
+        _EXPECTED_BETA_GRID,
+        selected_threshold=threshold,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        epsilon=_EPSILON,
+    )
     artifacts = _build_validation_run_artifacts(
         prepared,
         inferences,
@@ -688,6 +697,7 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         threshold=threshold,
         mode="dev",
         parity=parity,
+        diagnostics_by_beta=diagnostics_by_beta,
     )
     return {
         "status": "validation_complete",

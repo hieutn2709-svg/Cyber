@@ -570,6 +570,16 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         epsilon=_EPSILON,
     )
     metrics = _score_records(records, prepared.inventory)
+    artifacts = _build_validation_run_artifacts(
+        prepared,
+        inferences,
+        records,
+        selection,
+        metrics,
+        beta=beta,
+        threshold=threshold,
+        mode="dev",
+    )
     return {
         "status": "validation_complete",
         "mode": "dev",
@@ -578,10 +588,7 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         "validation": best,
         "validation_metrics": metrics,
         "test_evaluated": False,
-        "artifacts": {
-            "validation_decoder_selection.json": selection,
-            "validation_metrics.json": metrics,
-        },
+        "artifacts": artifacts,
     }
 
 

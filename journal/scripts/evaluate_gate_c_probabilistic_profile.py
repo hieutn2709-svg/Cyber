@@ -497,6 +497,7 @@ def _build_validation_run_artifacts(
     beta: float,
     threshold: float,
     mode: str,
+    parity: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the frozen validation-only journal artifact bundle in memory."""
     prediction_rows = tuple(_record_to_dict(record) for record in records)
@@ -550,7 +551,7 @@ def _build_validation_run_artifacts(
         "epsilon": _EPSILON,
         "beta_grid": list(_EXPECTED_BETA_GRID),
     }
-    return {
+    artifacts = {
         "validation_predictions.jsonl": prediction_rows,
         "validation_entity_posteriors.jsonl": posterior_rows,
         "validation_scored_pairs.jsonl": pair_rows,
@@ -571,6 +572,10 @@ def _build_validation_run_artifacts(
         },
         "run_summary.json": summary,
     }
+    if parity is not None:
+        artifacts["validation_beta_zero_parity.json"] = parity
+        summary["beta_zero_parity"] = parity
+    return artifacts
 
 
 def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:

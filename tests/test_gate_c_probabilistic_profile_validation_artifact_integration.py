@@ -97,6 +97,7 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
             beta=0.25,
             threshold=0.96,
             mode="dev",
+            parity=parity_report,
         )
         self.assertIs(result["artifacts"], artifact_bundle)
         self.assertEqual(result["beta"], 0.25)

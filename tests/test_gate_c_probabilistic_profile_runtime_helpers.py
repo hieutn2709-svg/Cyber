@@ -66,6 +66,39 @@ class GateCProbabilisticProfileRuntimeHelperTests(unittest.TestCase):
                     + "\n",
                 )
 
+    def test_write_artifacts_serializes_jsonl_as_one_strict_json_row_per_line(self) -> None:
+        writer = getattr(gate_c_cli, "_write_artifacts", None)
+        self.assertIsNotNone(writer, "Gate C artifact writer must exist")
+
+        rows = (
+            {"z": 2, "a": "first"},
+            {"z": 1, "a": "second"},
+        )
+        artifacts = {"validation_predictions.jsonl": rows}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp) / "gate-c-jsonl"
+            writer(output_dir, artifacts)
+            path = output_dir / "validation_predictions.jsonl"
+            text = path.read_text(encoding="utf-8")
+
+        expected = "".join(
+            json.dumps(
+                row,
+                sort_keys=True,
+                ensure_ascii=False,
+                allow_nan=False,
+                separators=(",", ":"),
+            )
+            + "\n"
+            for row in rows
+        )
+        self.assertEqual(text, expected)
+        self.assertEqual(
+            tuple(json.loads(line) for line in text.splitlines()),
+            rows,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

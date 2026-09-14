@@ -642,7 +642,7 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
     )
     parity = _check_beta_zero_parity(prepared, inferences)
     if not bool(parity.get("prediction_parity")) or int(parity.get("mismatch_count", 0)) != 0:
-        raise ValueError("Gate C beta=0 prediction parity check failed")
+        raise RuntimeError("Gate C beta=0 parity failure")
 
     selection = _select_probabilistic_decoder(
         inferences,

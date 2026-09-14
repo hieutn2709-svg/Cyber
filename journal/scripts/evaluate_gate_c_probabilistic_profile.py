@@ -61,6 +61,12 @@ def _resolve_repo_path(repo_root: Path, value: str) -> Path:
     return path.resolve() if path.is_absolute() else (repo_root / path).resolve()
 
 
+def _windows_for_ids(windows, document_ids) -> tuple[Any, ...]:
+    """Return only windows whose document id is explicitly requested."""
+    wanted = set(document_ids)
+    return tuple(window for window in windows if window.doc_id in wanted)
+
+
 def validate_gate_a_provenance(
     checkpoint: dict[str, Any],
     run_metadata: dict[str, Any],

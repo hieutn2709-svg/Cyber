@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validation-only selection primitives for Gate C probabilistic decoding.
 
-This Task 5 surface intentionally contains only frozen mode/grid constants and
-pure beta x threshold selection. Frozen-checkpoint provenance and full CLI
-runtime behavior are added separately in Task 6.
+This surface contains frozen mode/grid constants, validation decoder selection,
+and the frozen Gate A provenance guard. Full CLI runtime behavior is added
+separately in later Task 6 steps.
 """
 from __future__ import annotations
 
@@ -29,6 +29,60 @@ def mode_evaluates_test(mode: str) -> bool:
 def requested_evaluation_splits(mode: str) -> tuple[str, ...]:
     """Return only splits that the evaluator is authorized to infer/score."""
     return ("validation", "test") if mode_evaluates_test(mode) else ("validation",)
+
+
+def validate_gate_a_provenance(
+    checkpoint: dict[str, Any],
+    run_metadata: dict[str, Any],
+    *,
+    dataset_sha256: str,
+    config_sha256: str,
+    fold: int,
+    seed: int,
+    width_cap: int,
+) -> None:
+    """Reject any mismatch from the frozen Gate A checkpoint lineage."""
+    required_checkpoint = (
+        "model_state_dict",
+        "git_commit",
+        "dataset_sha256",
+        "config_sha256",
+        "width_cap",
+    )
+    for field in required_checkpoint:
+        if field not in checkpoint:
+            raise ValueError(f"Gate A checkpoint missing metadata: {field}")
+
+    if checkpoint["git_commit"] != _FROZEN_GATE_A_COMMIT:
+        raise ValueError(
+            "Gate A checkpoint lineage mismatch: "
+            f"{checkpoint['git_commit']} != {_FROZEN_GATE_A_COMMIT}"
+        )
+    if checkpoint["dataset_sha256"] != dataset_sha256:
+        raise ValueError("Gate A checkpoint dataset hash mismatch")
+    if checkpoint["config_sha256"] != config_sha256:
+        raise ValueError("Gate A checkpoint config hash mismatch")
+    if int(checkpoint["width_cap"]) != int(width_cap):
+        raise ValueError("Gate A checkpoint width_cap mismatch")
+
+    required_run = (
+        "fold",
+        "seed",
+        "dataset_sha256",
+        "combined_config_sha256",
+    )
+    for field in required_run:
+        if field not in run_metadata:
+            raise ValueError(f"Gate A run metadata missing field: {field}")
+
+    if int(run_metadata["fold"]) != int(fold):
+        raise ValueError("Gate A checkpoint fold mismatch")
+    if int(run_metadata["seed"]) != int(seed):
+        raise ValueError("Gate A checkpoint seed mismatch")
+    if run_metadata["dataset_sha256"] != dataset_sha256:
+        raise ValueError("Gate A run metadata dataset hash mismatch")
+    if run_metadata["combined_config_sha256"] != config_sha256:
+        raise ValueError("Gate A run metadata config hash mismatch")
 
 
 def _select_probabilistic_decoder(

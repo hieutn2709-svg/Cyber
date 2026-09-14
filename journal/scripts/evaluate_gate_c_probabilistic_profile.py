@@ -1,18 +1,41 @@
 #!/usr/bin/env python3
-"""Validation-only selection primitives for Gate C probabilistic decoding.
+"""Validation-only evaluator for Gate C probabilistic decoding.
 
 This surface contains frozen mode/grid constants, validation decoder selection,
 the frozen Gate A provenance guard, the frozen Gate C config/profile contract,
-split-firewall orchestration, and validation runtime evaluation. Concrete
-runtime preparation is added separately in later Task 6 steps.
+split-firewall orchestration, validation runtime evaluation, and frozen runtime
+preparation. Test evaluation remains gated behind explicit full mode.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
+import torch
+
+from journal.scsp.config import GateAConfig
+from journal.scsp.data import LabelInventory, load_clean_windows
 from journal.scsp.gate_c import build_probabilistic_prediction_records
 from journal.scsp.gate_c_inference import infer_gate_c_split
-from journal.scripts.train_gate_a import _score_records
+from journal.scsp.schema import (
+    load_relation_canonicalization,
+    load_task_relationship_profile,
+)
+from journal.scsp.splits import load_fold_partition
+from journal.scsp.training_config import GateATrainingConfig
+from journal.scripts.run_gate_a import build_preflight
+from journal.scripts.train_gate_a import (
+    _combined_config_hash,
+    _derive_width_cap,
+    _git_commit,
+    _make_model,
+    _resolve_device,
+    _score_records,
+    _set_seed,
+    _sha256_file,
+)
 
 _VALID_MODES = ("dev", "full")
 _FROZEN_GATE_A_COMMIT = "b4033edbaf2150605c286a36e4b0564d75b0ac91"
@@ -31,6 +54,11 @@ def mode_evaluates_test(mode: str) -> bool:
 def requested_evaluation_splits(mode: str) -> tuple[str, ...]:
     """Return only splits that the evaluator is authorized to infer/score."""
     return ("validation", "test") if mode_evaluates_test(mode) else ("validation",)
+
+
+def _resolve_repo_path(repo_root: Path, value: str) -> Path:
+    path = Path(value)
+    return path.resolve() if path.is_absolute() else (repo_root / path).resolve()
 
 
 def validate_gate_a_provenance(
@@ -211,9 +239,123 @@ def _select_probabilistic_decoder(
             ):
                 best = item
 
-    if best is None:  # Defensive; non-empty grids above make this unreachable.
+    if best is None:
         raise ValueError("decoder grid must be non-empty")
     return {"best": best, "grid": scored}
+
+
+def _prepare_evaluation_context(args):
+    """Load and validate the frozen Gate A state without touching val/test splits."""
+    mode = str(args.mode)
+    if mode not in _VALID_MODES:
+        raise ValueError(f"unsupported Gate C mode: {mode}")
+
+    repo_root = Path(__file__).resolve().parents[2]
+    config_path = _resolve_repo_path(repo_root, args.config)
+    training_config_path = _resolve_repo_path(repo_root, args.training_config)
+    inventory_path = _resolve_repo_path(repo_root, args.inventory)
+    canonicalization_path = _resolve_repo_path(repo_root, args.canonicalization)
+    profile_path = _resolve_repo_path(repo_root, args.profile)
+    manifest_path = _resolve_repo_path(repo_root, args.manifest)
+    dataset_path = Path(args.dataset).resolve()
+    checkpoint_path = Path(args.gate_a_checkpoint).resolve()
+
+    base_config = GateAConfig.from_json(config_path)
+    training_config = GateATrainingConfig.from_json(training_config_path)
+    inventory = LabelInventory.from_json(inventory_path)
+    canonicalization = load_relation_canonicalization(canonicalization_path)
+    profile = load_task_relationship_profile(profile_path)
+
+    if int(base_config.seed) != int(args.seed):
+        raise ValueError(
+            f"Gate A config fixes seed={base_config.seed}; received --seed {args.seed}"
+        )
+
+    preflight = build_preflight(
+        config_path,
+        manifest_path,
+        fold=args.fold,
+        dataset_path=dataset_path,
+        dry_run=False,
+    )
+    partition = load_fold_partition(manifest_path, args.fold)
+    windows = load_clean_windows(dataset_path, inventory)
+
+    # Width cap is derived from TRAIN documents only. Validation and test are
+    # deliberately not materialized during preparation.
+    train_windows = _windows_for_ids(windows, partition.train_document_ids)
+    width_cap = _derive_width_cap(train_windows, base_config.span_width_coverage)
+
+    dataset_sha256 = _sha256_file(dataset_path)
+    config_sha256 = _combined_config_hash(
+        [config_path, training_config_path, inventory_path]
+    )
+    canonicalization_sha256 = _sha256_file(canonicalization_path)
+    task_profile_sha256 = _sha256_file(profile_path)
+    gate_a_checkpoint_sha256 = _sha256_file(checkpoint_path)
+
+    validate_gate_c_frozen_contract(
+        base_config,
+        training_config,
+        inventory,
+        canonicalization,
+        profile,
+        canonicalization_sha256=canonicalization_sha256,
+        task_profile_sha256=task_profile_sha256,
+    )
+
+    _set_seed(args.seed)
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    companion_path = checkpoint_path.parent / "training_run_config.json"
+    if not companion_path.is_file():
+        raise ValueError(
+            "Gate A checkpoint requires companion training_run_config.json "
+            "for fold/seed provenance"
+        )
+    run_metadata = json.loads(companion_path.read_text(encoding="utf-8"))
+    validate_gate_a_provenance(
+        checkpoint,
+        run_metadata,
+        dataset_sha256=dataset_sha256,
+        config_sha256=config_sha256,
+        fold=args.fold,
+        seed=args.seed,
+        width_cap=width_cap,
+    )
+
+    device = _resolve_device(args.device)
+    model = _make_model(base_config, training_config, inventory, width_cap)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.to(device)
+    model.eval()
+
+    commit = _git_commit(repo_root)
+    run_id = f"gate-c-prob-profile-f{args.fold}-s{args.seed}-{mode}-{commit[:8]}"
+
+    return SimpleNamespace(
+        base_config=base_config,
+        training_config=training_config,
+        inventory=inventory,
+        canonicalization=canonicalization,
+        profile=profile,
+        partition=partition,
+        windows=windows,
+        model=model,
+        width_cap=width_cap,
+        device=device,
+        fold=int(args.fold),
+        seed=int(args.seed),
+        dataset_sha256=dataset_sha256,
+        config_sha256=config_sha256,
+        canonicalization_sha256=canonicalization_sha256,
+        task_profile_sha256=task_profile_sha256,
+        gate_a_checkpoint_sha256=gate_a_checkpoint_sha256,
+        git_commit=commit,
+        preflight=preflight,
+        checkpoint=checkpoint,
+        run_metadata=run_metadata,
+        run_id=run_id,
+    )
 
 
 def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:

@@ -46,6 +46,10 @@ class GateCProbabilisticProfileParityArtifactIntegrationTests(unittest.TestCase)
             "all_relation": {"f1": 0.55},
             "primary_entity": {"f1": 0.66},
         }
+        diagnostics_by_beta = {
+            "selected_threshold": 0.96,
+            "by_beta": [],
+        }
         artifact_bundle = {"validation_beta_zero_parity.json": parity}
 
         with patch.object(
@@ -70,6 +74,10 @@ class GateCProbabilisticProfileParityArtifactIntegrationTests(unittest.TestCase)
             return_value=metrics,
         ), patch.object(
             gate_c_cli,
+            "_build_diagnostics_by_beta",
+            return_value=diagnostics_by_beta,
+        ), patch.object(
+            gate_c_cli,
             "_build_validation_run_artifacts",
             return_value=artifact_bundle,
         ) as artifact_mock:
@@ -86,6 +94,7 @@ class GateCProbabilisticProfileParityArtifactIntegrationTests(unittest.TestCase)
             threshold=0.96,
             mode="dev",
             parity=parity,
+            diagnostics_by_beta=diagnostics_by_beta,
         )
         self.assertIs(result["artifacts"], artifact_bundle)
 

@@ -349,6 +349,83 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             api(base, training, inventory, canonicalization, missing_entity, **kwargs)
 
+    def test_dev_run_never_materializes_or_writes_test(self) -> None:
+        self._assert_module()
+        run = getattr(gate_c_cli, "run", None)
+        self.assertIsNotNone(run, "Gate C evaluator run() must exist")
+
+        partition = SimpleNamespace(
+            validation_document_ids=("val-doc",),
+            test_document_ids=("test-doc",),
+        )
+        context = SimpleNamespace(
+            windows=("all-window",),
+            partition=partition,
+        )
+        materialized: list[tuple[str, ...]] = []
+        written: list[str] = []
+
+        def fake_windows_for_ids(windows, document_ids):
+            ids = tuple(document_ids)
+            materialized.append(ids)
+            if ids == partition.test_document_ids:
+                raise AssertionError("dev mode must not materialize test windows")
+            self.assertEqual(ids, partition.validation_document_ids)
+            return ("validation-window",)
+
+        def fake_evaluate_validation(prepared, validation_windows):
+            self.assertIs(prepared, context)
+            self.assertEqual(validation_windows, ("validation-window",))
+            return {
+                "status": "completed",
+                "mode": "dev",
+                "test_evaluated": False,
+                "artifacts": {
+                    "validation_metrics.json": {"all_relation": {"f1": 0.5}},
+                    "run_summary.json": {"test_evaluated": False},
+                },
+            }
+
+        def fake_write_artifacts(output_dir, artifacts):
+            for name in artifacts:
+                if str(name).startswith("test_"):
+                    raise AssertionError("dev mode must not write test artifacts")
+                written.append(str(name))
+
+        args = SimpleNamespace(mode="dev", output_dir="/tmp/gate-c-firewall-test")
+        with patch.object(
+            gate_c_cli,
+            "_prepare_evaluation_context",
+            return_value=context,
+            create=True,
+        ), patch.object(
+            gate_c_cli,
+            "_windows_for_ids",
+            side_effect=fake_windows_for_ids,
+            create=True,
+        ), patch.object(
+            gate_c_cli,
+            "_evaluate_validation",
+            side_effect=fake_evaluate_validation,
+            create=True,
+        ), patch.object(
+            gate_c_cli,
+            "_evaluate_test",
+            side_effect=AssertionError("dev mode must not evaluate test"),
+            create=True,
+        ), patch.object(
+            gate_c_cli,
+            "_write_artifacts",
+            side_effect=fake_write_artifacts,
+            create=True,
+        ):
+            result = run(args)
+
+        self.assertEqual(materialized, [partition.validation_document_ids])
+        self.assertFalse(result["test_evaluated"])
+        self.assertTrue(written)
+        self.assertFalse(any(name.startswith("test_") for name in written))
+
 
 if __name__ == "__main__":
     unittest.main()

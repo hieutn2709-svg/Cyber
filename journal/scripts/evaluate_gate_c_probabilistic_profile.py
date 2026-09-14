@@ -16,6 +16,7 @@ from typing import Any
 
 import torch
 
+from journal.scsp.artifacts import build_prediction_records as build_gate_a_prediction_records
 from journal.scsp.config import GateAConfig
 from journal.scsp.data import LabelInventory, load_clean_windows
 from journal.scsp.gate_c import build_probabilistic_prediction_records
@@ -325,6 +326,53 @@ def _select_probabilistic_decoder(
     if best is None:
         raise ValueError("decoder grid must be non-empty")
     return {"best": best, "grid": scored}
+
+
+def _check_beta_zero_parity(prepared, inferences) -> dict[str, Any]:
+    """Check exact Gate C beta=0 prediction parity against frozen Gate A."""
+    base_inferences = tuple(inference.base for inference in inferences)
+    checked_thresholds: list[float] = []
+    mismatch_count = 0
+
+    for threshold_value in _EXPECTED_THRESHOLD_GRID:
+        threshold = float(threshold_value)
+        checked_thresholds.append(threshold)
+        gate_a_records = build_gate_a_prediction_records(
+            base_inferences,
+            prepared.inventory.relation_types,
+            threshold,
+            run_id=prepared.run_id,
+            git_commit=prepared.git_commit,
+            dataset_sha256=prepared.dataset_sha256,
+            config_sha256=prepared.config_sha256,
+            fold=prepared.fold,
+            seed=prepared.seed,
+            split="validation",
+        )
+        gate_c_records = build_probabilistic_prediction_records(
+            inferences,
+            prepared.inventory.relation_types,
+            beta=0.0,
+            threshold=threshold,
+            canonicalization=prepared.canonicalization,
+            profile=prepared.profile,
+            run_id=prepared.run_id,
+            git_commit=prepared.git_commit,
+            dataset_sha256=prepared.dataset_sha256,
+            config_sha256=prepared.config_sha256,
+            fold=prepared.fold,
+            seed=prepared.seed,
+            split="validation",
+            epsilon=_EPSILON,
+        )
+        if gate_c_records != gate_a_records:
+            mismatch_count += 1
+
+    return {
+        "checked_thresholds": checked_thresholds,
+        "prediction_parity": mismatch_count == 0,
+        "mismatch_count": mismatch_count,
+    }
 
 
 def _prepare_evaluation_context(args):

@@ -8,6 +8,7 @@ preparation. Test evaluation remains gated behind explicit full mode.
 """
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -54,6 +55,42 @@ def mode_evaluates_test(mode: str) -> bool:
 def requested_evaluation_splits(mode: str) -> tuple[str, ...]:
     """Return only splits that the evaluator is authorized to infer/score."""
     return ("validation", "test") if mode_evaluates_test(mode) else ("validation",)
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--mode", choices=_VALID_MODES, default="dev")
+    parser.add_argument("--gate-a-checkpoint", required=True)
+    parser.add_argument(
+        "--config",
+        default="journal/configs/gate_a_plain_spanpair.json",
+    )
+    parser.add_argument(
+        "--training-config",
+        default="journal/configs/gate_a_training_threshold_refine.json",
+    )
+    parser.add_argument(
+        "--inventory",
+        default="journal/configs/gate_a_label_inventory.json",
+    )
+    parser.add_argument(
+        "--canonicalization",
+        default="journal/configs/stix/relation_canonicalization_v1.json",
+    )
+    parser.add_argument(
+        "--profile",
+        default="journal/configs/stix/task_relationship_profile_v1.json",
+    )
+    parser.add_argument(
+        "--manifest",
+        default="experiments/cv_manifest/run_partitions_seed_42.json",
+    )
+    parser.add_argument("--dataset", required=True)
+    parser.add_argument("--fold", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--device", choices=("auto", "cuda", "cpu"), default="auto")
+    parser.add_argument("--output-dir", required=True)
+    return parser
 
 
 def _resolve_repo_path(repo_root: Path, value: str) -> Path:

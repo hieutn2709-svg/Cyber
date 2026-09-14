@@ -54,12 +54,21 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
             "checkpoint_metadata.json": {"checkpoint": {}},
             "run_summary.json": {"test_evaluated": False},
         }
+        parity_report = {
+            "checked_thresholds": list(gate_c_cli._EXPECTED_THRESHOLD_GRID),
+            "prediction_parity": True,
+            "mismatch_count": 0,
+        }
 
         with patch.object(
             gate_c_cli,
             "infer_gate_c_split",
             return_value=inferences,
         ), patch.object(
+            gate_c_cli,
+            "_check_beta_zero_parity",
+            return_value=parity_report,
+        ) as parity_mock, patch.object(
             gate_c_cli,
             "_select_probabilistic_decoder",
             return_value=selection,
@@ -78,6 +87,7 @@ class GateCProbabilisticProfileValidationArtifactIntegrationTests(unittest.TestC
         ) as artifact_mock:
             result = gate_c_cli._evaluate_validation(prepared, validation_windows)
 
+        parity_mock.assert_called_once_with(prepared, inferences)
         artifact_mock.assert_called_once_with(
             prepared,
             inferences,

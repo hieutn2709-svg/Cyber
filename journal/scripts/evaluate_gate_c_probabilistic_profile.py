@@ -67,6 +67,23 @@ def _windows_for_ids(windows, document_ids) -> tuple[Any, ...]:
     return tuple(window for window in windows if window.doc_id in wanted)
 
 
+def _write_artifacts(output_dir, artifacts) -> None:
+    """Write deterministic JSON artifacts without renaming them."""
+    destination = Path(output_dir)
+    destination.mkdir(parents=True, exist_ok=True)
+    for name, payload in artifacts.items():
+        (destination / str(name)).write_text(
+            json.dumps(
+                payload,
+                indent=2,
+                sort_keys=True,
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+
 def validate_gate_a_provenance(
     checkpoint: dict[str, Any],
     run_metadata: dict[str, Any],

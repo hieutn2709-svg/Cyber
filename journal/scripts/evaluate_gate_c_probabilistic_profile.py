@@ -375,6 +375,53 @@ def _check_beta_zero_parity(prepared, inferences) -> dict[str, Any]:
     }
 
 
+def _build_diagnostics_by_beta(
+    inferences,
+    relation_types,
+    betas,
+    *,
+    selected_threshold: float,
+    canonicalization,
+    profile,
+    epsilon: float = _EPSILON,
+) -> dict[str, Any]:
+    """Build compact prediction-side journal diagnostics for every beta."""
+    threshold = float(selected_threshold)
+    rows: list[dict[str, Any]] = []
+    for beta_value in betas:
+        beta = float(beta_value)
+        diagnostics = build_gate_c_diagnostics(
+            inferences,
+            relation_types,
+            beta=beta,
+            threshold=threshold,
+            canonicalization=canonicalization,
+            profile=profile,
+            epsilon=epsilon,
+        )
+        rows.append(
+            {
+                "beta": beta,
+                "argmax_change_count_vs_gate_a": int(
+                    diagnostics["argmax_change_count_vs_gate_a"]
+                ),
+                "argmax_change_rate_vs_gate_a": float(
+                    diagnostics["argmax_change_rate_vs_gate_a"]
+                ),
+                "above_selected_threshold_change_count": int(
+                    diagnostics[
+                        "above_threshold_argmax_change_count_vs_gate_a"
+                    ]
+                ),
+                "transition_counts": dict(diagnostics["transition_counts"]),
+            }
+        )
+    return {
+        "selected_threshold": threshold,
+        "by_beta": rows,
+    }
+
+
 def _prepare_evaluation_context(args):
     """Load and validate the frozen Gate A state without touching val/test splits."""
     mode = str(args.mode)

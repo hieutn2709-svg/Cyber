@@ -636,6 +636,7 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         beta=beta,
         threshold=threshold,
         mode="dev",
+        parity=parity,
     )
     return {
         "status": "validation_complete",

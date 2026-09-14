@@ -113,11 +113,26 @@ def _windows_for_ids(windows, document_ids) -> tuple[Any, ...]:
 
 
 def _write_artifacts(output_dir, artifacts) -> None:
-    """Write deterministic JSON artifacts without renaming them."""
+    """Write deterministic JSON/JSONL artifacts without renaming them."""
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     for name, payload in artifacts.items():
-        (destination / str(name)).write_text(
+        path = destination / str(name)
+        if path.suffix == ".jsonl":
+            with path.open("w", encoding="utf-8", newline="\n") as handle:
+                for row in payload:
+                    handle.write(
+                        json.dumps(
+                            row,
+                            sort_keys=True,
+                            ensure_ascii=False,
+                            allow_nan=False,
+                            separators=(",", ":"),
+                        )
+                    )
+                    handle.write("\n")
+            continue
+        path.write_text(
             json.dumps(
                 payload,
                 indent=2,

@@ -3,14 +3,15 @@
 
 This surface contains frozen mode/grid constants, validation decoder selection,
 the frozen Gate A provenance guard, the frozen Gate C config/profile contract,
-and split-firewall orchestration. Concrete runtime preparation/evaluation
-helpers are added in later Task 6 steps.
+split-firewall orchestration, and validation runtime evaluation. Concrete
+runtime preparation is added separately in later Task 6 steps.
 """
 from __future__ import annotations
 
 from typing import Any
 
 from journal.scsp.gate_c import build_probabilistic_prediction_records
+from journal.scsp.gate_c_inference import infer_gate_c_split
 from journal.scripts.train_gate_a import _score_records
 
 _VALID_MODES = ("dev", "full")
@@ -213,6 +214,66 @@ def _select_probabilistic_decoder(
     if best is None:  # Defensive; non-empty grids above make this unreachable.
         raise ValueError("decoder grid must be non-empty")
     return {"best": best, "grid": scored}
+
+
+def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
+    """Infer Gate C on validation and apply the predeclared decoder search."""
+    inferences = infer_gate_c_split(
+        prepared.model,
+        validation_windows,
+        prepared.inventory,
+        width_cap=prepared.width_cap,
+        base_config=prepared.base_config,
+        training_config=prepared.training_config,
+        device=prepared.device,
+    )
+    selection = _select_probabilistic_decoder(
+        inferences,
+        _EXPECTED_BETA_GRID,
+        _EXPECTED_THRESHOLD_GRID,
+        prepared.inventory,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        run_id=prepared.run_id,
+        git_commit=prepared.git_commit,
+        dataset_sha256=prepared.dataset_sha256,
+        config_sha256=prepared.config_sha256,
+        fold=prepared.fold,
+        seed=prepared.seed,
+    )
+    best = selection["best"]
+    beta = float(best["beta"])
+    threshold = float(best["threshold"])
+    records = build_probabilistic_prediction_records(
+        inferences,
+        prepared.inventory.relation_types,
+        beta=beta,
+        threshold=threshold,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        run_id=prepared.run_id,
+        git_commit=prepared.git_commit,
+        dataset_sha256=prepared.dataset_sha256,
+        config_sha256=prepared.config_sha256,
+        fold=prepared.fold,
+        seed=prepared.seed,
+        split="validation",
+        epsilon=_EPSILON,
+    )
+    metrics = _score_records(records, prepared.inventory)
+    return {
+        "status": "validation_complete",
+        "mode": "dev",
+        "beta": beta,
+        "relation_threshold": threshold,
+        "validation": best,
+        "validation_metrics": metrics,
+        "test_evaluated": False,
+        "artifacts": {
+            "validation_decoder_selection.json": selection,
+            "validation_metrics.json": metrics,
+        },
+    }
 
 
 def run(args) -> dict[str, Any]:

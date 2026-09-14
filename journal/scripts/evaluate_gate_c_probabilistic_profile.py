@@ -584,6 +584,10 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
         training_config=prepared.training_config,
         device=prepared.device,
     )
+    parity = _check_beta_zero_parity(prepared, inferences)
+    if not bool(parity.get("prediction_parity")) or int(parity.get("mismatch_count", 0)) != 0:
+        raise ValueError("Gate C beta=0 prediction parity check failed")
+
     selection = _select_probabilistic_decoder(
         inferences,
         _EXPECTED_BETA_GRID,

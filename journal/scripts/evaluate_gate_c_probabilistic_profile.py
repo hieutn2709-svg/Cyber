@@ -2,8 +2,9 @@
 """Validation-only selection primitives for Gate C probabilistic decoding.
 
 This surface contains frozen mode/grid constants, validation decoder selection,
-the frozen Gate A provenance guard, and the frozen Gate C config/profile
-contract. Full CLI runtime behavior is added separately in later Task 6 steps.
+the frozen Gate A provenance guard, the frozen Gate C config/profile contract,
+and split-firewall orchestration. Concrete runtime preparation/evaluation
+helpers are added in later Task 6 steps.
 """
 from __future__ import annotations
 
@@ -212,3 +213,39 @@ def _select_probabilistic_decoder(
     if best is None:  # Defensive; non-empty grids above make this unreachable.
         raise ValueError("decoder grid must be non-empty")
     return {"best": best, "grid": scored}
+
+
+def run(args) -> dict[str, Any]:
+    """Orchestrate validation first and keep test strictly behind full mode."""
+    mode = str(args.mode)
+    if mode not in _VALID_MODES:
+        raise ValueError(f"unsupported Gate C mode: {mode}")
+
+    prepared = _prepare_evaluation_context(args)
+    validation_windows = _windows_for_ids(
+        prepared.windows,
+        prepared.partition.validation_document_ids,
+    )
+    validation_result = _evaluate_validation(prepared, validation_windows)
+    if not isinstance(validation_result, dict):
+        raise ValueError("validation evaluator must return a mapping")
+
+    result = dict(validation_result)
+    artifacts = dict(result.get("artifacts", {}))
+
+    if mode_evaluates_test(mode):
+        test_windows = _windows_for_ids(
+            prepared.windows,
+            prepared.partition.test_document_ids,
+        )
+        test_result = _evaluate_test(prepared, test_windows, result)
+        if not isinstance(test_result, dict):
+            raise ValueError("test evaluator must return a mapping")
+        artifacts.update(dict(test_result.get("artifacts", {})))
+        for key, value in test_result.items():
+            if key != "artifacts":
+                result[key] = value
+
+    result["artifacts"] = artifacts
+    _write_artifacts(args.output_dir, artifacts)
+    return result

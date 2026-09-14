@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -70,6 +71,42 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
                 fold=1,
                 seed=42,
             )
+
+    def _provenance_api(self):
+        self._assert_module()
+        api = getattr(gate_c_cli, "validate_gate_a_provenance", None)
+        self.assertIsNotNone(api, "Gate C Gate-A provenance guard must exist")
+        return api
+
+    def _valid_provenance(self):
+        dataset_sha = "a" * 64
+        config_sha = "b" * 64
+        checkpoint = {
+            "model_state_dict": {},
+            "git_commit": "b4033edbaf2150605c286a36e4b0564d75b0ac91",
+            "dataset_sha256": dataset_sha,
+            "config_sha256": config_sha,
+            "width_cap": 8,
+        }
+        run_metadata = {
+            "fold": 1,
+            "seed": 42,
+            "dataset_sha256": dataset_sha,
+            "combined_config_sha256": config_sha,
+        }
+        return checkpoint, run_metadata, dataset_sha, config_sha
+
+    def _validate_provenance(self, checkpoint, run_metadata, dataset_sha, config_sha):
+        api = self._provenance_api()
+        return api(
+            checkpoint,
+            run_metadata,
+            dataset_sha256=dataset_sha,
+            config_sha256=config_sha,
+            fold=1,
+            seed=42,
+            width_cap=8,
+        )
 
     def test_mode_guard_and_frozen_grid_constants(self) -> None:
         self._assert_module()
@@ -148,6 +185,50 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
             (result["best"]["beta"], result["best"]["threshold"]),
             (0.5, 0.85),
         )
+
+    def test_provenance_accepts_matching_frozen_gate_a_checkpoint(self) -> None:
+        checkpoint, run_metadata, dataset_sha, config_sha = self._valid_provenance()
+        self._validate_provenance(checkpoint, run_metadata, dataset_sha, config_sha)
+
+    def test_provenance_rejects_checkpoint_lineage_hash_and_width_mismatch(self) -> None:
+        checkpoint, run_metadata, dataset_sha, config_sha = self._valid_provenance()
+        cases = (
+            ("lineage", {"git_commit": "0" * 40}),
+            ("checkpoint_dataset", {"dataset_sha256": "c" * 64}),
+            ("checkpoint_config", {"config_sha256": "d" * 64}),
+            ("width_cap", {"width_cap": 9}),
+        )
+        for name, checkpoint_patch in cases:
+            with self.subTest(name=name):
+                bad_checkpoint = copy.deepcopy(checkpoint)
+                bad_checkpoint.update(checkpoint_patch)
+                with self.assertRaises(ValueError):
+                    self._validate_provenance(
+                        bad_checkpoint,
+                        run_metadata,
+                        dataset_sha,
+                        config_sha,
+                    )
+
+    def test_provenance_rejects_companion_fold_seed_and_hash_mismatch(self) -> None:
+        checkpoint, run_metadata, dataset_sha, config_sha = self._valid_provenance()
+        cases = (
+            ("fold", {"fold": 2}),
+            ("seed", {"seed": 123}),
+            ("run_dataset", {"dataset_sha256": "c" * 64}),
+            ("run_config", {"combined_config_sha256": "d" * 64}),
+        )
+        for name, metadata_patch in cases:
+            with self.subTest(name=name):
+                bad_metadata = copy.deepcopy(run_metadata)
+                bad_metadata.update(metadata_patch)
+                with self.assertRaises(ValueError):
+                    self._validate_provenance(
+                        checkpoint,
+                        bad_metadata,
+                        dataset_sha,
+                        config_sha,
+                    )
 
 
 if __name__ == "__main__":

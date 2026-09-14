@@ -2,8 +2,8 @@
 """Validation-only selection primitives for Gate C probabilistic decoding.
 
 This surface contains frozen mode/grid constants, validation decoder selection,
-and the frozen Gate A provenance guard. Full CLI runtime behavior is added
-separately in later Task 6 steps.
+the frozen Gate A provenance guard, and the frozen Gate C config/profile
+contract. Full CLI runtime behavior is added separately in later Task 6 steps.
 """
 from __future__ import annotations
 
@@ -83,6 +83,64 @@ def validate_gate_a_provenance(
         raise ValueError("Gate A run metadata dataset hash mismatch")
     if run_metadata["combined_config_sha256"] != config_sha256:
         raise ValueError("Gate A run metadata config hash mismatch")
+
+
+def validate_gate_c_frozen_contract(
+    base_config,
+    training_config,
+    inventory,
+    canonicalization,
+    profile,
+    *,
+    canonicalization_sha256: str,
+    task_profile_sha256: str,
+) -> dict[str, str]:
+    """Validate the predeclared Gate C model/training/profile contract."""
+    if int(base_config.max_span_candidates) != 128:
+        raise ValueError("Gate C requires max_span_candidates=128")
+    if int(base_config.max_relation_token_distance) != 96:
+        raise ValueError("Gate C requires max_relation_token_distance=96")
+    if int(training_config.max_epochs) != 12:
+        raise ValueError("Gate C requires max_epochs=12")
+
+    threshold_grid = tuple(float(value) for value in training_config.threshold_grid)
+    if threshold_grid != _EXPECTED_THRESHOLD_GRID:
+        raise ValueError("Gate C threshold grid drift")
+    if _EXPECTED_BETA_GRID != (0.0, 0.25, 0.5, 1.0, 2.0):
+        raise ValueError("Gate C beta grid drift")
+    if _EPSILON != 1e-8:
+        raise ValueError("Gate C epsilon drift")
+
+    relation_types = set(inventory.relation_types)
+    canonicalized_labels = set(canonicalization.by_project_label)
+    missing_relations = sorted(relation_types - canonicalized_labels)
+    if missing_relations:
+        raise ValueError(
+            "Gate C canonicalization missing relation labels: "
+            f"{missing_relations}"
+        )
+
+    trainable_entity_types = set(inventory.trainable_entity_types)
+    resolved_entity_types = set(profile.resolved_entity_types)
+    unresolved_entity_types = set(profile.unresolved_entity_types)
+    overlap = resolved_entity_types & unresolved_entity_types
+    if overlap:
+        raise ValueError(
+            "Gate C profile entity status overlap: "
+            f"{sorted(overlap)}"
+        )
+    declared_entity_types = resolved_entity_types | unresolved_entity_types
+    if declared_entity_types != trainable_entity_types:
+        raise ValueError(
+            "Gate C profile entity inventory mismatch: "
+            f"declared={sorted(declared_entity_types)} "
+            f"trainable={sorted(trainable_entity_types)}"
+        )
+
+    return {
+        "canonicalization_sha256": str(canonicalization_sha256),
+        "task_profile_sha256": str(task_profile_sha256),
+    }
 
 
 def _select_probabilistic_decoder(

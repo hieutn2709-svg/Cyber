@@ -341,8 +341,6 @@ def _prepare_evaluation_context(args):
     partition = load_fold_partition(manifest_path, args.fold)
     windows = load_clean_windows(dataset_path, inventory)
 
-    # Width cap is derived from TRAIN documents only. Validation and test are
-    # deliberately not materialized during preparation.
     train_windows = _windows_for_ids(windows, partition.train_document_ids)
     width_cap = _derive_width_cap(train_windows, base_config.span_width_coverage)
 
@@ -475,6 +473,44 @@ def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:
             "validation_decoder_selection.json": selection,
             "validation_metrics.json": metrics,
         },
+    }
+
+
+def _evaluate_test(prepared, test_windows, validation_result) -> dict[str, Any]:
+    """Evaluate test once using the decoder frozen on validation."""
+    beta = float(validation_result["beta"])
+    threshold = float(validation_result["relation_threshold"])
+    inferences = infer_gate_c_split(
+        prepared.model,
+        test_windows,
+        prepared.inventory,
+        width_cap=prepared.width_cap,
+        base_config=prepared.base_config,
+        training_config=prepared.training_config,
+        device=prepared.device,
+    )
+    records = build_probabilistic_prediction_records(
+        inferences,
+        prepared.inventory.relation_types,
+        beta=beta,
+        threshold=threshold,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        run_id=prepared.run_id,
+        git_commit=prepared.git_commit,
+        dataset_sha256=prepared.dataset_sha256,
+        config_sha256=prepared.config_sha256,
+        fold=prepared.fold,
+        seed=prepared.seed,
+        split="test",
+        epsilon=_EPSILON,
+    )
+    metrics = _score_records(records, prepared.inventory)
+    return {
+        "mode": "full",
+        "test_evaluated": True,
+        "test_metrics": metrics,
+        "artifacts": {"test_metrics.json": metrics},
     }
 
 

@@ -54,6 +54,10 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             "prediction_parity": True,
             "mismatch_count": 0,
         }
+        diagnostics_by_beta = {
+            "selected_threshold": 0.96,
+            "by_beta": [],
+        }
 
         with patch.object(
             gate_c_cli,
@@ -77,6 +81,10 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             "_score_records",
             return_value=metrics,
         ) as score_mock, patch.object(
+            gate_c_cli,
+            "_build_diagnostics_by_beta",
+            return_value=diagnostics_by_beta,
+        ), patch.object(
             gate_c_cli,
             "_build_validation_run_artifacts",
             return_value=artifact_bundle,

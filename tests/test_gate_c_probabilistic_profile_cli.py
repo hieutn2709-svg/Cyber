@@ -168,6 +168,48 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
         )
         self.assertEqual(gate_c_cli._EPSILON, 1e-8)
 
+    def test_parser_exposes_frozen_gate_c_cli_surface(self) -> None:
+        self._assert_module()
+        parser_factory = getattr(gate_c_cli, "_parser", None)
+        self.assertIsNotNone(parser_factory, "Gate C CLI parser must exist")
+
+        args = parser_factory().parse_args(
+            [
+                "--gate-a-checkpoint",
+                "/tmp/best_model.pt",
+                "--dataset",
+                "/tmp/dataset.json",
+                "--output-dir",
+                "/tmp/gate-c-out",
+            ]
+        )
+
+        self.assertEqual(args.mode, "dev")
+        self.assertEqual(args.gate_a_checkpoint, "/tmp/best_model.pt")
+        self.assertEqual(args.config, "journal/configs/gate_a_plain_spanpair.json")
+        self.assertEqual(
+            args.training_config,
+            "journal/configs/gate_a_training_threshold_refine.json",
+        )
+        self.assertEqual(args.inventory, "journal/configs/gate_a_label_inventory.json")
+        self.assertEqual(
+            args.canonicalization,
+            "journal/configs/stix/relation_canonicalization_v1.json",
+        )
+        self.assertEqual(
+            args.profile,
+            "journal/configs/stix/task_relationship_profile_v1.json",
+        )
+        self.assertEqual(
+            args.manifest,
+            "experiments/cv_manifest/run_partitions_seed_42.json",
+        )
+        self.assertEqual(args.dataset, "/tmp/dataset.json")
+        self.assertEqual(args.fold, 1)
+        self.assertEqual(args.seed, 42)
+        self.assertEqual(args.device, "auto")
+        self.assertEqual(args.output_dir, "/tmp/gate-c-out")
+
     def test_selector_evaluates_all_75_rows_in_beta_major_order(self) -> None:
         result = self._selector({})
         grid = result["grid"]

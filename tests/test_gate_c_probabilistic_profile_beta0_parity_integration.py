@@ -70,11 +70,13 @@ class GateCProbabilisticProfileBetaZeroParityIntegrationTests(unittest.TestCase)
             "_build_validation_run_artifacts",
             return_value={"bundle": True},
         ):
-            with self.assertRaisesRegex(
-                RuntimeError,
-                r"^Gate C beta=0 parity failure$",
-            ):
+            try:
                 gate_c_cli._evaluate_validation(prepared, validation_windows)
+            except Exception as exc:
+                self.assertIs(type(exc), RuntimeError)
+                self.assertEqual(str(exc), "Gate C beta=0 parity failure")
+            else:
+                self.fail("beta=0 parity mismatch must hard-fail")
 
         parity_mock.assert_called_once_with(prepared, inferences)
         selector_mock.assert_not_called()

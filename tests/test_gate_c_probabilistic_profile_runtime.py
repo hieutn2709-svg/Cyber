@@ -49,6 +49,11 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             "primary_entity": {"f1": 0.66},
         }
         artifact_bundle = {"validation_bundle": True}
+        parity_report = {
+            "checked_thresholds": list(gate_c_cli._EXPECTED_THRESHOLD_GRID),
+            "prediction_parity": True,
+            "mismatch_count": 0,
+        }
 
         with patch.object(
             gate_c_cli,
@@ -56,6 +61,10 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             return_value=inferences,
             create=True,
         ) as infer_mock, patch.object(
+            gate_c_cli,
+            "_check_beta_zero_parity",
+            return_value=parity_report,
+        ) as parity_mock, patch.object(
             gate_c_cli,
             "_select_probabilistic_decoder",
             return_value=selection,
@@ -83,6 +92,7 @@ class GateCProbabilisticProfileRuntimeTests(unittest.TestCase):
             training_config=prepared.training_config,
             device=prepared.device,
         )
+        parity_mock.assert_called_once_with(prepared, inferences)
         selector_mock.assert_called_once_with(
             inferences,
             gate_c_cli._EXPECTED_BETA_GRID,

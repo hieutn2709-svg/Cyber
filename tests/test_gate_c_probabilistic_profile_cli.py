@@ -108,6 +108,40 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
             width_cap=8,
         )
 
+    def _contract_api(self):
+        self._assert_module()
+        api = getattr(gate_c_cli, "validate_gate_c_frozen_contract", None)
+        self.assertIsNotNone(api, "Gate C frozen config/profile guard must exist")
+        return api
+
+    def _valid_contract(self):
+        base_config = SimpleNamespace(
+            max_span_candidates=128,
+            max_relation_token_distance=96,
+        )
+        training_config = SimpleNamespace(
+            max_epochs=12,
+            threshold_grid=self.EXPECTED_THRESHOLDS,
+        )
+        inventory = SimpleNamespace(
+            primary_entity_types=("intrusion-set", "identity"),
+            auxiliary_entity_types=("file-paths",),
+            trainable_entity_types=("intrusion-set", "identity", "file-paths"),
+            relation_types=("uses", "targets", "used-in"),
+        )
+        canonicalization = SimpleNamespace(
+            by_project_label={
+                "uses": object(),
+                "targets": object(),
+                "used-in": object(),
+            }
+        )
+        profile = SimpleNamespace(
+            resolved_entity_types=frozenset({"intrusion-set", "identity"}),
+            unresolved_entity_types=frozenset({"file-paths"}),
+        )
+        return base_config, training_config, inventory, canonicalization, profile
+
     def test_mode_guard_and_frozen_grid_constants(self) -> None:
         self._assert_module()
         self.assertFalse(gate_c_cli.mode_evaluates_test("dev"))
@@ -229,6 +263,91 @@ class GateCProbabilisticProfileCliTests(unittest.TestCase):
                         dataset_sha,
                         config_sha,
                     )
+
+    def test_frozen_contract_accepts_and_reports_profile_hashes(self) -> None:
+        api = self._contract_api()
+        base, training, inventory, canonicalization, profile = self._valid_contract()
+        canonicalization_sha = "c" * 64
+        profile_sha = "d" * 64
+        reported = api(
+            base,
+            training,
+            inventory,
+            canonicalization,
+            profile,
+            canonicalization_sha256=canonicalization_sha,
+            task_profile_sha256=profile_sha,
+        )
+        self.assertEqual(
+            reported,
+            {
+                "canonicalization_sha256": canonicalization_sha,
+                "task_profile_sha256": profile_sha,
+            },
+        )
+
+    def test_frozen_contract_rejects_model_and_training_drift(self) -> None:
+        api = self._contract_api()
+        base, training, inventory, canonicalization, profile = self._valid_contract()
+        cases = (
+            ("max_span_candidates", {"max_span_candidates": 127}, {}),
+            ("max_relation_token_distance", {"max_relation_token_distance": 95}, {}),
+            ("max_epochs", {}, {"max_epochs": 11}),
+            ("threshold_grid", {}, {"threshold_grid": self.EXPECTED_THRESHOLDS[:-1]}),
+        )
+        for name, base_patch, training_patch in cases:
+            with self.subTest(name=name):
+                bad_base = copy.deepcopy(base)
+                bad_training = copy.deepcopy(training)
+                for field, value in base_patch.items():
+                    setattr(bad_base, field, value)
+                for field, value in training_patch.items():
+                    setattr(bad_training, field, value)
+                with self.assertRaises(ValueError):
+                    api(
+                        bad_base,
+                        bad_training,
+                        inventory,
+                        canonicalization,
+                        profile,
+                        canonicalization_sha256="c" * 64,
+                        task_profile_sha256="d" * 64,
+                    )
+
+    def test_frozen_contract_rejects_decoder_constant_drift(self) -> None:
+        api = self._contract_api()
+        base, training, inventory, canonicalization, profile = self._valid_contract()
+        kwargs = dict(
+            canonicalization_sha256="c" * 64,
+            task_profile_sha256="d" * 64,
+        )
+        with patch.object(gate_c_cli, "_EXPECTED_BETA_GRID", (0.0, 1.0)):
+            with self.assertRaises(ValueError):
+                api(base, training, inventory, canonicalization, profile, **kwargs)
+        with patch.object(gate_c_cli, "_EPSILON", 1e-6):
+            with self.assertRaises(ValueError):
+                api(base, training, inventory, canonicalization, profile, **kwargs)
+
+    def test_frozen_contract_rejects_canonicalization_and_entity_coverage_drift(self) -> None:
+        api = self._contract_api()
+        base, training, inventory, canonicalization, profile = self._valid_contract()
+        kwargs = dict(
+            canonicalization_sha256="c" * 64,
+            task_profile_sha256="d" * 64,
+        )
+
+        missing_relation = SimpleNamespace(
+            by_project_label={"uses": object(), "targets": object()}
+        )
+        with self.assertRaises(ValueError):
+            api(base, training, inventory, missing_relation, profile, **kwargs)
+
+        missing_entity = SimpleNamespace(
+            resolved_entity_types=frozenset({"intrusion-set", "identity"}),
+            unresolved_entity_types=frozenset(),
+        )
+        with self.assertRaises(ValueError):
+            api(base, training, inventory, canonicalization, missing_entity, **kwargs)
 
 
 if __name__ == "__main__":

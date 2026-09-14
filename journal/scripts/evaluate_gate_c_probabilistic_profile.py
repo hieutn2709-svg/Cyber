@@ -19,17 +19,24 @@ import torch
 from journal.scsp.config import GateAConfig
 from journal.scsp.data import LabelInventory, load_clean_windows
 from journal.scsp.gate_c import build_probabilistic_prediction_records
+from journal.scsp.gate_c_artifacts import (
+    build_gate_c_diagnostics,
+    build_gate_c_scored_pair_rows,
+    build_gate_c_span_rows,
+)
 from journal.scsp.gate_c_inference import infer_gate_c_split
 from journal.scsp.schema import (
     load_relation_canonicalization,
     load_task_relationship_profile,
 )
+from journal.scsp.serialization import _record_to_dict
 from journal.scsp.splits import load_fold_partition
 from journal.scsp.training_config import GateATrainingConfig
 from journal.scripts.run_gate_a import build_preflight
 from journal.scripts.train_gate_a import (
     _combined_config_hash,
     _derive_width_cap,
+    _environment,
     _git_commit,
     _make_model,
     _resolve_device,
@@ -40,6 +47,7 @@ from journal.scripts.train_gate_a import (
 
 _VALID_MODES = ("dev", "full")
 _FROZEN_GATE_A_COMMIT = "b4033edbaf2150605c286a36e4b0564d75b0ac91"
+_FROZEN_GATE_B_PARENT_COMMIT = "2e74e98231c3c5bb1b0db4d826602b61b71ba07d"
 _EXPECTED_THRESHOLD_GRID = tuple(round(value / 100, 2) for value in range(85, 100))
 _EXPECTED_BETA_GRID = (0.0, 0.25, 0.5, 1.0, 2.0)
 _EPSILON = 1e-8
@@ -414,6 +422,92 @@ def _prepare_evaluation_context(args):
         run_metadata=run_metadata,
         run_id=run_id,
     )
+
+
+def _build_validation_run_artifacts(
+    prepared,
+    inferences,
+    records,
+    selection,
+    metrics,
+    *,
+    beta: float,
+    threshold: float,
+    mode: str,
+) -> dict[str, Any]:
+    """Build the frozen validation-only journal artifact bundle in memory."""
+    prediction_rows = tuple(_record_to_dict(record) for record in records)
+    posterior_rows = build_gate_c_span_rows(inferences)
+    pair_rows = build_gate_c_scored_pair_rows(
+        inferences,
+        prepared.inventory.relation_types,
+        beta=beta,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        epsilon=_EPSILON,
+    )
+    diagnostics = build_gate_c_diagnostics(
+        inferences,
+        prepared.inventory.relation_types,
+        beta=beta,
+        threshold=threshold,
+        canonicalization=prepared.canonicalization,
+        profile=prepared.profile,
+        epsilon=_EPSILON,
+    )
+    environment = _environment(prepared.device)
+    checkpoint = prepared.checkpoint
+    checkpoint_metadata = {
+        "git_commit": checkpoint.get("git_commit"),
+        "dataset_sha256": checkpoint.get("dataset_sha256"),
+        "config_sha256": checkpoint.get("config_sha256"),
+        "epoch": checkpoint.get("epoch"),
+        "threshold": checkpoint.get("threshold"),
+        "validation": checkpoint.get("validation"),
+        "width_cap": checkpoint.get("width_cap"),
+    }
+    summary = {
+        "status": "dev_complete" if mode == "dev" else "validation_complete",
+        "mode": mode,
+        "fold": prepared.fold,
+        "seed": prepared.seed,
+        "selection_scope": "validation-only",
+        "beta": float(beta),
+        "relation_threshold": float(threshold),
+        "validation": selection["best"],
+        "validation_metrics": metrics,
+        "test_evaluated": False,
+        "gate_a_parent_commit": _FROZEN_GATE_A_COMMIT,
+        "gate_b_parent_commit": _FROZEN_GATE_B_PARENT_COMMIT,
+        "git_commit": prepared.git_commit,
+        "dataset_sha256": prepared.dataset_sha256,
+        "config_sha256": prepared.config_sha256,
+        "canonicalization_sha256": prepared.canonicalization_sha256,
+        "task_profile_sha256": prepared.task_profile_sha256,
+        "epsilon": _EPSILON,
+        "beta_grid": list(_EXPECTED_BETA_GRID),
+    }
+    return {
+        "validation_predictions.jsonl": prediction_rows,
+        "validation_entity_posteriors.jsonl": posterior_rows,
+        "validation_scored_pairs.jsonl": pair_rows,
+        "validation_decoder_selection.json": selection,
+        "validation_metrics.json": metrics,
+        "validation_profile_diagnostics.json": diagnostics,
+        "environment.json": environment,
+        "hashes.json": {
+            "dataset_sha256": prepared.dataset_sha256,
+            "gate_a_combined_config_sha256": prepared.config_sha256,
+            "canonicalization_sha256": prepared.canonicalization_sha256,
+            "task_profile_sha256": prepared.task_profile_sha256,
+            "gate_a_checkpoint_sha256": prepared.gate_a_checkpoint_sha256,
+        },
+        "checkpoint_metadata.json": {
+            "checkpoint": checkpoint_metadata,
+            "companion_training_run_config": prepared.run_metadata,
+        },
+        "run_summary.json": summary,
+    }
 
 
 def _evaluate_validation(prepared, validation_windows) -> dict[str, Any]:

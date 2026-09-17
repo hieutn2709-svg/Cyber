@@ -177,6 +177,28 @@ class GateCInferenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "top-1 parity"):
             self._run(base, [[0.20, 0.70, 0.10]])
 
+    def test_accepts_observed_float32_entity_score_parity_drift(self) -> None:
+        self._assert_api()
+        base = self._base(
+            label="malware",
+            entity_score=0.6424156427383423,
+        )
+
+        result, _, _ = self._run(
+            base,
+            [[0.3575849533081055, 0.60, 0.0424150466918945]],
+        )
+
+        posterior = result.posterior_by_typed_key[
+            base.predicted_spans[0].typed_key
+        ]
+        self.assertEqual(posterior.top1_entity_type, "malware")
+        self.assertAlmostEqual(
+            posterior.entity_probability,
+            0.6424150466918945,
+            places=12,
+        )
+
     def test_rejects_entity_score_parity_mismatch(self) -> None:
         self._assert_api()
         base = self._base(label="malware", entity_score=0.7)

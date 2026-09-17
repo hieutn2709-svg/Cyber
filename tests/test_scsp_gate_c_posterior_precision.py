@@ -46,6 +46,28 @@ class GateCPosteriorPrecisionTests(unittest.TestCase):
         )
         self.assertEqual(result.top1_entity_type, "type-0")
 
+    def test_accepts_observed_probability_sum_drift_above_one_float32_epsilon(self) -> None:
+        float32_epsilon = 2.0**-23
+        probabilities = (
+            0.20,
+            0.30,
+            0.50 + 1.5 * float32_epsilon,
+        )
+
+        try:
+            result = conditional_non_none_posterior(
+                probabilities,
+                ("malware", "tool"),
+                span_key=("400", 3, 3, "intrusion-set"),
+            )
+        except ValueError as exc:
+            self.fail(
+                "Gate C must accept the observed 1.51-epsilon float32 "
+                f"probability-sum drift; got ValueError: {exc}"
+            )
+
+        self.assertEqual(result.top1_entity_type, "tool")
+
     def test_still_rejects_material_probability_sum_error(self) -> None:
         with self.assertRaisesRegex(ValueError, "must sum to one"):
             conditional_non_none_posterior(

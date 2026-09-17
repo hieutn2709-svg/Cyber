@@ -65,7 +65,10 @@ class GateCInferenceTests(unittest.TestCase):
             auxiliary_entity_types=(),
         )
         self.base_config = SimpleNamespace()
-        self.training_config = SimpleNamespace(relation_chunk_size=32)
+        self.training_config = SimpleNamespace(
+            relation_chunk_size=32,
+            relation_inference_chunk_size=32,
+        )
         self.device = torch.device("cpu")
 
     def _assert_api(self) -> None:
@@ -90,6 +93,16 @@ class GateCInferenceTests(unittest.TestCase):
         return WindowInference(
             window=self.window,
             predicted_spans=(span,),
+            scored_pairs=(),
+            proposal_gold_count=0,
+            proposal_matched_count=0,
+            post_pruning_typed_matched_count=0,
+        )
+
+    def _empty_base(self) -> WindowInference:
+        return WindowInference(
+            window=self.window,
+            predicted_spans=(),
             scored_pairs=(),
             proposal_gold_count=0,
             proposal_matched_count=0,
@@ -125,6 +138,38 @@ class GateCInferenceTests(unittest.TestCase):
         self.assertEqual(posterior.top1_entity_type, "malware")
         self.assertAlmostEqual(posterior.entity_probability, 0.8, places=12)
         self.assertEqual(model.asserted_span_count, 1)
+
+    def test_uses_canonical_relation_inference_chunk_size_from_training_config(self) -> None:
+        self._assert_api()
+        base = self._empty_base()
+        training_config = SimpleNamespace(relation_inference_chunk_size=512)
+
+        with patch.object(
+            gate_c_inference,
+            "infer_window",
+            return_value=base,
+        ) as delegated:
+            try:
+                result = infer_gate_c_window(
+                    object(),
+                    self.window,
+                    self.inventory,
+                    width_cap=4,
+                    base_config=self.base_config,
+                    training_config=training_config,
+                    device=self.device,
+                )
+            except AttributeError as exc:
+                self.fail(
+                    "Gate C must use GateATrainingConfig.relation_inference_chunk_size; "
+                    f"got AttributeError: {exc}"
+                )
+
+        self.assertIs(result.base, base)
+        self.assertEqual(
+            delegated.call_args.kwargs["relation_chunk_size"],
+            512,
+        )
 
     def test_rejects_top1_parity_mismatch(self) -> None:
         self._assert_api()

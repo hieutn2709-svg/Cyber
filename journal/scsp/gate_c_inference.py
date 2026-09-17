@@ -44,7 +44,7 @@ def infer_gate_c_window(
         inventory,
         width_cap=width_cap,
         base_config=base_config,
-        relation_chunk_size=training_config.relation_chunk_size,
+        relation_chunk_size=training_config.relation_inference_chunk_size,
         device=device,
     )
 

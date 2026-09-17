@@ -27,11 +27,17 @@ class GateCPosteriorPrecisionTests(unittest.TestCase):
         )
         entity_types = tuple(f"type-{index}" for index in range(15))
 
-        result = conditional_non_none_posterior(
-            probabilities,
-            entity_types,
-            span_key=("420", 64, 64, "attack-pattern"),
-        )
+        try:
+            result = conditional_non_none_posterior(
+                probabilities,
+                entity_types,
+                span_key=("420", 64, 64, "attack-pattern"),
+            )
+        except ValueError as exc:
+            self.fail(
+                "Gate C must accept observed float32 softmax normalization drift; "
+                f"got ValueError: {exc}"
+            )
 
         self.assertAlmostEqual(
             sum(result.conditional_probabilities),

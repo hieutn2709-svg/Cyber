@@ -52,7 +52,8 @@ def conditional_non_none_posterior(
         raise ValueError("tolerance must be >= 0")
     if any(value < -tolerance or value > 1.0 + tolerance for value in probs):
         raise ValueError("entity probabilities must lie in [0, 1]")
-    if abs(sum(probs) - 1.0) > tolerance:
+    probability_sum_tolerance = max(tolerance, 2.0**-23)
+    if abs(sum(probs) - 1.0) > probability_sum_tolerance:
         raise ValueError("entity probabilities must sum to one")
 
     none_probability = probs[0]

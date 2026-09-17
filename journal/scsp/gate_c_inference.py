@@ -17,6 +17,9 @@ from .gate_c import EntityTypePosterior, conditional_non_none_posterior
 from .training import WindowInference, _span_tensor, _window_tensors, infer_window
 
 
+_FLOAT32_ENTITY_SCORE_PARITY_TOLERANCE = 2.0**-20
+
+
 @dataclass(frozen=True, slots=True)
 class GateCWindowInference:
     base: WindowInference
@@ -32,7 +35,7 @@ def infer_gate_c_window(
     base_config,
     training_config,
     device: torch.device,
-    parity_tolerance: float = 1e-8,
+    parity_tolerance: float = _FLOAT32_ENTITY_SCORE_PARITY_TOLERANCE,
 ) -> GateCWindowInference:
     """Run frozen Gate A inference and recover posteriors for retained spans."""
     if parity_tolerance < 0.0:
@@ -99,7 +102,7 @@ def infer_gate_c_split(
     base_config,
     training_config,
     device: torch.device,
-    parity_tolerance: float = 1e-8,
+    parity_tolerance: float = _FLOAT32_ENTITY_SCORE_PARITY_TOLERANCE,
 ) -> tuple[GateCWindowInference, ...]:
     """Infer Gate C windows in input order, exactly once per supplied window."""
     return tuple(

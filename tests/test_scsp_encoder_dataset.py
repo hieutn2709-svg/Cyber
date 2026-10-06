@@ -111,6 +111,28 @@ class FrozenWindowContractTests(unittest.TestCase):
 
 
 class EncoderAlignmentTests(unittest.TestCase):
+    def test_source_whitespace_boundaries_keep_original_character_coordinates(self):
+        entity = ed.SourceEntity('space', 0, 7, 'malware')
+        got = self.align(((0, 0), (1, 6), (0, 0)), (1, 0, 1), entity=entity,
+            window_char_start=1, window_char_end=6, document_text=' alpha ')
+        self.assertEqual((got.char_start, got.char_end, got.token_start, got.token_end),
+                         (0, 7, 1, 1))
+
+    def test_uncovered_non_whitespace_still_fails_with_source_context(self):
+        with self.assertRaisesRegex(ValueError, 'truncated'):
+            self.align(((0, 0), (1, 5), (0, 0)), (1, 0, 1),
+                entity=ed.SourceEntity('partial', 0, 5, 'malware'),
+                window_char_start=0, window_char_end=5, document_text='alpha')
+
+    def test_projection_keeps_annotation_with_only_whitespace_outside_window(self):
+        entity = ed.SourceEntity('space', 0, 7, 'malware')
+        doc = ed.SourceDocument(0, '420', ' alpha ', (entity,), ())
+        got = ed.project_logical_window(document=doc,
+            logical_window=ed.LogicalWindow(0, '420', 0, 0, 1),
+            document_offsets=((1, 6),))
+        self.assertEqual(got.entities, (entity,))
+        self.assertEqual(got.exclusions, ())
+
     def align(self, offsets, mask, entity=None, **kwargs):
         return ed.align_entity(doc_id='420', window_index=0,
             entity=entity or ed.SourceEntity('e1', 2, 8, 'malware'),
@@ -171,6 +193,32 @@ def inventory():
 
 
 class EncoderWindowBuilderTests(unittest.TestCase):
+    def test_frozen_overlap_policy_excludes_all_conflicting_reference_members_with_audit(self):
+        docs = load_source([source_row(entities=[('e1',0,5,'malware'),
+            ('overlap',0,10,'tool'),('e2',11,15,'tool')])])
+        got = self.build(docs=docs, restore_frozen_overlap_policy=True)
+        self.assertEqual([e['entity_id'] for e in got.rows[0]['entity_spans']], ['e2'])
+        self.assertEqual(got.rows[0]['relations'], [])
+        self.assertEqual(got.rows[0]['bieos_labels'], ['O','O','O','S-tool','O'])
+        self.assertEqual(got.rows[0]['entity_spans'][0]['role'], 'ROLE_2')
+        excluded = [e for e in got.exclusions if e['reason']=='frozen_reference_overlap']
+        self.assertEqual([(e['entity_id'],e['char_start'],e['char_end'],e['type'])
+                         for e in excluded], [('e1',0,5,'malware'),('overlap',0,10,'tool')])
+        self.assertEqual(got.audit['source_entity_count'], 3)
+        self.assertEqual(got.audit['reference_overlap_excluded_count'], 2)
+
+    def test_target_tokenization_cannot_select_reference_conflicts(self):
+        class Target(WhitespaceTokenizer):
+            def document_offsets(self, text):
+                raise AssertionError('reference policy must not use target offsets')
+            def encode_window(self, text, *, max_length):
+                return WhitespaceTokenizer().encode_window(text, max_length=max_length)
+        docs=load_source([source_row(entities=[('e1',0,5,'malware'),
+            ('overlap',0,10,'tool'),('e2',11,15,'tool')])])
+        got=self.build(docs=docs,tokenizer=Target(),reference_tokenizer=WhitespaceTokenizer(),
+                       restore_frozen_overlap_policy=True)
+        self.assertEqual([e['entity_id'] for e in got.rows[0]['entity_spans']], ['e2'])
+
     def build(self, docs=None, windows=None, tokenizer=None, **kwargs):
         return ed.build_encoder_windows(documents=docs or load_source([source_row()]),
             logical_windows=windows or (ed.LogicalWindow(0,'420',0,0,3),),

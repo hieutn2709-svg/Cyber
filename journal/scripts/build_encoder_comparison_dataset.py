@@ -91,10 +91,31 @@ class FastTokenizerAdapter:
     def __init__(self,tokenizer):
         self.tokenizer=tokenizer
         self.unk_token_id=tokenizer.unk_token_id
+        self._document_cache={}
+
+    def _document_encoding(self,text):
+        if text not in self._document_cache:
+            self._document_cache[text]=self.tokenizer(text,add_special_tokens=False,
+                truncation=False,return_offsets_mapping=True,return_attention_mask=True)
+        return self._document_cache[text]
 
     def document_offsets(self,text):
-        result=self.tokenizer(text,add_special_tokens=False,truncation=False,return_offsets_mapping=True)
+        result=self._document_encoding(text)
         return tuple(tuple(x) for x in result['offset_mapping'])
+
+    def encode_reference_window(self,text,*,logical_window,projection,max_length):
+        # Frozen RoBERTa windows were sliced AFTER full-document tokenization.
+        # Retokenizing a trimmed character slice loses the leading-space BPE id.
+        result=self._document_encoding(text)
+        a,b=logical_window.token_start_global,logical_window.token_end_global
+        ids=result['input_ids'][a:b]
+        bos,eos=self.tokenizer.bos_token_id,self.tokenizer.eos_token_id
+        if type(bos) is not int or type(eos) is not int or bos==eos:
+            raise ValueError('reference tokenizer requires distinct BOS/EOS ids')
+        offsets=tuple((x-projection.char_start,y-projection.char_start)
+                      for x,y in result['offset_mapping'][a:b])
+        return ed.WindowEncoding((bos,*ids,eos),(1,)*(len(ids)+2),
+            ((0,0),*offsets,(0,0)),(1,*(0 for _ in ids),1))
 
     def encode_window(self,text,*,max_length):
         # No implicit truncation. Overflow is handled by the explicit amendment gate.
@@ -134,9 +155,12 @@ def run(args):
     tokenizer=load_fast_tokenizer(model_id,revision)
     reference=(tokenizer if args.mode=='roberta-parity' else
                load_fast_tokenizer(art.ROBERTA_ID,art.ROBERTA_REVISION))
+    target_adapter=FastTokenizerAdapter(tokenizer)
+    reference_adapter=(target_adapter if reference is tokenizer else FastTokenizerAdapter(reference))
     result=ed.build_encoder_windows(documents=documents,logical_windows=windows,
-        tokenizer=FastTokenizerAdapter(tokenizer),reference_tokenizer=FastTokenizerAdapter(reference),
-        inventory=inventory,encoder_id=model_id,encoder_revision=revision,max_length=512)
+        tokenizer=target_adapter,reference_tokenizer=reference_adapter,
+        inventory=inventory,encoder_id=model_id,encoder_revision=revision,max_length=512,
+        restore_frozen_overlap_policy=True)
     if args.mode=='securebert':
         # Counts alone are insufficient: preserve ordered window/entity/relation membership.
         def membership(rows):

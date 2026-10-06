@@ -8,6 +8,7 @@ from unittest.mock import patch
 from journal.scripts import build_encoder_comparison_dataset as cli
 from journal.scsp import encoder_dataset_artifacts as art
 from tests.test_scsp_encoder_dataset import source_row
+from tests.test_scsp_encoder_dataset import inventory
 from tests.test_scsp_encoder_dataset_artifacts import passed_manifest
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -15,6 +16,31 @@ SCRIPT=ROOT/'journal/scripts/build_encoder_comparison_dataset.py'
 
 
 class BuildEncoderComparisonDatasetCliTests(unittest.TestCase):
+    def test_reference_windows_preserve_contextual_bytelevel_ids_and_local_offsets(self):
+        from tokenizers import Tokenizer, models, pre_tokenizers, processors
+        from transformers import PreTrainedTokenizerFast
+        from journal.scsp import encoder_dataset as ed
+        backend=Tokenizer(models.WordLevel({'<s>':0,'<pad>':1,'</s>':2,
+            '<unk>':3,'alpha':4,'beta':5,'Ġbeta':6},unk_token='<unk>'))
+        backend.pre_tokenizer=pre_tokenizers.ByteLevel(add_prefix_space=False)
+        backend.post_processor=processors.Sequence([processors.ByteLevel(trim_offsets=True),
+            processors.TemplateProcessing(single='<s> $A </s>',
+                special_tokens=[('<s>',0),('</s>',2)])])
+        tokenizer=PreTrainedTokenizerFast(tokenizer_object=backend,
+            bos_token='<s>',eos_token='</s>',unk_token='<unk>',pad_token='<pad>')
+        adapter=cli.FastTokenizerAdapter(tokenizer)
+        doc=ed.SourceDocument(0,'420','alpha beta',
+            (ed.SourceEntity('e',6,10,'tool'),),())
+        result=ed.build_encoder_windows(documents=(doc,),
+            logical_windows=(ed.LogicalWindow(0,'420',1,1,2),),
+            tokenizer=adapter, reference_tokenizer=adapter, inventory=inventory(),
+            encoder_id=art.ROBERTA_ID,encoder_revision=art.ROBERTA_REVISION,max_length=8)
+        self.assertEqual(result.rows[0]['input_ids'],[0,6,2])
+        span=result.rows[0]['entity_spans'][0]
+        self.assertEqual((span['token_start'],span['token_end'],span['char_start'],span['char_end']),
+                         (1,1,6,10))
+        self.assertEqual(result.rows[0]['token_start_global'],1)
+
     def test_help_is_lazy_and_no_model_or_prediction_modes_are_accepted(self):
         result=subprocess.run([sys.executable,str(SCRIPT),'--help'],cwd=ROOT,text=True,capture_output=True)
         self.assertEqual(result.returncode,0,result.stderr)

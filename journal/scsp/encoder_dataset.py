@@ -231,12 +231,29 @@ def _overlaps(a, b, c, d):
     return max(a, c) < min(b, d)
 
 
+def _content_bounds(entity, document_text):
+    """Trim only proven whitespace for coverage checks; never rewrite gold spans."""
+    a, b = entity.char_start, entity.char_end
+    if document_text is not None:
+        if not 0 <= a < b <= len(document_text):
+            raise ValueError('invalid source coordinates for alignment')
+        while a < b and document_text[a].isspace():
+            a += 1
+        while b > a and document_text[b-1].isspace():
+            b -= 1
+        if a == b:
+            raise ValueError('empty entity content')
+    return a, b
+
+
 def align_entity(*, doc_id, window_index, entity, offsets, special_tokens_mask,
-                 window_char_start, window_char_end, offsets_are_local=False):
+                 window_char_start, window_char_end, offsets_are_local=False,
+                 document_text=None):
     context = f'{doc_id} window {window_index} entity {entity.entity_id}'
     if len(offsets) != len(special_tokens_mask):
         raise ValueError(f'{context}: offset/mask length mismatch')
-    if not window_char_start <= entity.char_start < entity.char_end <= window_char_end:
+    content_start, content_end = _content_bounds(entity, document_text)
+    if not window_char_start <= content_start < content_end <= window_char_end:
         raise ValueError(f'{context}: truncated entity')
     shift = window_char_start if offsets_are_local else 0
     absolute = [(a+shift, b+shift) for a, b in offsets]
@@ -249,7 +266,7 @@ def align_entity(*, doc_id, window_index, entity, offsets, special_tokens_mask,
     selected = [absolute[i] for i in indices]
     if any(b <= a for a,b in selected) or any(selected[i][0] < selected[i-1][1] for i in range(1,len(selected))):
         raise ValueError(f'{context}: ambiguous offsets')
-    if selected[0][0] > entity.char_start or selected[-1][1] < entity.char_end:
+    if selected[0][0] > content_start or selected[-1][1] < content_end:
         raise ValueError(f'{context}: truncated alignment')
     return AlignedEntity(entity.entity_id, entity.label, entity.char_start, entity.char_end,
                          indices[0], indices[-1])
@@ -267,7 +284,8 @@ def project_logical_window(*, document, logical_window, document_offsets):
         raise ValueError(f'{w.doc_id}: invalid window character bounds')
     entities, exclusions = [], []
     for entity in document.entities:
-        if a <= entity.char_start < entity.char_end <= b:
+        content_start, content_end = _content_bounds(entity, document.text)
+        if a <= content_start < content_end <= b:
             entities.append(entity)
         else:
             reason = ('crosses_window_boundary' if _overlaps(a,b,entity.char_start,entity.char_end)
@@ -334,7 +352,8 @@ def materialize_clean_window_row(*, document, logical_window, projection, encodi
     for entity in projection.entities:
         aligned = align_entity(doc_id=document.doc_id, window_index=logical_window.window_index,
             entity=entity, offsets=encoding.offset_mapping, special_tokens_mask=encoding.special_tokens_mask,
-            window_char_start=projection.char_start, window_char_end=projection.char_end, offsets_are_local=True)
+            window_char_start=projection.char_start, window_char_end=projection.char_end, offsets_are_local=True,
+            document_text=document.text)
         indices = set(range(aligned.token_start,aligned.token_end+1))
         if occupied & indices:
             raise ValueError(f'{document.doc_id} {entity.entity_id}: ambiguous overlapping aligned spans')
@@ -395,7 +414,9 @@ def audit_encoder_build(rows, exclusions, inventory):
 
 
 def build_encoder_windows(*, documents, logical_windows, tokenizer, inventory, encoder_id,
-                          encoder_revision, max_length, reference_tokenizer=None):
+                          encoder_revision, max_length, reference_tokenizer=None,
+                          restore_frozen_overlap_policy=False):
+    from dataclasses import replace
     import re
     if not re.fullmatch(r'[0-9a-f]{40}',encoder_revision):
         raise ValueError('encoder requires immutable 40-character revision')
@@ -409,11 +430,35 @@ def build_encoder_windows(*, documents, logical_windows, tokenizer, inventory, e
         if any(r.label not in inventory.relation_types for r in doc.relations):
             raise ValueError(f'{doc.doc_id}: relation label absent from inventory')
     rows, exclusions, cache, seen = [], [], {}, set()
+    reference_conflicts = {}
     for doc in documents:
         for region in doc.unlabeled_regions:
             exclusions.append({'kind':'unlabeled_region','doc_id':doc.doc_id,
                 'entity_id':region.entity_id,'char_start':region.char_start,'char_end':region.char_end,
                 'reason':'unlabeled_unreferenced_region'})
+        if restore_frozen_overlap_policy:
+            offsets = cache[(doc.doc_seq_index,doc.doc_id)] = reference.document_offsets(doc.text)
+            spans = []
+            for entity in doc.entities:
+                indices = [i for i,(a,b) in enumerate(offsets)
+                           if _overlaps(a,b,entity.char_start,entity.char_end)]
+                if not indices:
+                    raise ValueError(f'{doc.doc_id} {entity.entity_id}: empty reference alignment')
+                spans.append((indices[0],indices[-1]))
+            conflicts = set()
+            for i,(a,b) in enumerate(spans):
+                for j in range(i+1,len(spans)):
+                    c,d = spans[j]
+                    if max(a,c) <= min(b,d):
+                        conflicts.update((i,j))
+            ids = {doc.entities[i].entity_id for i in conflicts}
+            reference_conflicts[(doc.doc_seq_index,doc.doc_id)] = ids
+            for entity in doc.entities:
+                if entity.entity_id in ids:
+                    exclusions.append({'kind':'reference_entity','doc_id':doc.doc_id,
+                        'entity_id':entity.entity_id,'char_start':entity.char_start,
+                        'char_end':entity.char_end,'type':entity.label,
+                        'reason':'frozen_reference_overlap'})
     chars = unknown = 0
     for w in logical_windows:
         key = (w.doc_seq_index,w.doc_id)
@@ -423,11 +468,20 @@ def build_encoder_windows(*, documents, logical_windows, tokenizer, inventory, e
             raise ValueError('duplicate window identity')
         seen.add((key,w.window_index))
         doc = documents_by_key[key]
+        if restore_frozen_overlap_policy:
+            # Restore reference-corpus supervision before target tokenization.
+            # Keep original relations so retained endpoint roles do not change.
+            doc = replace(doc, entities=tuple(e for e in doc.entities
+                          if e.entity_id not in reference_conflicts[key]))
         if key not in cache:
             cache[key] = reference.document_offsets(doc.text)
         projection = project_logical_window(document=doc,logical_window=w,document_offsets=cache[key])
         text = doc.text[projection.char_start:projection.char_end]
-        encoding = tokenizer.encode_window(text,max_length=max_length)
+        if tokenizer is reference and hasattr(tokenizer,'encode_reference_window'):
+            encoding = tokenizer.encode_reference_window(doc.text,logical_window=w,
+                projection=projection,max_length=max_length)
+        else:
+            encoding = tokenizer.encode_window(text,max_length=max_length)
         if encoding.truncated or len(encoding.input_ids)>max_length:
             subwindows = deterministic_whitespace_subwindows(doc.text,projection.char_start,
                 projection.char_end,tokenizer,max_length)
@@ -440,6 +494,9 @@ def build_encoder_windows(*, documents, logical_windows, tokenizer, inventory, e
                        for t,flag in zip(encoding.input_ids,row['label_mask']))
     audit = audit_encoder_build(rows,exclusions,inventory)
     audit.update(excluded_unlabeled_region_count=sum(len(d.unlabeled_regions) for d in documents),
+        reference_overlap_excluded_count=sum(len(ids) for ids in reference_conflicts.values()),
+        source_overlap_policy=('exclude_all_frozen_reference_conflicts_v1'
+                               if restore_frozen_overlap_policy else 'reject'),
         source_entity_count=sum(len(d.entities) for d in documents),
         source_relation_count=sum(len(d.relations) for d in documents),
         emitted_entity_count=sum(len(r['entity_spans']) for r in rows),

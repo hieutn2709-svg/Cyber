@@ -757,6 +757,13 @@ def _run_overfit(
     }
 
 
+def load_checkpoint_state(model, checkpoint, encoder_package=None):
+    if encoder_package is not None:
+        from journal.scsp.matched_runtime import validate_checkpoint_package
+        validate_checkpoint_package(checkpoint, encoder_package)
+    model.load_state_dict(checkpoint["model_state_dict"])
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     import torch
 
@@ -831,6 +838,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         output_dir / "training_run_config.json",
         {
             "mode": args.mode,
+            **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
             "fold": args.fold,
             "seed": args.seed,
             "epoch_budget": mode_epoch_budget(
@@ -956,6 +964,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
+                    **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
                     "epoch": epoch,
                     "threshold": best_threshold,
                     "validation": best_selection,
@@ -983,7 +992,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("training produced no validation checkpoint")
 
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    load_checkpoint_state(model, checkpoint, getattr(args, "encoder_package", None))
     model.eval()
 
     validation_inferences = _infer_split(

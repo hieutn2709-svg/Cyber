@@ -1,6 +1,9 @@
-# Proposed matched-window amendment for SecureBERT v1
+# Approved matched-window amendment for SecureBERT v1
 
-Status: **PROPOSED — NOT APPROVED, NOT APPLIED**.
+Status: **APPROVED for implementation and RoBERTa re-baseline**.
+
+User approved the 70-window proposal with “ok” and reiterated continuation on
+2026-10-07. Full/test remains prohibited.
 
 ## Reason and approval boundary
 
@@ -29,7 +32,7 @@ The expected annotation totals remain 1,353 primary, 28 auxiliary and 564 relati
 occurrences; these totals are acceptance targets, not a claim that the amended
 datasets already exist.
 
-Rule: for each over-capacity logical window, enumerate whitespace boundaries;
+Rule: for each over-capacity logical window, enumerate boundaries immediately after whitespace (as in the approved audit);
 reject cuts inside a retained entity or between the endpoints of a retained
 relation; require both resulting parts to fit both tokenizers; select the largest
 valid character cut. If no such cut exists, fail closed and review the protocol.
@@ -49,7 +52,7 @@ or metric was consulted to select these boundaries.
 3. Re-audit every window, exact document/character/entity/relation membership,
    hashes, exclusion policy, local/native coordinate conversion and all counts.
    The proposed slices were capacity-checked; complete amended artifact generation
-   and semantic validation remain pending approval.
+   and semantic validation are required before training.
 4. Re-run B3 RoBERTa under this new common-window protocol before interpreting
    B4 SecureBERT. Reusing an old 67-window B3 score as the matched baseline is
    disallowed. Both packages keep the frozen Fold 1, split seed 11800, seed 42,
@@ -76,5 +79,5 @@ or metric was consulted to select these boundaries.
   and pre-existing generic JSON diagnostics/exclusion-coordinate polish (deferred).
 
 The executor restored only behavior proven by the frozen corpus, with explicit
-audits and exact parity. These restoration decisions do not authorize the new
-70-window protocol. Approval of this document is the next execution gate.
+audits and exact parity. The subsequent explicit user approval authorizes the 70-window protocol
+and RoBERTa rerun, subject to the runtime and diagnostic gates above.

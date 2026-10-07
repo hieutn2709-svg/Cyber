@@ -3,7 +3,73 @@
 The approved comparison changes the paired encoder/tokenizer package only.
 The dataset gate is independent of training, predictions, splits and metrics.
 
-## Current execution status, 2026-10-07
+## Approved matched-70 continuation, 2026-10-07
+
+The user approved the 70-window amendment and RoBERTa re-baseline. Both real
+corpora were generated, with exact annotation preservation: 52 documents,
+70 windows, 1,353 primary and 28 auxiliary entity occurrences, 564 relations
+including 561 core-to-core. The original 67-window artifacts remain unchanged.
+
+- RoBERTa dataset SHA: `16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348`.
+- SecureBERT dataset SHA: `ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d`.
+- Shared character manifest SHA: `fb33d6639d0a7def4b5f66142817184463f9e4c451a5faa8040791e3e05c8961`.
+
+Native token coordinates concatenate independently tokenized window content
+per document, excluding specials. They are package-local and are NOT token
+indices from full-document tokenization. Source character coordinates, original
+window IDs and per-token offset mappings remain the cross-package mapping.
+Only after-whitespace cuts from the approved audit are used.
+
+The versioned `journal/configs/matched70_corpus_lock.json` binds the distributed
+bundle. The builder reconstructs the complete original ancestor before deriving
+the matched corpus. Both split files retain every original partition field except
+the dataset hash. A rebuild from another code commit changes manifest provenance;
+do not silently regenerate the release lock or substitute a different bundle.
+
+Runtime preflight and guarded training are implemented for both packages.
+RoBERTa no-gradient preflight passed with length 512 and hidden dimension 768.
+SecureBERT preflight and training gates are tracked in the execution report.
+The repository suite passed 238 tests. A fresh independent review found one
+runtime compatibility defect (private Transformers revision metadata), fixed with
+snapshot-path and model-file SHA verification and a RED-to-GREEN regression.
+A resumed cache subsequently contained a truncated weight file; its hash failed
+against the successful preflight. The wrapper now verifies model-file hashes
+before training; the pinned file was restored without changing model identity.
+
+### Matched execution commands
+
+Use the delivered bundle outside the repository. Set `CTI70` to the directory
+containing `common_window_manifest.json`, `roberta/` and `securebert/`.
+Set `CTI_RUNS` to a new external run directory. Keep both paths quoted.
+
+```bash
+python -m journal.scripts.preflight_matched_encoders --package roberta \
+  --bundle "$CTI70" --output-dir "$CTI_RUNS/preflight_roberta" --device cuda
+python -m journal.scripts.train_matched_encoder --package roberta --mode overfit \
+  --bundle "$CTI70" --preflight "$CTI_RUNS/preflight_roberta" \
+  --output-dir "$CTI_RUNS/roberta_overfit" --device cuda
+python -m journal.scripts.train_matched_encoder --package roberta --mode smoke \
+  --bundle "$CTI70" --preflight "$CTI_RUNS/preflight_roberta" \
+  --overfit-run "$CTI_RUNS/roberta_overfit" \
+  --output-dir "$CTI_RUNS/roberta_smoke" --device cuda
+python -m journal.scripts.train_matched_encoder --package roberta --mode dev \
+  --bundle "$CTI70" --preflight "$CTI_RUNS/preflight_roberta" \
+  --overfit-run "$CTI_RUNS/roberta_overfit" --smoke-run "$CTI_RUNS/roberta_smoke" \
+  --output-dir "$CTI_RUNS/roberta_dev" --device cuda
+```
+
+Use `--device cpu` on CPU-only runtimes. Runtime preflight must run in the same
+cache as training. Both model and tokenizer revisions are pinned and remote code
+is disabled. The wrapper enforces Fold 1, split seed 11800, run seed 42, unchanged
+heads/hyperparameters, decreasing overfit loss and successful smoke before dev.
+SecureBERT supports preflight, overfit and smoke; its dev needs the later checkpoint.
+Full/test is unavailable. Checkpoints are package-bound before state loading.
+No test metric may be used to select splits, cuts, thresholds or checkpoints.
+
+The sections below are historical evidence for the original corpus; their
+unapproved/unrun statements apply to those earlier checkpoints only.
+
+## Historical 67-window checkpoint, 2026-10-07
 
 **Real RoBERTa parity PASSED. SecureBERT is blocked by window capacity.**
 The verified bundle exactly matches the frozen semantic digest

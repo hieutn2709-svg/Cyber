@@ -116,3 +116,12 @@ class TrainingRecoveryTests(unittest.TestCase):
             (path/"run_summary.json").write_text('{}')
             with self.assertRaisesRegex(ValueError, "complete"):
                 cli.validate_output(args)
+
+    def test_second_writer_is_rejected_and_lock_released(self):
+        with tempfile.TemporaryDirectory() as d:
+            with recovery.run_lock(Path(d)):
+                with self.assertRaisesRegex(ValueError, "active"):
+                    with recovery.run_lock(Path(d)):
+                        self.fail("two writers acquired the same run")
+            with recovery.run_lock(Path(d)):
+                pass

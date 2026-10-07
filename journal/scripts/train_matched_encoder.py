@@ -51,7 +51,10 @@ def run(args):
         epoch_recovery=args.mode != 'overfit',resume=getattr(args,'resume',False))
     if gate.mode_evaluates_test(delegated.mode):
         raise ValueError('test evaluation not authorized')
-    return gate.run(delegated)
+    from journal.scsp.training_recovery import run_lock
+    args.output_dir.mkdir(parents=True,exist_ok=True)
+    with run_lock(args.output_dir):
+        return gate.run(delegated)
 
 
 def main(argv=None):

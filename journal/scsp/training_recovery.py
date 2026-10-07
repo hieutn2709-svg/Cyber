@@ -8,7 +8,24 @@ from __future__ import annotations
 import os
 import random
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
+
+
+@contextmanager
+def run_lock(output_dir):
+    """Reject concurrent writers; the OS releases the advisory lock on exit."""
+    import fcntl
+
+    with (Path(output_dir) / ".training.lock").open("a+b") as stream:
+        try:
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise ValueError("another training writer is active in this output directory") from exc
+        try:
+            yield
+        finally:
+            fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
 
 
 def atomic_save(payload, path):

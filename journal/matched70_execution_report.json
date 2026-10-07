@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-07",
+  "protocol": "matched70_v1",
+  "test_evaluated": false,
+  "counts": {
+    "auxiliary_entity_count": 28,
+    "core_to_core_relation_count": 561,
+    "document_count": 52,
+    "primary_entity_count": 1353,
+    "relation_count": 564,
+    "window_count": 70
+  },
+  "preflight": {
+    "roberta": {
+      "deterministic_algorithms": true,
+      "encoder_package_sha256": "adbd42ca3a0e80e31667b80f3c7609520e47a50e32655f93a00c2581cbbc8298",
+      "gradient_steps": 0,
+      "input_length": 512,
+      "last_hidden_state_shape": [
+        1,
+        512,
+        768
+      ],
+      "status": "passed",
+      "test_evaluated": false
+    },
+    "securebert": {
+      "deterministic_algorithms": true,
+      "encoder_package_sha256": "a55e28bdf91844ba21b99acfe61235c8fe51d5c0c489321fce47b1c9f9b82bd9",
+      "gradient_steps": 0,
+      "input_length": 512,
+      "last_hidden_state_shape": [
+        1,
+        512,
+        768
+      ],
+      "status": "passed",
+      "test_evaluated": false
+    }
+  },
+  "roberta_overfit": {
+    "document_id": "374",
+    "epochs": 20,
+    "final_loss": 0.22797708213329315,
+    "initial_loss": 7.485998630523682,
+    "status": "overfit_complete",
+    "test_evaluated": false,
+    "window_index": 1
+  },
+  "roberta_smoke": {
+    "best_epoch": 2,
+    "config_sha256": "c29ce974417c677793dea01e726040b4b24390cf747d44420fa1385efee16f9d",
+    "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+    "fold": 1,
+    "git_commit": "8b05c634772040b517eda9a7fed8d3d1ceab5d4e",
+    "mode": "smoke",
+    "relation_threshold": 0.75,
+    "seed": 42,
+    "status": "smoke_complete",
+    "test_evaluated": false,
+    "validation": {
+      "primary_entity_f1": 0.14473684210526316,
+      "relation_f1": 0.07692307692307691,
+      "threshold": 0.75
+    }
+  },
+  "securebert_overfit": {
+    "document_id": "374",
+    "epochs": 20,
+    "final_loss": 0.5280766487121582,
+    "initial_loss": 5.933850288391113,
+    "status": "overfit_complete",
+    "test_evaluated": false,
+    "window_index": 1
+  },
+  "securebert_smoke": {
+    "best_epoch": 2,
+    "config_sha256": "e672bf88e699208265fff6c8c08ba19a6e4eaf66cf66b05685d0fcea5ac9602e",
+    "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+    "fold": 1,
+    "git_commit": "8b05c634772040b517eda9a7fed8d3d1ceab5d4e",
+    "mode": "smoke",
+    "relation_threshold": 0.1,
+    "seed": 42,
+    "status": "smoke_complete",
+    "test_evaluated": false,
+    "validation": {
+      "primary_entity_f1": 0.06578947368421052,
+      "relation_f1": 0.0,
+      "threshold": 0.1
+    }
+  },
+  "roberta_dev": {
+    "best_epoch": 12,
+    "config_sha256": "c29ce974417c677793dea01e726040b4b24390cf747d44420fa1385efee16f9d",
+    "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+    "fold": 1,
+    "git_commit": "cef0c5c8648d7781951f82d99b375c17d35225d6",
+    "mode": "dev",
+    "relation_threshold": 0.9,
+    "seed": 42,
+    "status": "dev_complete",
+    "test_evaluated": false,
+    "validation": {
+      "primary_entity_f1": 0.3872180451127819,
+      "relation_f1": 0.25380710659898476,
+      "threshold": 0.9
+    }
+  },
+  "full_and_test": "not_authorized",
+  "securebert_dev": "later_approval_checkpoint",
+  "regression_tests_passed": 244,
+  "published_code_commit": "2c00434119d9dda0e9e12d8db371ba1fdaeef9db",
+  "published_code_tree": "6f0b30c38e65eb8a35dd1c8beb6ca90cd1292a03",
+  "tokenization_audit": {
+    "roberta": {
+      "max_input_length": 512,
+      "content_token_count": 21470,
+      "unknown_token_count": 0,
+      "truncation_count": 0
+    },
+    "securebert": {
+      "max_input_length": 512,
+      "content_token_count": 20592,
+      "unknown_token_count": 0,
+      "truncation_count": 0
+    }
+  },
+  "runtime_threads": {
+    "training_omp_num_threads": 4,
+    "training_mkl_num_threads": 4,
+    "device": "cpu",
+    "cuda_verified": false
+  },
+  "roberta_dev_interrupted": {
+    "directory": "runs70/roberta_dev",
+    "status": "interrupted",
+    "epochs_completed": 11,
+    "final_summary_present": false,
+    "resumable": false,
+    "reason": "legacy checkpoint contains model weights only; optimizer and RNG not retained"
+  },
+  "recovery_integration_diagnostic": {
+    "directory": "runs70/roberta_dev_v2",
+    "status": "stopped_for_writer_lock_fix",
+    "recovered_epoch": 1,
+    "optimizer_parameter_entries": 210,
+    "overlap_detected": true,
+    "used_for_final_metrics": false,
+    "resolution": "OS advisory writer lock added; restart in a separate v3 directory with unchanged experimental settings"
+  },
+  "local_execution_commit": "cef0c5c8648d7781951f82d99b375c17d35225d6",
+  "roberta_dev_directory": "runs70/roberta_dev_v3",
+  "roberta_dev_epochs_completed": 12,
+  "recovery_verification": {
+    "unit_tests": "exact AdamW/dropout, optimizer, Python/NumPy/Torch RNG; atomic write failure; wrong identity; legacy weights rejection; concurrent writer exclusion",
+    "actual_run_resumed_after_epoch": 1,
+    "epochs_1_to_11_equal_prior_uninterrupted_run": true,
+    "epoch12_finalization_complete": true
+  },
+  "artifact_sha256": {
+    "runs70/roberta_dev_v3/best_model.pt": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+    "runs70/roberta_dev_v3/run_summary.json": "824b84e082e33323d6ea0eb726eb3eab574468097ff331c7d64dfff4c586e45e",
+    "runs70/roberta_dev_v3/training_history.json": "fb8ac1150fa01a9de186fd181857f26a767c4ac9a1201bc744d1d9dea0399317",
+    "runs70/roberta_dev_v3/validation_metrics.json": "16f63b34e127a0cbfbace3406645cd88677308a7d40c0ec5e154278ef0c650d2"
+  }
+}

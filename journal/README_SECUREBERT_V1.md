@@ -1,3 +1,17 @@
+## Epoch recovery (matched runs)
+
+The interrupted first RoBERTa dev attempt reached epoch 11/12 but had no optimizer
+or RNG state. It is retained as incomplete; a fresh `roberta_dev_v2` run uses the
+same pinned corpus, fold, seed, hyperparameters and selection rule.
+
+Matched smoke/dev runs now atomically save `recovery.pt` after each completed
+epoch, including optimizer, scaler, Python/NumPy/Torch RNG, history and the selected
+best checkpoint. Add `--resume` to the original matched training command to resume
+an incomplete run in the same output directory. Identity checks require unchanged
+code commit, package, configuration, dataset, mode and runtime profile. A completed
+run or weights-only checkpoint cannot be resumed. Original Gate A defaults remain
+unchanged. Full/test and SecureBERT dev authorization gates remain in force.
+
 # SecureBERT v1 dataset gate
 
 The approved comparison changes the paired encoder/tokenizer package only.
@@ -27,8 +41,10 @@ the dataset hash. A rebuild from another code commit changes manifest provenance
 do not silently regenerate the release lock or substitute a different bundle.
 
 Runtime preflight and guarded training are implemented for both packages.
-RoBERTa no-gradient preflight passed with length 512 and hidden dimension 768.
-SecureBERT preflight and training gates are tracked in the execution report.
+Both no-gradient preflights passed with length 512 and hidden dimension 768.
+Both 20-epoch overfit diagnostics and two-epoch smoke runs completed;
+RoBERTa 12-epoch dev is running. See `matched70_execution_report.json` for the
+latest recorded execution checkpoint.
 The repository suite passed 238 tests. A fresh independent review found one
 runtime compatibility defect (private Transformers revision metadata), fixed with
 snapshot-path and model-file SHA verification and a RED-to-GREEN regression.

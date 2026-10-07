@@ -20,22 +20,35 @@ def build_parser():
     p.add_argument('--device',choices=('cpu','cuda','auto'),default='auto')
     p.add_argument('--overfit-run',type=Path)
     p.add_argument('--smoke-run',type=Path)
+    p.add_argument('--resume',action='store_true',help='resume an incomplete run from its atomic epoch recovery state')
     return p
+
+
+def validate_output(args):
+    if getattr(args,'resume',False):
+        if args.mode == 'overfit':
+            raise ValueError('overfit recovery is not supported')
+        if (args.output_dir/'run_summary.json').exists():
+            raise ValueError('run is already complete')
+        if not (args.output_dir/'recovery.pt').is_file():
+            raise ValueError('resume requires complete epoch recovery state')
+    elif args.output_dir.exists():
+        raise FileExistsError('run output already exists')
 
 
 def run(args):
     mr.validate_mode(args.package,args.mode)
+    validate_output(args)
     expected=mr.contract(args.bundle,args.package)
     package=mr.validate_preflight(args.preflight,expected)
     mr.validate_cached_model(package)
     mr.validate_previous_gate(args.mode,args.overfit_run,args.smoke_run,package)
-    if args.output_dir.exists():
-        raise FileExistsError('run output already exists')
     config,training,inventory=mr.config_paths(args.package)
     delegated=argparse.Namespace(mode=args.mode,config=str(config),training_config=str(training),
         inventory=str(inventory),manifest=str(args.bundle/args.package/'split_manifest.json'),
         dataset=str(args.bundle/args.package/'dataset.json'),fold=1,seed=42,
-        output_dir=str(args.output_dir),device=args.device,overfit_epochs=20,encoder_package=package)
+        output_dir=str(args.output_dir),device=args.device,overfit_epochs=20,encoder_package=package,
+        epoch_recovery=args.mode != 'overfit',resume=getattr(args,'resume',False))
     if gate.mode_evaluates_test(delegated.mode):
         raise ValueError('test evaluation not authorized')
     return gate.run(delegated)

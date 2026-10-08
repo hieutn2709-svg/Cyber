@@ -4,7 +4,12 @@
 
 The user approved the 12-epoch SecureBERT dev step after reviewing the completed
 RoBERTa baseline. See `docs/superpowers/specs/2026-10-08-securebert-dev-approval.md`.
-Both packages now support guarded dev; full/test remains unavailable. Earlier
+Both packages now support guarded dev; full/test remains unavailable.
+SecureBERT completed 12/12 epochs, selecting epoch 8 at threshold 0.90:
+validation relation F1 0.2043795620 and primary entity F1 0.3144654088.
+Against the matched RoBERTa baseline, these are lower by 4.94 and 7.28 percentage
+points respectively. This is one-fold/one-seed validation evidence, not a general
+ranking. See `matched70_encoder_comparison_report.json` for verified outputs. Earlier
 references to a pending SecureBERT dev checkpoint below are historical.
 
 The approved comparison changes the paired encoder/tokenizer package only.

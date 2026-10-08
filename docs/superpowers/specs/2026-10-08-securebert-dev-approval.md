@@ -22,3 +22,12 @@ Restore the exact published tree 728c3a3641dfe7690c481486e9250aff61c261f0 from
 commit 270af0ee98e968f741b23e3d4864d8f904153ba7 and the version-1 archived results;
 verify all internal SHA-256 entries. Do not rerun the completed RoBERTa baseline
 or alter original run provenance. Restore only missing pinned model cache files.
+
+## Completed execution
+
+SecureBERT completed 12 epochs under local48e7960 / published9aca2f8. Selected
+epoch8, threshold0.90, validation relationF1 .2043795620, primaryEF1 .3144654088.
+All244 tests pass; independent authorization review found no issues. Actual
+checkpoint/package, recovery epoch12 with210 AdamW states, exact embedded-best
+tensor equality, five validation records and first-two-epoch smoke parity were
+verified. No test evaluation. See the paired execution/comparison reports.

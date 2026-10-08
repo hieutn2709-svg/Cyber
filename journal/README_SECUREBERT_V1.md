@@ -1,5 +1,12 @@
 # SecureBERT v1 dataset gate
 
+## SecureBERT dev approved, 2026-10-08
+
+The user approved the 12-epoch SecureBERT dev step after reviewing the completed
+RoBERTa baseline. See `docs/superpowers/specs/2026-10-08-securebert-dev-approval.md`.
+Both packages now support guarded dev; full/test remains unavailable. Earlier
+references to a pending SecureBERT dev checkpoint below are historical.
+
 The approved comparison changes the paired encoder/tokenizer package only.
 The dataset gate is independent of training, predictions, splits and metrics.
 

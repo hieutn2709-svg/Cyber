@@ -29,12 +29,14 @@ class MatchedRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'position'):
             mr.validate_components(cfg,100,tokens,(1,512,8),512)
 
-    def test_full_mode_and_unapproved_securebert_dev_rejected(self):
+    def test_approved_paired_dev_allowed_but_full_test_and_unknown_package_rejected(self):
+        for package in ('roberta','securebert'):
+            mr.validate_mode(package,'dev')
+            for mode in ('full','test'):
+                with self.assertRaisesRegex(ValueError,'not authorized'):
+                    mr.validate_mode(package,mode)
         with self.assertRaisesRegex(ValueError,'not authorized'):
-            mr.validate_mode('roberta','full')
-        with self.assertRaisesRegex(ValueError,'not authorized'):
-            mr.validate_mode('securebert','dev')
-        mr.validate_mode('roberta','dev')
+            mr.validate_mode('unapproved_encoder','dev')
 
     def test_checkpoint_other_package_rejected_before_model_state_load(self):
         from journal.scripts import train_gate_a as gate

@@ -40,7 +40,7 @@ def validate_settings(candidate, package):
 
 
 def validate_mode(package, mode):
-    if mode not in ('overfit','smoke','dev') or (package=='securebert' and mode=='dev'):
+    if package not in PACKAGES or mode not in ('overfit','smoke','dev'):
         raise ValueError(f'{package} {mode} not authorized')
 
 

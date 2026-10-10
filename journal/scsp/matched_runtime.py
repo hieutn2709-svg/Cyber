@@ -193,3 +193,49 @@ def validate_cached_model(package):
     for path in paths.values():
         validate_snapshot_path(path,identity['revision'])
     validate_model_files(package,paths)
+
+
+def _approved_repeat_seed(seed):
+    if type(seed) is not int or seed not in (43,44):
+        raise ValueError('only approved repeat seed 43 or 44 is allowed')
+    return seed
+
+
+def seed_config(package,seed):
+    """Copy the locked seed42 baseline, changing only the approved run seed."""
+    seed=_approved_repeat_seed(seed)
+    candidate=read_json(config_paths(package)[0])
+    validate_settings(candidate,package)
+    return {**candidate,'seed':seed}
+
+
+def seed_package(parent,seed,combined_hash):
+    """Preserve engineering-gate provenance without relabeling it as a new preflight."""
+    import copy,re
+    seed=_approved_repeat_seed(seed)
+    if parent['contract'].get('seed')!=42 or not re.fullmatch('[0-9a-f]{64}',combined_hash):
+        raise ValueError('invalid seed package parent or config hash')
+    result=copy.deepcopy(parent)
+    result['parent_seed42_package_sha256']=digest(parent)
+    result['contract'].update(seed=seed,combined_config_sha256=combined_hash)
+    return result
+
+
+def validate_seed_baseline(folder,package):
+    """Require the previously completed same-package seed42 dev engineering gate."""
+    folder=Path(folder)
+    summary=read_json(folder/'run_summary.json')
+    config=read_json(folder/'training_run_config.json')
+    history=read_json(folder/'training_history.json')
+    contract=package['contract']
+    expected={'status':'dev_complete','test_evaluated':False,'seed':42,'fold':1,
+        'dataset_sha256':contract['dataset_sha256'],'config_sha256':contract['combined_config_sha256']}
+    valid=(all(summary.get(k)==v for k,v in expected.items())
+        and config.get('encoder_package')==package and config.get('seed')==42
+        and config.get('mode')=='dev' and config.get('test_evaluated') is False
+        and config.get('epoch_budget')==12
+        and [row.get('epoch') for row in history]==list(range(1,13))
+        and type(summary.get('best_epoch')) is int and 1<=summary['best_epoch']<=12
+        and (folder/'validation_metrics.json').is_file())
+    if not valid:
+        raise ValueError('seed42 baseline is incomplete or inconsistent with the package')

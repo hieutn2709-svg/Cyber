@@ -757,6 +757,13 @@ def _run_overfit(
     }
 
 
+def load_checkpoint_state(model, checkpoint, encoder_package=None):
+    if encoder_package is not None:
+        from journal.scsp.matched_runtime import validate_checkpoint_package
+        validate_checkpoint_package(checkpoint, encoder_package)
+    model.load_state_dict(checkpoint["model_state_dict"])
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     import torch
 
@@ -826,11 +833,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     _set_seed(args.seed)
     device = _resolve_device(args.device)
+    recovery_state = None
+    recovery_enabled = getattr(args, "epoch_recovery", False)
+    if recovery_enabled:
+        from journal.scsp import training_recovery
+        if args.mode not in {"smoke", "dev"} or getattr(args, "encoder_package", None) is None:
+            raise ValueError("epoch recovery requires a matched smoke/dev package")
+        recovery_identity = {
+            "mode": args.mode, "fold": args.fold, "seed": args.seed,
+            "epoch_budget": mode_epoch_budget(args.mode, training_config),
+            "dataset_sha256": dataset_sha256, "config_sha256": config_sha256,
+            "git_commit": commit, "encoder_package": args.encoder_package,
+            "environment": _environment(device),
+            "torch_threads": torch.get_num_threads(),
+            "torch_interop_threads": torch.get_num_interop_threads(),
+        }
+        if getattr(args, "resume", False):
+            recovery_state = training_recovery.load(output_dir / "recovery.pt", recovery_identity)
     _write_json(output_dir / "environment.json", _environment(device))
     _write_json(
         output_dir / "training_run_config.json",
         {
             "mode": args.mode,
+            **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
             "fold": args.fold,
             "seed": args.seed,
             "epoch_budget": mode_epoch_budget(
@@ -887,8 +912,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     best_threshold = None
     stale_epochs = 0
     checkpoint_path = output_dir / "best_model.pt"
+    start_epoch = 1
+    if recovery_state is not None:
+        progress = training_recovery.restore(recovery_state, model, optimizer, scaler, checkpoint_path)
+        history = progress["history"]
+        best_selection = progress["best_selection"]
+        best_epoch = progress["best_epoch"]
+        best_threshold = progress["best_threshold"]
+        stale_epochs = progress["stale_epochs"]
+        start_epoch = progress["epoch"] + 1
+        _write_json(output_dir / "training_history.json", history)
+        print(f"resumed completed_epoch={start_epoch - 1}; next_epoch={start_epoch}", flush=True)
+        del recovery_state
 
-    for epoch in range(1, epoch_budget + 1):
+    for epoch in range(start_epoch, epoch_budget + 1):
         start_time = time.time()
         train_metrics = _train_epoch(
             model,
@@ -956,6 +993,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
+                    **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
                     "epoch": epoch,
                     "threshold": best_threshold,
                     "validation": best_selection,
@@ -968,6 +1006,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         else:
             stale_epochs += 1
+
+        if recovery_enabled:
+            best_checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+            training_recovery.save(
+                output_dir / "recovery.pt", identity=recovery_identity,
+                model=model, optimizer=optimizer, scaler=scaler,
+                progress={"epoch": epoch, "history": history, "best_selection": best_selection,
+                          "best_epoch": best_epoch, "best_threshold": best_threshold,
+                          "stale_epochs": stale_epochs}, best_checkpoint=best_checkpoint,
+            )
+            del best_checkpoint
 
         if (
             args.mode == "full"
@@ -983,7 +1032,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("training produced no validation checkpoint")
 
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    load_checkpoint_state(model, checkpoint, getattr(args, "encoder_package", None))
     model.eval()
 
     validation_inferences = _infer_split(

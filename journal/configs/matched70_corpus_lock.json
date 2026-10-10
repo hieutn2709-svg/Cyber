@@ -1,0 +1,15 @@
+{
+  "ancestor_alignment_exclusions.json": "7b6712122b8972e9c89f899f8a85ed433356c38f746a5fc7dc4a5874c43f3eac",
+  "common_window_manifest.json": "fb33d6639d0a7def4b5f66142817184463f9e4c451a5faa8040791e3e05c8961",
+  "roberta/alignment_exclusions.json": "d9f3d14e311c2af9a2ce1e39dfec5f039e896d2c812eda6f84fe9a617aaed109",
+  "roberta/dataset.json": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+  "roberta/encoder_dataset_manifest.json": "3a018eee971cc57330b497c4d155830a7888c0bdc9d0bbafdee97006a24c3fd4",
+  "roberta/split_manifest.json": "315f6018fb34f2380061101cc1e6e636709d9112b0641a6355936e969b490bd7",
+  "roberta/tokenizer_audit.json": "dedc91e52b4966ccfb03d629406424c6513d0ba15fe575ca6b6b22045182f207",
+  "roberta_parity_manifest.json": "7244756f44e40b7ed10d1217652613b3f7c508b1b08b1d83540828561c329797",
+  "securebert/alignment_exclusions.json": "d9f3d14e311c2af9a2ce1e39dfec5f039e896d2c812eda6f84fe9a617aaed109",
+  "securebert/dataset.json": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+  "securebert/encoder_dataset_manifest.json": "da8f38eb3dd3c2136baa391d46d5a5e4e102c964e0bb7bc6fd01a56c033d150d",
+  "securebert/split_manifest.json": "06bf2852dcc816a948bf53ac0a0e32dca79484bda1bab03fc715b31d4ab5f06a",
+  "securebert/tokenizer_audit.json": "7d9fef52d2482f1c207e0bb040e994695747cb07c3c5a0f3a061ef29b5bcc312"
+}

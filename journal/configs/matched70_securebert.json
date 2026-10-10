@@ -1,0 +1,15 @@
+{
+  "experiment_name": "matched70_securebert",
+  "schema_mode": "none",
+  "encoder_model": "ehsanaghaei/SecureBERT",
+  "encoder_revision": "3a47918dd874e5c769efd152b51c5756a953fb67",
+  "split_seed": 11800,
+  "seed": 42,
+  "fold": 1,
+  "span_width_coverage": 0.995,
+  "max_span_candidates": 128,
+  "min_entity_score": 0.05,
+  "max_relation_token_distance": 96,
+  "relation_negative_ratio": 6,
+  "output_dir": "journal/runs/matched70_securebert"
+}

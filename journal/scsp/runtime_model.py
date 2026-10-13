@@ -72,7 +72,7 @@ class GateASpanPairModel(nn.Module):
             raise RuntimeError(
                 "transformers is required for runtime encoder loading"
             ) from exc
-        encoder = AutoModel.from_pretrained(model_name, revision=revision)
+        encoder = AutoModel.from_pretrained(model_name, revision=revision, trust_remote_code=False)
         hidden_size = int(encoder.config.hidden_size)
         return cls(
             encoder=encoder,

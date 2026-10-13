@@ -1,7 +1,7 @@
 {
-  "completed_new_dev_runs": 2,
-  "pending_new_dev_runs": 2,
-  "seed44_status": "in_progress",
+  "completed_new_dev_runs": 4,
+  "pending_new_dev_runs": 0,
+  "seed44_status": "completed",
   "test_evaluated": false,
   "source_commit": "1e589a02bc77cef3af1dd27a09effce4e6c80f72",
   "seed43_forward_cases": [
@@ -165,5 +165,7 @@
       "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
       "verification_passed": true
     }
-  ]
+  ],
+  "updated_at": "2026-10-13",
+  "final_report": "journal/reports/matched70_multiseed_20261013.json"
 }

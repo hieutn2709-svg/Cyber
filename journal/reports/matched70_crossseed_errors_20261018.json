@@ -1,0 +1,1036 @@
+{
+  "date": "2026-10-18",
+  "source_commit": "1e589a02bc77cef3af1dd27a09effce4e6c80f72",
+  "report_source_head": "4376c21963143e66720a0ea82fea4a02d6300fc5",
+  "test_evaluated": false,
+  "new_training": false,
+  "archive_checks": [
+    {
+      "archive": "CTI_Q2_Kiem_chung_3_seed_20261013.zip",
+      "verified_entries": 167,
+      "sha256": "6f3a485535ce5b77eb77ce163a69781667a03e426512aaa239e44420de51b22f"
+    },
+    {
+      "archive": "CTI_Q2_Matched70_Ket_qua_20261007.zip",
+      "verified_entries": 105,
+      "sha256": "59e413752174e1bf7f8caa6aea6fff34ca310c7d039ff60c5be3b305fb6ad414"
+    }
+  ],
+  "logits_integrity_exception": {
+    "model": "securebert",
+    "seed": 42,
+    "cap": 128,
+    "complete_forward_records": 31527,
+    "expected_records": 34136,
+    "missing_records": 2609,
+    "original_sha256": "0cb2ca36a2195b1103abbe5e33e04480379293419066b5c6e32b3df115517467",
+    "fallback": "Original selected-baseline dev logits, SHA verified; no new forward; unavailable tail not recovered from gzip."
+  },
+  "cases": [
+    {
+      "model": "roberta",
+      "seed": 42,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 25,
+        "endpoint_loss": 12,
+        "below_threshold": 10,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 82,
+        "unannotated_pair": 38,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 22458,
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 309,
+          "fn": 17,
+          "precision": 0.25,
+          "recall": 0.8583333333333333,
+          "f1": 0.3872180451127819
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 123,
+          "fn": 24,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "f1": 0.25380710659898476
+        }
+      }
+    },
+    {
+      "model": "roberta",
+      "seed": 42,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 25,
+        "endpoint_loss": 12,
+        "below_threshold": 10,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 77,
+        "unannotated_pair": 38,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 15592,
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 245,
+          "fn": 17,
+          "precision": 0.2959770114942529,
+          "recall": 0.8583333333333333,
+          "f1": 0.4401709401709401
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 118,
+          "fn": 24,
+          "precision": 0.17482517482517482,
+          "recall": 0.5102040816326531,
+          "f1": 0.2604166666666667
+        }
+      }
+    },
+    {
+      "model": "roberta",
+      "seed": 43,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 15,
+        "endpoint_loss": 17,
+        "below_threshold": 15,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 21,
+        "unannotated_pair": 8,
+        "wrong_type": 2
+      },
+      "logits_count": 15594,
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 242,
+          "fn": 23,
+          "precision": 0.2861356932153392,
+          "recall": 0.8083333333333333,
+          "f1": 0.4226579520697168
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      }
+    },
+    {
+      "model": "roberta",
+      "seed": 43,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 15,
+        "endpoint_loss": 17,
+        "below_threshold": 15,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 21,
+        "unannotated_pair": 8,
+        "wrong_type": 2
+      },
+      "logits_count": 14530,
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 231,
+          "fn": 23,
+          "precision": 0.29573170731707316,
+          "recall": 0.8083333333333333,
+          "f1": 0.4330357142857143
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      }
+    },
+    {
+      "model": "roberta",
+      "seed": 44,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 20,
+        "endpoint_loss": 14,
+        "below_threshold": 13,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 34,
+        "unannotated_pair": 16,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 21120,
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 282,
+          "fn": 20,
+          "precision": 0.2617801047120419,
+          "recall": 0.8333333333333334,
+          "f1": 0.398406374501992
+        },
+        "relation": {
+          "tp": 20,
+          "fp": 53,
+          "fn": 29,
+          "precision": 0.273972602739726,
+          "recall": 0.40816326530612246,
+          "f1": 0.3278688524590164
+        }
+      }
+    },
+    {
+      "model": "roberta",
+      "seed": 44,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 20,
+        "endpoint_loss": 14,
+        "below_threshold": 13,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 34,
+        "unannotated_pair": 16,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 13862,
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 218,
+          "fn": 20,
+          "precision": 0.31446540880503143,
+          "recall": 0.8333333333333334,
+          "f1": 0.45662100456621
+        },
+        "relation": {
+          "tp": 20,
+          "fp": 53,
+          "fn": 29,
+          "precision": 0.273972602739726,
+          "recall": 0.40816326530612246,
+          "f1": 0.3278688524590164
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 42,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 14,
+        "below_threshold": 14,
+        "endpoint_loss": 19,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 50,
+        "unannotated_pair": 21,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 34136,
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 416,
+          "fn": 20,
+          "precision": 0.1937984496124031,
+          "recall": 0.8333333333333334,
+          "f1": 0.3144654088050315
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 74,
+          "fn": 35,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "f1": 0.20437956204379562
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 42,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 14,
+        "below_threshold": 14,
+        "endpoint_loss": 19,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 45,
+        "unannotated_pair": 21,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 22804,
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 320,
+          "fn": 20,
+          "precision": 0.23809523809523808,
+          "recall": 0.8333333333333334,
+          "f1": 0.37037037037037035
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 69,
+          "fn": 35,
+          "precision": 0.1686746987951807,
+          "recall": 0.2857142857142857,
+          "f1": 0.21212121212121213
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 43,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 14,
+        "below_threshold": 18,
+        "endpoint_loss": 15,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 38,
+        "unannotated_pair": 15,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 36616,
+      "metrics": {
+        "entity": {
+          "tp": 105,
+          "fp": 424,
+          "fn": 15,
+          "precision": 0.19848771266540643,
+          "recall": 0.875,
+          "f1": 0.32357473035439144
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 43,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 14,
+        "below_threshold": 14,
+        "endpoint_loss": 19,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 38,
+        "unannotated_pair": 15,
+        "wrong_type": 2,
+        "reversed": 1
+      },
+      "logits_count": 26658,
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 340,
+          "fn": 17,
+          "precision": 0.2325056433408578,
+          "recall": 0.8583333333333333,
+          "f1": 0.36589698046181174
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 44,
+      "cap": 128,
+      "gold_stages": {
+        "correct": 15,
+        "endpoint_loss": 18,
+        "below_threshold": 14,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 26,
+        "unannotated_pair": 12,
+        "wrong_type": 2
+      },
+      "logits_count": 40492,
+      "metrics": {
+        "entity": {
+          "tp": 102,
+          "fp": 456,
+          "fn": 18,
+          "precision": 0.1827956989247312,
+          "recall": 0.85,
+          "f1": 0.3008849557522124
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 40,
+          "fn": 34,
+          "precision": 0.2727272727272727,
+          "recall": 0.30612244897959184,
+          "f1": 0.28846153846153844
+        }
+      }
+    },
+    {
+      "model": "securebert",
+      "seed": 44,
+      "cap": 96,
+      "gold_stages": {
+        "correct": 15,
+        "endpoint_loss": 19,
+        "below_threshold": 13,
+        "wrong_type": 2
+      },
+      "fp_stages": {
+        "non_gold_endpoint": 26,
+        "unannotated_pair": 12,
+        "wrong_type": 2
+      },
+      "logits_count": 28410,
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 356,
+          "fn": 20,
+          "precision": 0.21929824561403508,
+          "recall": 0.8333333333333334,
+          "f1": 0.34722222222222227
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 40,
+          "fn": 34,
+          "precision": 0.2727272727272727,
+          "recall": 0.30612244897959184,
+          "f1": 0.28846153846153844
+        }
+      }
+    }
+  ],
+  "correct_seed_distributions": [
+    {
+      "model": "roberta",
+      "cap": 128,
+      "correct_seed_count": {
+        "0": 22,
+        "1": 6,
+        "2": 9,
+        "3": 12
+      },
+      "never_correct": 22
+    },
+    {
+      "model": "roberta",
+      "cap": 96,
+      "correct_seed_count": {
+        "0": 22,
+        "1": 6,
+        "2": 9,
+        "3": 12
+      },
+      "never_correct": 22
+    },
+    {
+      "model": "securebert",
+      "cap": 128,
+      "correct_seed_count": {
+        "0": 30,
+        "1": 6,
+        "2": 2,
+        "3": 11
+      },
+      "never_correct": 30
+    },
+    {
+      "model": "securebert",
+      "cap": 96,
+      "correct_seed_count": {
+        "0": 30,
+        "1": 6,
+        "2": 2,
+        "3": 11
+      },
+      "never_correct": 30
+    }
+  ],
+  "never_correct_any_baseline": 22,
+  "never_correct_by_document": {
+    "395": 1,
+    "365": 8,
+    "389": 8,
+    "400": 4,
+    "420": 1
+  },
+  "never_correct_by_label": {
+    "originates-from": 1,
+    "targets": 5,
+    "uses": 8,
+    "targeted-by": 4,
+    "indicates": 2,
+    "deliver": 1,
+    "located-at": 1
+  },
+  "complementarity": [
+    {
+      "seed": 42,
+      "both": 14,
+      "roberta_only": 11,
+      "securebert_only": 0,
+      "neither": 24
+    },
+    {
+      "seed": 43,
+      "both": 11,
+      "roberta_only": 4,
+      "securebert_only": 3,
+      "neither": 31
+    },
+    {
+      "seed": 44,
+      "both": 14,
+      "roberta_only": 6,
+      "securebert_only": 1,
+      "neither": 28
+    }
+  ],
+  "cap_transitions": [
+    {
+      "model": "roberta",
+      "seed": 42,
+      "changes": {},
+      "removed_fp": 5
+    },
+    {
+      "model": "roberta",
+      "seed": 43,
+      "changes": {},
+      "removed_fp": 0
+    },
+    {
+      "model": "roberta",
+      "seed": 44,
+      "changes": {},
+      "removed_fp": 0
+    },
+    {
+      "model": "securebert",
+      "seed": 42,
+      "changes": {},
+      "removed_fp": 5
+    },
+    {
+      "model": "securebert",
+      "seed": 43,
+      "changes": {
+        "below_threshold -> endpoint_loss": 4
+      },
+      "removed_fp": 0
+    },
+    {
+      "model": "securebert",
+      "seed": 44,
+      "changes": {
+        "below_threshold -> endpoint_loss": 1
+      },
+      "removed_fp": 0
+    }
+  ],
+  "persistent_fp_counts": {
+    "roberta": {
+      "128": 13,
+      "96": 13
+    },
+    "securebert": {
+      "128": 7,
+      "96": 7
+    }
+  },
+  "aggregate": {
+    "rows": [
+      {
+        "model": "roberta",
+        "seed": 42,
+        "cap": 128,
+        "epoch": 12,
+        "threshold": 0.9,
+        "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 22458,
+        "reachable_gold_pairs": 37,
+        "entity_tp": 103,
+        "entity_fp": 309,
+        "entity_fn": 17,
+        "entity_precision": 0.25,
+        "entity_recall": 0.8583333333333333,
+        "entity_f1": 0.3872180451127819,
+        "relation_tp": 25,
+        "relation_fp": 123,
+        "relation_fn": 24,
+        "relation_precision": 0.16891891891891891,
+        "relation_recall": 0.5102040816326531,
+        "relation_f1": 0.25380710659898476
+      },
+      {
+        "model": "roberta",
+        "seed": 42,
+        "cap": 96,
+        "epoch": 12,
+        "threshold": 0.9,
+        "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 15592,
+        "reachable_gold_pairs": 37,
+        "entity_tp": 103,
+        "entity_fp": 245,
+        "entity_fn": 17,
+        "entity_precision": 0.2959770114942529,
+        "entity_recall": 0.8583333333333333,
+        "entity_f1": 0.4401709401709401,
+        "relation_tp": 25,
+        "relation_fp": 118,
+        "relation_fn": 24,
+        "relation_precision": 0.17482517482517482,
+        "relation_recall": 0.5102040816326531,
+        "relation_f1": 0.2604166666666667
+      },
+      {
+        "model": "roberta",
+        "seed": 43,
+        "cap": 128,
+        "epoch": 10,
+        "threshold": 0.9,
+        "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 15594,
+        "reachable_gold_pairs": 32,
+        "entity_tp": 97,
+        "entity_fp": 242,
+        "entity_fn": 23,
+        "entity_precision": 0.2861356932153392,
+        "entity_recall": 0.8083333333333333,
+        "entity_f1": 0.4226579520697168,
+        "relation_tp": 15,
+        "relation_fp": 31,
+        "relation_fn": 34,
+        "relation_precision": 0.32608695652173914,
+        "relation_recall": 0.30612244897959184,
+        "relation_f1": 0.3157894736842105
+      },
+      {
+        "model": "roberta",
+        "seed": 43,
+        "cap": 96,
+        "epoch": 10,
+        "threshold": 0.9,
+        "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 14530,
+        "reachable_gold_pairs": 32,
+        "entity_tp": 97,
+        "entity_fp": 231,
+        "entity_fn": 23,
+        "entity_precision": 0.29573170731707316,
+        "entity_recall": 0.8083333333333333,
+        "entity_f1": 0.4330357142857143,
+        "relation_tp": 15,
+        "relation_fp": 31,
+        "relation_fn": 34,
+        "relation_precision": 0.32608695652173914,
+        "relation_recall": 0.30612244897959184,
+        "relation_f1": 0.3157894736842105
+      },
+      {
+        "model": "roberta",
+        "seed": 44,
+        "cap": 128,
+        "epoch": 12,
+        "threshold": 0.9,
+        "checkpoint_sha256": "7d654572be73a5a35fd952891a8a1a45b0c7cbb65ed486bf77d9cb21ef76dc64",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 21120,
+        "reachable_gold_pairs": 35,
+        "entity_tp": 100,
+        "entity_fp": 282,
+        "entity_fn": 20,
+        "entity_precision": 0.2617801047120419,
+        "entity_recall": 0.8333333333333334,
+        "entity_f1": 0.398406374501992,
+        "relation_tp": 20,
+        "relation_fp": 53,
+        "relation_fn": 29,
+        "relation_precision": 0.273972602739726,
+        "relation_recall": 0.40816326530612246,
+        "relation_f1": 0.3278688524590164
+      },
+      {
+        "model": "roberta",
+        "seed": 44,
+        "cap": 96,
+        "epoch": 12,
+        "threshold": 0.9,
+        "checkpoint_sha256": "7d654572be73a5a35fd952891a8a1a45b0c7cbb65ed486bf77d9cb21ef76dc64",
+        "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+        "pairs": 13862,
+        "reachable_gold_pairs": 35,
+        "entity_tp": 100,
+        "entity_fp": 218,
+        "entity_fn": 20,
+        "entity_precision": 0.31446540880503143,
+        "entity_recall": 0.8333333333333334,
+        "entity_f1": 0.45662100456621,
+        "relation_tp": 20,
+        "relation_fp": 53,
+        "relation_fn": 29,
+        "relation_precision": 0.273972602739726,
+        "relation_recall": 0.40816326530612246,
+        "relation_f1": 0.3278688524590164
+      },
+      {
+        "model": "securebert",
+        "seed": 42,
+        "cap": 128,
+        "epoch": 8,
+        "threshold": 0.9,
+        "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 34136,
+        "reachable_gold_pairs": 30,
+        "entity_tp": 100,
+        "entity_fp": 416,
+        "entity_fn": 20,
+        "entity_precision": 0.1937984496124031,
+        "entity_recall": 0.8333333333333334,
+        "entity_f1": 0.3144654088050315,
+        "relation_tp": 14,
+        "relation_fp": 74,
+        "relation_fn": 35,
+        "relation_precision": 0.1590909090909091,
+        "relation_recall": 0.2857142857142857,
+        "relation_f1": 0.20437956204379562
+      },
+      {
+        "model": "securebert",
+        "seed": 42,
+        "cap": 96,
+        "epoch": 8,
+        "threshold": 0.9,
+        "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 22804,
+        "reachable_gold_pairs": 30,
+        "entity_tp": 100,
+        "entity_fp": 320,
+        "entity_fn": 20,
+        "entity_precision": 0.23809523809523808,
+        "entity_recall": 0.8333333333333334,
+        "entity_f1": 0.37037037037037035,
+        "relation_tp": 14,
+        "relation_fp": 69,
+        "relation_fn": 35,
+        "relation_precision": 0.1686746987951807,
+        "relation_recall": 0.2857142857142857,
+        "relation_f1": 0.21212121212121213
+      },
+      {
+        "model": "securebert",
+        "seed": 43,
+        "cap": 128,
+        "epoch": 11,
+        "threshold": 0.9,
+        "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 36616,
+        "reachable_gold_pairs": 34,
+        "entity_tp": 105,
+        "entity_fp": 424,
+        "entity_fn": 15,
+        "entity_precision": 0.19848771266540643,
+        "entity_recall": 0.875,
+        "entity_f1": 0.32357473035439144,
+        "relation_tp": 14,
+        "relation_fp": 56,
+        "relation_fn": 35,
+        "relation_precision": 0.2,
+        "relation_recall": 0.2857142857142857,
+        "relation_f1": 0.23529411764705882
+      },
+      {
+        "model": "securebert",
+        "seed": 43,
+        "cap": 96,
+        "epoch": 11,
+        "threshold": 0.9,
+        "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 26658,
+        "reachable_gold_pairs": 30,
+        "entity_tp": 103,
+        "entity_fp": 340,
+        "entity_fn": 17,
+        "entity_precision": 0.2325056433408578,
+        "entity_recall": 0.8583333333333333,
+        "entity_f1": 0.36589698046181174,
+        "relation_tp": 14,
+        "relation_fp": 56,
+        "relation_fn": 35,
+        "relation_precision": 0.2,
+        "relation_recall": 0.2857142857142857,
+        "relation_f1": 0.23529411764705882
+      },
+      {
+        "model": "securebert",
+        "seed": 44,
+        "cap": 128,
+        "epoch": 10,
+        "threshold": 0.9,
+        "checkpoint_sha256": "9f4aedbf1a0c66e02334b872de869b0488e1b80534590349c7dd82320f3644b4",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 40492,
+        "reachable_gold_pairs": 31,
+        "entity_tp": 102,
+        "entity_fp": 456,
+        "entity_fn": 18,
+        "entity_precision": 0.1827956989247312,
+        "entity_recall": 0.85,
+        "entity_f1": 0.3008849557522124,
+        "relation_tp": 15,
+        "relation_fp": 40,
+        "relation_fn": 34,
+        "relation_precision": 0.2727272727272727,
+        "relation_recall": 0.30612244897959184,
+        "relation_f1": 0.28846153846153844
+      },
+      {
+        "model": "securebert",
+        "seed": 44,
+        "cap": 96,
+        "epoch": 10,
+        "threshold": 0.9,
+        "checkpoint_sha256": "9f4aedbf1a0c66e02334b872de869b0488e1b80534590349c7dd82320f3644b4",
+        "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+        "pairs": 28410,
+        "reachable_gold_pairs": 30,
+        "entity_tp": 100,
+        "entity_fp": 356,
+        "entity_fn": 20,
+        "entity_precision": 0.21929824561403508,
+        "entity_recall": 0.8333333333333334,
+        "entity_f1": 0.34722222222222227,
+        "relation_tp": 15,
+        "relation_fp": 40,
+        "relation_fn": 34,
+        "relation_precision": 0.2727272727272727,
+        "relation_recall": 0.30612244897959184,
+        "relation_f1": 0.28846153846153844
+      }
+    ],
+    "summary": [
+      {
+        "model": "roberta",
+        "cap": 128,
+        "n": 3,
+        "entity_f1_mean": 0.4027607905614969,
+        "entity_f1_sd": 0.018116772772585794,
+        "relation_f1_mean": 0.2991551442474039,
+        "relation_f1_sd": 0.03973425772325611,
+        "entity_recall_mean": 0.8333333333333334,
+        "entity_recall_sd": 0.024999999999999967,
+        "relation_recall_mean": 0.40816326530612246,
+        "relation_recall_sd": 0.10204081632653061,
+        "pairs_mean": 19724,
+        "pairs_sd": 3638.713508920426
+      },
+      {
+        "model": "roberta",
+        "cap": 96,
+        "n": 3,
+        "entity_f1_mean": 0.44327588634095483,
+        "entity_f1_sd": 0.012095329571484532,
+        "relation_f1_mean": 0.3013583309366312,
+        "relation_f1_sd": 0.035967245554701224,
+        "entity_recall_mean": 0.8333333333333334,
+        "entity_recall_sd": 0.024999999999999967,
+        "relation_recall_mean": 0.40816326530612246,
+        "relation_recall_sd": 0.10204081632653061,
+        "pairs_mean": 14661.333333333334,
+        "pairs_sd": 872.4456047991378
+      },
+      {
+        "model": "securebert",
+        "cap": 128,
+        "n": 3,
+        "entity_f1_mean": 0.3129750316372118,
+        "entity_f1_sd": 0.011418072777452016,
+        "relation_f1_mean": 0.24271173938413096,
+        "relation_f1_sd": 0.04252893748677691,
+        "entity_recall_mean": 0.8527777777777777,
+        "entity_recall_sd": 0.02097176232019651,
+        "relation_recall_mean": 0.2925170068027211,
+        "relation_recall_sd": 0.011782658554890335,
+        "pairs_mean": 37081.333333333336,
+        "pairs_sd": 3203.4489746729746
+      },
+      {
+        "model": "securebert",
+        "cap": 96,
+        "n": 3,
+        "entity_f1_mean": 0.36116319101813477,
+        "entity_f1_sd": 0.012278671041483008,
+        "relation_f1_mean": 0.24529228940993647,
+        "relation_f1_sd": 0.039139927636454346,
+        "entity_recall_mean": 0.8416666666666667,
+        "entity_recall_sd": 0.014433756729740593,
+        "relation_recall_mean": 0.2925170068027211,
+        "relation_recall_sd": 0.011782658554890335,
+        "pairs_mean": 25957.333333333332,
+        "pairs_sd": 2867.927707131638
+      }
+    ],
+    "paired_deltas": [
+      {
+        "model": "roberta",
+        "seed": 42,
+        "entity_f1": 0.0529528950581582,
+        "relation_f1": 0.00660956006768193,
+        "entity_tp": 0,
+        "relation_tp": 0,
+        "relation_fp": -5,
+        "pairs": -6866,
+        "reachable_gold_pairs": 0
+      },
+      {
+        "model": "roberta",
+        "seed": 43,
+        "entity_f1": 0.01037776221599751,
+        "relation_f1": 0.0,
+        "entity_tp": 0,
+        "relation_tp": 0,
+        "relation_fp": 0,
+        "pairs": -1064,
+        "reachable_gold_pairs": 0
+      },
+      {
+        "model": "roberta",
+        "seed": 44,
+        "entity_f1": 0.05821463006421801,
+        "relation_f1": 0.0,
+        "entity_tp": 0,
+        "relation_tp": 0,
+        "relation_fp": 0,
+        "pairs": -7258,
+        "reachable_gold_pairs": 0
+      },
+      {
+        "model": "securebert",
+        "seed": 42,
+        "entity_f1": 0.05590496156533886,
+        "relation_f1": 0.0077416500774165065,
+        "entity_tp": 0,
+        "relation_tp": 0,
+        "relation_fp": -5,
+        "pairs": -11332,
+        "reachable_gold_pairs": 0
+      },
+      {
+        "model": "securebert",
+        "seed": 43,
+        "entity_f1": 0.0423222501074203,
+        "relation_f1": 0.0,
+        "entity_tp": -2,
+        "relation_tp": 0,
+        "relation_fp": 0,
+        "pairs": -9958,
+        "reachable_gold_pairs": -4
+      },
+      {
+        "model": "securebert",
+        "seed": 44,
+        "entity_f1": 0.04633726647000985,
+        "relation_f1": 0.0,
+        "entity_tp": -2,
+        "relation_tp": 0,
+        "relation_fp": 0,
+        "pairs": -12082,
+        "reachable_gold_pairs": -1
+      }
+    ],
+    "delta_summary": [
+      {
+        "model": "roberta",
+        "relation_delta_mean": 0.00220318668922731,
+        "relation_delta_sd": 0.0038160312843011635,
+        "positive_seeds": 1
+      },
+      {
+        "model": "securebert",
+        "relation_delta_mean": 0.0025805500258055023,
+        "relation_delta_sd": 0.004469643756168307,
+        "positive_seeds": 1
+      }
+    ],
+    "test_evaluated": false,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "split_seed": 11800,
+    "fold": 1,
+    "source_commit": "1e589a02bc77cef3af1dd27a09effce4e6c80f72",
+    "limitations": [
+      "Three seeds on same five validation documents",
+      "Validation used for checkpoint/threshold selection and cap exploration",
+      "Not an independent test estimate or statistical significance claim",
+      "CPU only; concurrent timing is not a benchmark"
+    ]
+  }
+}

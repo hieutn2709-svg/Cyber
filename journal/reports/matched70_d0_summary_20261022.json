@@ -1,0 +1,587 @@
+{
+  "date": "2026-10-22",
+  "matrix_complete": true,
+  "missing_configurations": [],
+  "configurations": [
+    {
+      "model": "roberta",
+      "seed": 42,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 103,
+          "wrong_type": 12,
+          "threshold": 5
+        },
+        "gold_in_top2_proposed": 111,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 309,
+          "fn": 17,
+          "precision": 0.25,
+          "recall": 0.8583333333333333,
+          "f1": 0.3872180451127819
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 123,
+          "fn": 24,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "f1": 0.25380710659898476
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 22458
+    },
+    {
+      "model": "roberta",
+      "seed": 42,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 103,
+          "wrong_type": 12,
+          "threshold": 5
+        },
+        "gold_in_top2_proposed": 111,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 245,
+          "fn": 17,
+          "precision": 0.2959770114942529,
+          "recall": 0.8583333333333333,
+          "f1": 0.4401709401709401
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 118,
+          "fn": 24,
+          "precision": 0.17482517482517482,
+          "recall": 0.5102040816326531,
+          "f1": 0.2604166666666667
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 15592
+    },
+    {
+      "model": "roberta",
+      "seed": 43,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 97,
+          "wrong_type": 16,
+          "threshold": 7
+        },
+        "gold_in_top2_proposed": 109,
+        "gold_in_top2_retained": 105,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 242,
+          "fn": 23,
+          "precision": 0.2861356932153392,
+          "recall": 0.8083333333333333,
+          "f1": 0.4226579520697168
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 15594
+    },
+    {
+      "model": "roberta",
+      "seed": 43,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 97,
+          "wrong_type": 16,
+          "threshold": 7
+        },
+        "gold_in_top2_proposed": 109,
+        "gold_in_top2_retained": 105,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 231,
+          "fn": 23,
+          "precision": 0.29573170731707316,
+          "recall": 0.8083333333333333,
+          "f1": 0.4330357142857143
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 14530
+    },
+    {
+      "model": "roberta",
+      "seed": 44,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 100,
+          "wrong_type": 15,
+          "threshold": 5
+        },
+        "gold_in_top2_proposed": 114,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 282,
+          "fn": 20,
+          "precision": 0.2617801047120419,
+          "recall": 0.8333333333333334,
+          "f1": 0.398406374501992
+        },
+        "relation": {
+          "tp": 20,
+          "fp": 53,
+          "fn": 29,
+          "precision": 0.273972602739726,
+          "recall": 0.40816326530612246,
+          "f1": 0.3278688524590164
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 21120
+    },
+    {
+      "model": "roberta",
+      "seed": 44,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 100,
+          "wrong_type": 12,
+          "threshold": 5,
+          "cap": 3
+        },
+        "gold_in_top2_proposed": 114,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 218,
+          "fn": 20,
+          "precision": 0.31446540880503143,
+          "recall": 0.8333333333333334,
+          "f1": 0.45662100456621
+        },
+        "relation": {
+          "tp": 20,
+          "fp": 53,
+          "fn": 29,
+          "precision": 0.273972602739726,
+          "recall": 0.40816326530612246,
+          "f1": 0.3278688524590164
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8211,
+      "pair_count": 13862
+    },
+    {
+      "model": "securebert",
+      "seed": 42,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 100,
+          "wrong_type": 8,
+          "threshold": 7,
+          "cap": 5
+        },
+        "gold_in_top2_proposed": 112,
+        "gold_in_top2_retained": 105,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 416,
+          "fn": 20,
+          "precision": 0.1937984496124031,
+          "recall": 0.8333333333333334,
+          "f1": 0.3144654088050315
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 74,
+          "fn": 35,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "f1": 0.20437956204379562
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 34136
+    },
+    {
+      "model": "securebert",
+      "seed": 42,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 100,
+          "wrong_type": 8,
+          "threshold": 7,
+          "cap": 5
+        },
+        "gold_in_top2_proposed": 112,
+        "gold_in_top2_retained": 105,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 320,
+          "fn": 20,
+          "precision": 0.23809523809523808,
+          "recall": 0.8333333333333334,
+          "f1": 0.37037037037037035
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 69,
+          "fn": 35,
+          "precision": 0.1686746987951807,
+          "recall": 0.2857142857142857,
+          "f1": 0.21212121212121213
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 22804
+    },
+    {
+      "model": "securebert",
+      "seed": 43,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 105,
+          "wrong_type": 9,
+          "threshold": 5,
+          "cap": 1
+        },
+        "gold_in_top2_proposed": 115,
+        "gold_in_top2_retained": 111,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 105,
+          "fp": 424,
+          "fn": 15,
+          "precision": 0.19848771266540643,
+          "recall": 0.875,
+          "f1": 0.32357473035439144
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 36616
+    },
+    {
+      "model": "securebert",
+      "seed": 43,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 103,
+          "wrong_type": 8,
+          "threshold": 5,
+          "cap": 4
+        },
+        "gold_in_top2_proposed": 115,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 340,
+          "fn": 17,
+          "precision": 0.2325056433408578,
+          "recall": 0.8583333333333333,
+          "f1": 0.36589698046181174
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 26658
+    },
+    {
+      "model": "securebert",
+      "seed": 44,
+      "cap": 128,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 102,
+          "wrong_type": 10,
+          "threshold": 1,
+          "cap": 7
+        },
+        "gold_in_top2_proposed": 115,
+        "gold_in_top2_retained": 111,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 102,
+          "fp": 456,
+          "fn": 18,
+          "precision": 0.1827956989247312,
+          "recall": 0.85,
+          "f1": 0.3008849557522124
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 40,
+          "fn": 34,
+          "precision": 0.2727272727272727,
+          "recall": 0.30612244897959184,
+          "f1": 0.28846153846153844
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 40492
+    },
+    {
+      "model": "securebert",
+      "seed": 44,
+      "cap": 96,
+      "primary": {
+        "observations": 120,
+        "reasons": {
+          "retained": 100,
+          "wrong_type": 10,
+          "threshold": 1,
+          "cap": 9
+        },
+        "gold_in_top2_proposed": 115,
+        "gold_in_top2_retained": 109,
+        "unique_mentions": 120,
+        "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 356,
+          "fn": 20,
+          "precision": 0.21929824561403508,
+          "recall": 0.8333333333333334,
+          "f1": 0.34722222222222227
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 40,
+          "fn": 34,
+          "precision": 0.2727272727272727,
+          "recall": 0.30612244897959184,
+          "f1": 0.28846153846153844
+        }
+      },
+      "archival_parity": {
+        "exact_prediction_keys_and_order": true,
+        "exact_scores": true,
+        "max_entity_score_abs_diff": 0.0,
+        "max_relation_score_abs_diff": 0.0,
+        "score_abs_tolerance": 1e-05,
+        "score_guard_passed": true
+      },
+      "proposal_count": 8097,
+      "pair_count": 28410
+    }
+  ],
+  "persistent_baseline_endpoints": {
+    "observations": 264,
+    "reasons": {
+      "threshold": 29,
+      "retained": 174,
+      "wrong_type": 52,
+      "cap": 9
+    },
+    "gold_in_top2_proposed": 242,
+    "gold_in_top2_retained": 210,
+    "unique_mentions": 68,
+    "unique_mentions_note": "model-specific token coordinates, deduplicated over seeds and relation roles"
+  },
+  "persistent_baseline_relation_stages": {
+    "endpoint_loss": 81,
+    "below_threshold": 39,
+    "wrong_type": 12
+  },
+  "unique_persistent_mentions_character_ids": 34,
+  "all_primary_observations": 1440,
+  "all_persistent_endpoint_observations": 528,
+  "all_persistent_relation_observations": 264,
+  "all_streams_complete": true,
+  "all_saved_predictions_rescored": true,
+  "all_prior_persistent_stages_equal": true,
+  "archival_score_guard_failed_configurations": [],
+  "exact_archival_scores_all": true,
+  "review_sha256": "da11d5195a7f3fad72a6c4f29836d0f2afe6f36d5dbb456d971161a36e607d31",
+  "analysis_source_sha256": "3f672b6fcfeac5fc78ddc73aa1d634aeccbd77cb8238bb62546a3b1fc2d4ef23",
+  "new_training": false,
+  "test_evaluated": false,
+  "top2_limitation": "Retrospective exact-boundary gold-type coverage, not deployable precision/F1 or recovered relation TP.",
+  "numeric_limitation": "Archived numerical drift is measured, not resolved; the1e-5 guard is post-observation, not preregistered."
+}

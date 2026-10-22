@@ -11,7 +11,7 @@ from journal.scsp.candidates import enumerate_content_spans
 from journal.scsp.artifacts import _sigmoid
 from journal.scsp.serialization import read_prediction_jsonl
 from journal.evaluation.rescore_gate_a import strict_micro_scores
-from journal.scripts.run_d0_diagnostics import sha,read,dump,require
+from journal.scripts.run_d0_diagnostics import sha,read,dump,require,validate_resolved_config
 
 
 def classify_endpoint(snapshot,start,end,label):
@@ -58,6 +58,26 @@ def summarize(rows):
         unique_mentions_note='model-specific token coordinates, deduplicated over seeds and relation roles')
 
 
+def validate_case_identity(verification,summary,model,seed,cap,dataset_sha):
+    expected=dict(model=model,seed=seed,cap=cap,dataset_sha256=dataset_sha,split='validation',
+                  test_evaluated=False,new_training=False)
+    for key,value in expected.items():
+        require(verification.get(key)==value,f'case identity mismatch: {key}')
+    require(verification in summary['cases'],'summary/case disagreement')
+    require(set(verification['artifacts_sha256'])=={
+        'candidate_diagnostics.jsonl.gz','validation_logits.jsonl.gz','validation_predictions.jsonl'},'artifact contract mismatch')
+
+
+def validate_matrix(configs,allow_partial):
+    actual={(c['model'],c['seed'],c['cap']) for c in configs}
+    expected={(m,s,c) for m in ('roberta','securebert') for s in (42,43,44) for c in (128,96)}
+    require(len(actual)==len(configs) and actual<=expected,'duplicate or unexpected configuration')
+    require({x for x in expected if x[2]==128}<=actual,'all six cap128 baselines required')
+    missing=expected-actual
+    require(allow_partial or not missing,'matrix incomplete; explicit partial mode required')
+    return [f'{m}_s{s}_cap{c}' for m,s,c in sorted(missing)]
+
+
 def main(args):
     inv=LabelInventory.from_json(Path(__file__).resolve().parents[1]/'configs/gate_a_label_inventory.json')
     review=read(args.review); require(len(review['cases'])==22,'persistent case count')
@@ -67,12 +87,22 @@ def main(args):
         windows={(w.doc_id,w.window_index):w for w in load_clean_windows(data,inv)}
         raw={(str(r['doc_id']),r['window_index']):r for r in read(data)}
         for seed in (42,43,44):
+            original=(args.inputs/'inputs/runs70'/('roberta_dev_v3' if model=='roberta' else 'securebert_dev')
+                      if seed==42 else args.inputs/'runs'/f'{model}_s{seed}')
+            train_meta=read(original/'training_run_config.json')
+            validate_resolved_config(read(original/'resolved_config.json'),train_meta['encoder_package']['contract'])
             run=args.results/f'{model}_s{seed}'
             summary=read(run/'run_summary.json')
-            require(summary['status'] in {'D0_complete','D0_diagnostic_complete_with_archival_guard_failure'},'incomplete run')
+            allowed={'D0_complete','D0_diagnostic_complete_with_archival_guard_failure'}
+            if args.allow_incomplete_matrix:allowed.add('blocked_prediction_identity')
+            require(summary['status'] in allowed,'incomplete run')
             for cap in (128,96):
                 dest=run/('baseline' if cap==128 else 'A2_cap096')
+                if args.allow_incomplete_matrix and not (dest/'verification.json').exists():
+                    require(summary['status']=='blocked_prediction_identity' and summary['failed_case']['cap']==cap,'unexplained missing case')
+                    continue
                 verification=read(dest/'verification.json')
+                validate_case_identity(verification,summary,model,seed,cap,sha(data))
                 for name,digest in verification['artifacts_sha256'].items():
                     require(sha(dest/name)==digest,'output artifact hash mismatch')
                 require(verification['exact_logging_on_off'] and verification['weights_unchanged'] and verification['rng_unchanged'],'D0 parity failed')
@@ -82,10 +112,15 @@ def main(args):
                 logits=gzip_rows(dest/'validation_logits.jsonl.gz')
                 require(len(snaps)==5 and len(logits)==verification['pair_count'],'stream counts mismatch')
                 require(len({s['document_id'] for s in snaps})==5,'duplicate documents')
+                require({s['document_id'] for s in snaps}=={'365','389','395','400','420'},'validation document mismatch')
                 by_doc={s['document_id']:s for s in snaps};expected_pairs=[]
                 primary=[]
                 for snap in snaps:
                     w=windows[(snap['document_id'],snap['window_index'])];row=raw[(w.doc_id,w.window_index)]
+                    expected=dict(content_start=w.content_start,content_end=w.content_end,width_cap=6,
+                        global_token_offset=w.token_start_global-w.content_start,min_entity_score=.05,
+                        max_span_candidates=cap,max_relation_token_distance=96)
+                    require(all(snap.get(k)==v for k,v in expected.items()),'snapshot inference contract mismatch')
                     require(snap['classes']==['NONE']+list(inv.trainable_entity_types),'class order mismatch')
                     require([(s['start'],s['end']) for s in snap['spans']]==[(s.start,s.end) for s in enumerate_content_spans(w,6)],'proposal domain mismatch')
                     require(snap['label_mask']==list(w.label_mask) and snap['attention_mask']==list(w.attention_mask),'mask mismatch')
@@ -141,13 +176,14 @@ def main(args):
                         stage=stage,existence_probability=probability,argmax_relation_type=label))
                 configs.append(dict(model=model,seed=seed,cap=cap,primary=summarize(primary),metrics=verification['metrics'],
                     archival_parity=verification['archival_parity'],proposal_count=verification['proposal_count'],pair_count=len(logits)))
-    require(len(all_entities)==1440 and len(endpoints)==528 and len(relations)==264,'matrix incomplete')
+    missing=validate_matrix(configs,args.allow_incomplete_matrix)
+    require(len(all_entities)==120*len(configs) and len(endpoints)==44*len(configs) and len(relations)==22*len(configs),'observation count mismatch')
     base_end=[r for r in endpoints if r['cap']==128];base_rel=[r for r in relations if r['cap']==128]
     require(dict(Counter(r['stage'] for r in base_rel))==review['summary']['baseline_stage_counts'],'baseline reconciliation failed')
     output=args.output;output.mkdir(parents=True,exist_ok=False)
     for filename,rows in [('all_entity_diagnostics.jsonl',all_entities),('persistent_endpoint_diagnostics.jsonl',endpoints),('persistent_relation_diagnostics.jsonl',relations)]:
         (output/filename).write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in rows))
-    result=dict(date='2026-10-22',configurations=configs,persistent_baseline_endpoints=summarize(base_end),
+    result=dict(date='2026-10-22',matrix_complete=not missing,missing_configurations=missing,configurations=configs,persistent_baseline_endpoints=summarize(base_end),
         persistent_baseline_relation_stages=dict(Counter(r['stage'] for r in base_rel)),
         unique_persistent_mentions_character_ids=len({(c['document_id'],*c['identity'][i]) for c in review['cases'] for i in (1,3)}),
         all_primary_observations=len(all_entities),all_persistent_endpoint_observations=len(endpoints),all_persistent_relation_observations=len(relations),
@@ -164,4 +200,5 @@ def main(args):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('inputs','review','results','output'):parser.add_argument('--'+name,type=Path,required=True)
+    parser.add_argument('--allow-incomplete-matrix',action='store_true')
     main(parser.parse_args())

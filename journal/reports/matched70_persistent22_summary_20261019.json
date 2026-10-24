@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-19",
+  "source_sha256": "dabd5c52c20c7aa912de65723699f246b0c12b3590289283b3c2a2fa6250e776",
+  "source_code_head": "4376c21963143e66720a0ea82fea4a02d6300fc5",
+  "prior_report_head": "e7aa1a434af2e2f7d848bcb0da2d4548ad904fc4",
+  "relations_reviewed": 22,
+  "baseline_outcomes": 132,
+  "all_cap_outcomes": 264,
+  "baseline_stage_counts": {
+    "endpoint_loss": 81,
+    "below_threshold": 39,
+    "wrong_type": 12
+  },
+  "baseline_endpoint_observations": {
+    "no_overlapping_retained_candidate": 23,
+    "exact_typed_retained": 174,
+    "exact_boundary_wrong_type": 52,
+    "overlap_wrong_boundary_and_type": 10,
+    "overlap_same_type_wrong_boundary": 5
+  },
+  "uniform_baseline_stages": {
+    "endpoint_loss": 9,
+    "mixed": 10,
+    "below_threshold": 1,
+    "wrong_type": 2
+  },
+  "qualitative_categories": {
+    "relation_semantics": 5,
+    "relation_direction": 2,
+    "supported_context": 4,
+    "entity_granularity": 7,
+    "text_label_conflict": 1,
+    "mention_scope": 1,
+    "entity_boundary": 1,
+    "direction_convention": 1
+  },
+  "source_direction_left_cases": [
+    "R22"
+  ],
+  "annotation_changes": 0,
+  "new_training": false,
+  "new_forward": false,
+  "test_evaluated": false,
+  "limitations": [
+    "Retained-candidate diagnostics cannot distinguish upstream proposal failure from pruning.",
+    "Qualitative review is a first-pass assistant analysis, not independent human adjudication.",
+    "Selected persistent errors are not a random sample of the corpus.",
+    "Original baseline logits fallback applies to SecureBERT seed42 cap128 as previously disclosed."
+  ]
+}

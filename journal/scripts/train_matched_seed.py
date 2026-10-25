@@ -15,6 +15,8 @@ def build_parser():
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--device',choices=('cpu','cuda','auto'),default='cpu')
     p.add_argument('--resume',action='store_true')
+    p.add_argument('--train-pair-diagnostics',action='store_true',
+                   help='record actual training-pair label collisions in epoch history')
     return p
 
 
@@ -51,7 +53,8 @@ def run(args):
         delegated=argparse.Namespace(mode='dev',config=str(config),training_config=str(training),inventory=str(inventory),
             manifest=str(args.bundle/args.package/'split_manifest.json'),dataset=str(args.bundle/args.package/'dataset.json'),
             fold=1,seed=args.seed,output_dir=str(args.output_dir),device=args.device,overfit_epochs=20,
-            encoder_package=package,epoch_recovery=True,resume=args.resume)
+            encoder_package=package,epoch_recovery=True,resume=args.resume,
+            train_pair_diagnostics=getattr(args,'train_pair_diagnostics',False))
         if gate.mode_evaluates_test(delegated.mode):
             raise ValueError('test evaluation not authorized')
         return gate.run(delegated)

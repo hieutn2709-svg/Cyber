@@ -92,6 +92,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--fold", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--train-pair-diagnostics", action="store_true",
+                        help="observe eligible/sampled training label collisions in epoch history")
     parser.add_argument(
         "--device",
         choices=("auto", "cuda", "cpu"),
@@ -279,7 +281,8 @@ def _train_epoch(
     seed: int,
     epoch: int,
     device,
-) -> dict[str, float | int]:
+    train_pair_diagnostics: bool = False,
+) -> dict[str, Any]:
     import torch
     from journal.scsp.training import compute_training_window_loss
 
@@ -300,9 +303,11 @@ def _train_epoch(
     }
     amp_enabled = bool(training_config.fp16 and device.type == "cuda")
     accumulation = int(training_config.gradient_accumulation_steps)
+    pair_records = []
 
     for step, window in enumerate(order, start=1):
         sample_seed = seed + epoch * 100_000 + step
+        pair_record = {} if train_pair_diagnostics else None
         with torch.amp.autocast("cuda", enabled=amp_enabled):
             result = compute_training_window_loss(
                 model,
@@ -313,8 +318,17 @@ def _train_epoch(
                 train_config=training_config,
                 seed=sample_seed,
                 device=device,
+                **({"pair_diagnostics": pair_record} if pair_record is not None else {}),
             )
             scaled_loss = result.total_loss / accumulation
+        if pair_record is not None:
+            pair_record.update({
+                "document_id": window.doc_id,
+                "window_index": window.window_index,
+                "epoch": epoch, "step": step, "sample_seed": sample_seed,
+                "global_token_offset": window.token_start_global - window.content_start,
+            })
+            pair_records.append(pair_record)
         scaler.scale(scaled_loss).backward()
 
         if step % accumulation == 0 or step == len(order):
@@ -348,6 +362,8 @@ def _train_epoch(
     ):
         totals[key] /= count
     totals["window_count"] = len(order)
+    if train_pair_diagnostics:
+        totals["train_pair_diagnostics"] = pair_records
     return totals
 
 
@@ -712,6 +728,7 @@ def _run_overfit(
     seed: int,
     device,
     output_dir: Path,
+    train_pair_diagnostics: bool = False,
 ) -> dict[str, Any]:
     candidates = [window for window in train_windows if window.gold_relations]
     if not candidates:
@@ -735,6 +752,7 @@ def _run_overfit(
             seed=seed,
             epoch=epoch,
             device=device,
+            train_pair_diagnostics=train_pair_diagnostics,
         )
         metrics["epoch"] = epoch
         history.append(metrics)
@@ -835,6 +853,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     device = _resolve_device(args.device)
     recovery_state = None
     recovery_enabled = getattr(args, "epoch_recovery", False)
+    diagnostic_metadata = ({"train_pair_diagnostics": True}
+                           if getattr(args, "train_pair_diagnostics", False) else {})
     if recovery_enabled:
         from journal.scsp import training_recovery
         if args.mode not in {"smoke", "dev"} or getattr(args, "encoder_package", None) is None:
@@ -847,6 +867,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "environment": _environment(device),
             "torch_threads": torch.get_num_threads(),
             "torch_interop_threads": torch.get_num_interop_threads(),
+            **diagnostic_metadata,
         }
         if getattr(args, "resume", False):
             recovery_state = training_recovery.load(output_dir / "recovery.pt", recovery_identity)
@@ -855,6 +876,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         output_dir / "training_run_config.json",
         {
             "mode": args.mode,
+            **diagnostic_metadata,
             **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
             "fold": args.fold,
             "seed": args.seed,
@@ -902,6 +924,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             seed=args.seed,
             device=device,
             output_dir=output_dir,
+            train_pair_diagnostics=getattr(args, "train_pair_diagnostics", False),
         )
         _write_json(output_dir / "run_summary.json", summary)
         return summary
@@ -939,6 +962,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             seed=args.seed,
             epoch=epoch,
             device=device,
+            train_pair_diagnostics=getattr(args, "train_pair_diagnostics", False),
         )
         validation_inferences = _infer_split(
             model,

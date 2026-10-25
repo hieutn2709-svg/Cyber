@@ -112,6 +112,7 @@ def compute_training_window_loss(
     train_config,
     seed: int,
     device: torch.device,
+    pair_diagnostics: dict | None = None,
 ) -> TrainingWindowResult:
     """Compute one teacher-forced training-window loss.
 
@@ -172,6 +173,7 @@ def compute_training_window_loss(
         max_token_distance=base_config.max_relation_token_distance,
         negative_ratio=base_config.relation_negative_ratio,
         seed=seed,
+        diagnostics=pair_diagnostics,
     )
 
     if pair_batch.pairs:

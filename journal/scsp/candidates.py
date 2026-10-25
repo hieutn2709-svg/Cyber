@@ -121,6 +121,7 @@ def build_training_pairs(
     negative_ratio: int,
     *,
     seed: int,
+    diagnostics: dict | None = None,
 ) -> TrainingPairBatch:
     """Preserve all positives; sample deterministic nearby negatives.
 
@@ -154,6 +155,7 @@ def build_training_pairs(
             elif distance <= max_token_distance:
                 negatives.append(pair)
 
+    eligible_negatives = negatives
     rng = random.Random(seed)
     negative_limit = (
         len(positives) * negative_ratio if positives else negative_ratio
@@ -168,4 +170,11 @@ def build_training_pairs(
         [gold_by_endpoint[pair.ordered_key] for pair in positives]
         + [None] * len(negatives)
     )
-    return TrainingPairBatch(tuple(pairs), positive_mask, relation_labels)
+    batch = TrainingPairBatch(tuple(pairs), positive_mask, relation_labels)
+    if diagnostics is not None:
+        from .training_pair_diagnostics import summarize_training_pairs
+        diagnostics.update(summarize_training_pairs(
+            positives, eligible_negatives, batch, gold_relations,
+            max_token_distance=max_token_distance,
+        ))
+    return batch

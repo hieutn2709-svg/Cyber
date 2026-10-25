@@ -28,7 +28,7 @@ windows, and history/recovery/CLI flag propagation.
 
 ## Task 3: Review and delivery
 - [x] Fresh independent review of whole change; fix important findings.
-- [ ] Commit/update authorized draft PR5; save evidence report.
+- [x] Commit/update authorized draft PR5; save evidence report.
 
 ## Execution ledger
 Base c22e5e2356b56e0e9e9fa591cd1bf8ca0d00a34a; existing isolated worktree reused.
@@ -58,3 +58,8 @@ identified pilot must measure these before operational rollout.
 Final: Ruling: reviewer did not audit old PR changes or repeat full-suite comparison
 — this review covers only c22e5e2 onward; author-run full logs are retained — historical
 review coverage must not be inferred from approval of this delta.
+
+Task3 complete: code published at3d7aa16f3a0ea822fa12dfdca2bf890b86a39eb8; PR5 remains draft.
+Evidence archive CTI_Q2_E2_Chan_doan_huan_luyen_20261025.zip saved successfully;
+14 entries, CRC and all payload SHA256 verified. Final suite269/269 passed.
+Next incomplete work is real-corpus training collision measurement, not this instrumentation.

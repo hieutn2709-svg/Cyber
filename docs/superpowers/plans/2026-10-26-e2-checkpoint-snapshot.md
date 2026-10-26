@@ -12,7 +12,7 @@
 - [x] Add wrapper forwarding and enabled recovery/next-epoch regression tests (3 pass).
 - [x] Run both 49-window train-mode snapshots with exact on/off checks and tensor integrity.
 - [x] Independently reconstruct eligible/sample counts from saved sampler inputs.
-- [ ] Complete review, update draft PR5, save report/evidence archive.
+- [x] Complete review, update draft PR5, save report/evidence archive.
 
 ## Ledger
 Base223215e3a0910cabfd38e2b6f1d0f0a7be8abc6c; existing isolated worktree retained.
@@ -33,3 +33,8 @@ assertions plus completed artifacts and independent re-enumeration support the
 bounded result, not independent forward replication. Cost if overstated: false
 replication claim. Historical trajectory/pretrained backward/GPU/quality and
 performance claims remain excluded, as detailed in the report.
+
+Delivery complete: report/tests published ata433477ac2f9629780648e41dc02843358676b83.
+CTI_Q2_E2_Ket_qua_do_checkpoint_20261026.zip saved successfully (19 entries;
+CRC and all SHA256 checked). Artifact SHA25633c43dba7e09f201c7c95a18afcb233caf7aafb46e3546dcdd781883263cddb9.
+Do not rerun this completed snapshot to resume: next work is trajectory measurement.

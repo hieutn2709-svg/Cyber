@@ -1,0 +1,90 @@
+{
+  "checked_date": "2026-10-01",
+  "dataset_written": false,
+  "frozen_dataset_sha256": "190d3136edba33d89ee58f533e2d12cc6cac2842323e3168f6e3e0e71af72c48",
+  "invalid_entity_labels": [
+    {
+      "doc_id": "23",
+      "entity_id": "cLkh2E389L",
+      "reason": "missing_value_labels"
+    },
+    {
+      "doc_id": "23",
+      "entity_id": "IEzv6HuyUK",
+      "reason": "missing_value_labels"
+    },
+    {
+      "doc_id": "23",
+      "entity_id": "PPePXMwUyp",
+      "reason": "missing_value_labels"
+    },
+    {
+      "doc_id": "23",
+      "entity_id": "rA4TOUUb2i",
+      "reason": "missing_value_labels"
+    },
+    {
+      "doc_id": "23",
+      "entity_id": "Z6cRBq0G-z",
+      "reason": "missing_value_labels"
+    }
+  ],
+  "real_execution": {
+    "direct_url_check": "URLError: timed out",
+    "exit_code": 2,
+    "mode": "roberta-parity",
+    "reason": "Cannot load pinned FacebookAI/roberta-base configuration",
+    "roberta_parity": "not_established",
+    "securebert_dataset": "not_built"
+  },
+  "recovery_base_commit": "ddad941670cd672db140636875618ed0675361b6",
+  "review": {
+    "critical": 0,
+    "important": 0,
+    "later_source_policy": "verified with additional RED-to-GREEN tests and full suite; outside independent review range",
+    "minor_deferred": [
+      "Entity boundary exclusions omit coordinates and label",
+      "Malformed nested JSON may produce traceback"
+    ],
+    "range": "ddad941..eb6649b"
+  },
+  "runtime": {
+    "cuda_available": false,
+    "python": "3.12.14",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.18.0"
+  },
+  "schema_version": 1,
+  "source_document_count": 52,
+  "source_exclusion_evidence": {
+    "frozen_entity_occurrences": 0,
+    "regions": 5,
+    "source_relation_endpoint_references": 0
+  },
+  "source_exclusion_policy_sha256": "69d8aad86a5958458f8aa5b1ea4e3324efc822be182d82bbb44947aa94155aa8",
+  "source_path": "data/Annotations.json",
+  "source_sha256": "dabd5c52c20c7aa912de65723699f246b0c12b3590289283b3c2a2fa6250e776",
+  "source_validation": "passed_with_explicit_hash_bound_exclusions",
+  "status": "blocked_pinned_tokenizer_load",
+  "test_evaluated": false,
+  "tokenizer_loaded": false,
+  "training_run": false,
+  "unavailable_prior_commit_prefixes": [
+    "99cd047",
+    "d3bbc91",
+    "fec99a1"
+  ],
+  "verification_before_review": {
+    "errors": 0,
+    "failures": 0,
+    "repository_tests": 205
+  },
+  "verification_final": {
+    "compile_passed": true,
+    "dataset_gate_tests": 30,
+    "diff_check_passed": true,
+    "errors": 0,
+    "failures": 0,
+    "repository_tests": 208
+  }
+}

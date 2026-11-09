@@ -112,6 +112,8 @@ def compute_training_window_loss(
     train_config,
     seed: int,
     device: torch.device,
+    pair_diagnostics: dict | None = None,
+    relation_negative_policy: str = "typed",
 ) -> TrainingWindowResult:
     """Compute one teacher-forced training-window loss.
 
@@ -172,6 +174,8 @@ def compute_training_window_loss(
         max_token_distance=base_config.max_relation_token_distance,
         negative_ratio=base_config.relation_negative_ratio,
         seed=seed,
+        diagnostics=pair_diagnostics,
+        **({"negative_policy": relation_negative_policy} if relation_negative_policy != "typed" else {}),
     )
 
     if pair_batch.pairs:
@@ -288,6 +292,7 @@ def infer_window(
     base_config,
     relation_chunk_size: int,
     device: torch.device,
+    diagnostics: list[dict] | None = None,
 ) -> WindowInference:
     """Run no-gold-injection inference for one controlled-corpus window."""
     if relation_chunk_size < 1:
@@ -327,6 +332,13 @@ def infer_window(
             pruned,
             max_token_distance=base_config.max_relation_token_distance,
         )
+        if diagnostics is not None:
+            from .inference_diagnostics import candidate_snapshot
+
+            diagnostics.append(candidate_snapshot(
+                window, inventory, entity_logits, scored, pruned, pairs,
+                width_cap=width_cap, base_config=base_config,
+            ))
         if not pairs:
             return WindowInference(
                 window=window,

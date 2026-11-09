@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-08",
+  "execution_source": "b5ede38697c507d145b52d75b977ddb4dd17f87a",
+  "tests": {
+    "passed": 281,
+    "subtests_passed": 96,
+    "log": "tests_20261108.log"
+  },
+  "roberta_checkpoint": {
+    "model": "roberta",
+    "status": "verified",
+    "recovery_epoch": 12,
+    "selected_epoch": 12,
+    "embedded_best_exact": true,
+    "selected_tensors": 212,
+    "optimizer_states": 210,
+    "optimizer_step_distribution": {
+      "156": 201,
+      "154": 9
+    },
+    "empty_pair_accumulation_groups": [
+      [
+        10,
+        49
+      ],
+      [
+        11,
+        49
+      ]
+    ],
+    "validation_records": 5,
+    "saved_validation_rescored_exact": true,
+    "best_sha256": "4869985245358f7fe1e3bf8ca7372edb8dc5dd57de190f34155c3d249b04cee1",
+    "recovery_sha256": "4c7d4ae437a8b6e4ac39bbe2141df1f4004370ab82f0aabe4a9eab4434d38d4e",
+    "test_evaluated": false
+  },
+  "compact_restoration": {
+    "restored": "e2_trajectory/runs/roberta/recovery.pt",
+    "sha256": "4c7d4ae437a8b6e4ac39bbe2141df1f4004370ab82f0aabe4a9eab4434d38d4e",
+    "verified": true,
+    "date": "2026-11-08",
+    "production_loader_accepts_identity": true,
+    "full_history_matches": true,
+    "epoch": 12,
+    "selected_epoch": 12
+  },
+  "validation_regeneration": {
+    "date": "2026-11-08",
+    "model": "roberta",
+    "action": "fresh validation-only selected-checkpoint forward to replace missing exported predictions",
+    "training_performed": false,
+    "test_evaluated": false,
+    "selected_epoch": 12,
+    "frozen_threshold": 0.9,
+    "validation_documents": 5,
+    "loaded_tensors_exact": 212,
+    "weights_unchanged": true,
+    "regenerated_metrics_match_preserved_metrics": true,
+    "original_prediction_file_unavailable": true,
+    "original_prediction_identity_parity_claimed": false,
+    "predictions_sha256": "5038a37510fe7a292bcb90a94f4fe47d653afefca7e4adfedfa4ba4c965c7040",
+    "securebert_saved_predictions_rescored_exact": true,
+    "runtime_platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "torch": "2.14.1+cpu"
+  },
+  "securebert_checkpoint_archived_check": {
+    "model": "securebert",
+    "status": "verified",
+    "recovery_epoch": 12,
+    "selected_epoch": 8,
+    "embedded_best_exact": true,
+    "selected_tensors": 212,
+    "optimizer_states": 210,
+    "optimizer_step_distribution": {
+      "156": 210
+    },
+    "empty_pair_accumulation_groups": [],
+    "validation_records": 5,
+    "saved_validation_rescored_exact": true,
+    "best_sha256": "b35ef9d5675da37872b575f627c517dde810c56e9f73ec2c8a2304e19fbfdce1",
+    "recovery_sha256": "7598c3747dd5e3202d7aa6a6ab7454e0e925afe6a9c536ad95329cf22980adac",
+    "test_evaluated": false
+  },
+  "securebert_tensor_verification_fresh_on_nov8": false
+}

@@ -113,6 +113,7 @@ def compute_training_window_loss(
     seed: int,
     device: torch.device,
     pair_diagnostics: dict | None = None,
+    relation_negative_policy: str = "typed",
 ) -> TrainingWindowResult:
     """Compute one teacher-forced training-window loss.
 
@@ -174,6 +175,7 @@ def compute_training_window_loss(
         negative_ratio=base_config.relation_negative_ratio,
         seed=seed,
         diagnostics=pair_diagnostics,
+        **({"negative_policy": relation_negative_policy} if relation_negative_policy != "typed" else {}),
     )
 
     if pair_batch.pairs:

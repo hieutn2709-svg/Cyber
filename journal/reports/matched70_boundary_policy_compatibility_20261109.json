@@ -1,0 +1,11 @@
+{
+  "scope": "synthetic sampler compatibility audit; no pretrained training or scoring",
+  "baseline_commit": "63a31ba67089ea2bb7bf0016ff91f9f0fa4e0921",
+  "baseline_source_sha256": "065c4c5c5a4cd2be8cfdc881448efec406ac04835699acec09c8123569a5e555",
+  "current_source_sha256": "c227e43337bf6695bdd798db11b732e4960d218268bc001e53283376da2b74c5",
+  "cases": 504,
+  "default_batches_and_diagnostics_exact": true,
+  "intervention_batches_without_conflicts": 504,
+  "unaffected_batches_exact": 358,
+  "batches_requiring_repair": 146
+}

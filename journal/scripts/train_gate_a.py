@@ -94,6 +94,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--train-pair-diagnostics", action="store_true",
                         help="observe eligible/sampled training label collisions in epoch history")
+    parser.add_argument("--relation-negative-policy", choices=("typed", "boundary_replace"), default="typed",
+                        help="opt-in sampled boundary-conflict replacement; development only")
     parser.add_argument(
         "--device",
         choices=("auto", "cuda", "cpu"),
@@ -114,6 +116,18 @@ def _sha256_file(path: str | Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _negative_policy_metadata(args) -> dict[str, str]:
+    """Omit legacy default; include opt-in policy in all persisted run identities."""
+    policy = getattr(args, "relation_negative_policy", "typed")
+    if policy not in {"typed", "boundary_replace"}:
+        raise ValueError(f"unsupported negative policy: {policy}")
+    if policy == "typed":
+        return {}
+    if args.mode not in {"overfit", "smoke", "dev"}:
+        raise ValueError("boundary replacement does not authorize full/test evaluation")
+    return {"relation_negative_policy": policy}
 
 
 def _combined_config_hash(paths: list[Path]) -> str:
@@ -282,6 +296,7 @@ def _train_epoch(
     epoch: int,
     device,
     train_pair_diagnostics: bool = False,
+    relation_negative_policy: str = "typed",
 ) -> dict[str, Any]:
     import torch
     from journal.scsp.training import compute_training_window_loss
@@ -319,6 +334,7 @@ def _train_epoch(
                 seed=sample_seed,
                 device=device,
                 **({"pair_diagnostics": pair_record} if pair_record is not None else {}),
+                **({"relation_negative_policy": relation_negative_policy} if relation_negative_policy != "typed" else {}),
             )
             scaled_loss = result.total_loss / accumulation
         if pair_record is not None:
@@ -729,6 +745,7 @@ def _run_overfit(
     device,
     output_dir: Path,
     train_pair_diagnostics: bool = False,
+    relation_negative_policy: str = "typed",
 ) -> dict[str, Any]:
     candidates = [window for window in train_windows if window.gold_relations]
     if not candidates:
@@ -753,6 +770,7 @@ def _run_overfit(
             epoch=epoch,
             device=device,
             train_pair_diagnostics=train_pair_diagnostics,
+            **({"relation_negative_policy": relation_negative_policy} if relation_negative_policy != "typed" else {}),
         )
         metrics["epoch"] = epoch
         history.append(metrics)
@@ -783,6 +801,7 @@ def load_checkpoint_state(model, checkpoint, encoder_package=None):
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    policy_metadata = _negative_policy_metadata(args)
     import torch
 
     from journal.scripts.run_gate_a import build_preflight, write_preflight_artifacts
@@ -849,6 +868,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         f"{base_config.experiment_name}-f{args.fold}-s{args.seed}-"
         f"{args.mode}-{commit[:8]}"
     )
+    if policy_metadata:
+        run_id += "-" + policy_metadata["relation_negative_policy"]
     _set_seed(args.seed)
     device = _resolve_device(args.device)
     recovery_state = None
@@ -868,6 +889,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "torch_threads": torch.get_num_threads(),
             "torch_interop_threads": torch.get_num_interop_threads(),
             **diagnostic_metadata,
+            **policy_metadata,
         }
         if getattr(args, "resume", False):
             recovery_state = training_recovery.load(output_dir / "recovery.pt", recovery_identity)
@@ -877,6 +899,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {
             "mode": args.mode,
             **diagnostic_metadata,
+            **policy_metadata,
             **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
             "fold": args.fold,
             "seed": args.seed,
@@ -925,7 +948,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             device=device,
             output_dir=output_dir,
             train_pair_diagnostics=getattr(args, "train_pair_diagnostics", False),
+            **policy_metadata,
         )
+        summary.update(policy_metadata)
         _write_json(output_dir / "run_summary.json", summary)
         return summary
 
@@ -963,6 +988,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             epoch=epoch,
             device=device,
             train_pair_diagnostics=getattr(args, "train_pair_diagnostics", False),
+            **policy_metadata,
         )
         validation_inferences = _infer_split(
             model,
@@ -1017,6 +1043,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
+                    **policy_metadata,
                     **({"encoder_package": args.encoder_package} if getattr(args, "encoder_package", None) is not None else {}),
                     "epoch": epoch,
                     "threshold": best_threshold,
@@ -1138,6 +1165,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.mode == "dev":
         status = "dev_complete"
     summary: dict[str, Any] = {
+        **policy_metadata,
         "status": status,
         "mode": args.mode,
         "fold": args.fold,

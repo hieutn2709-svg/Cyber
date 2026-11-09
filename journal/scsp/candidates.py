@@ -122,6 +122,7 @@ def build_training_pairs(
     *,
     seed: int,
     diagnostics: dict | None = None,
+    negative_policy: str = "typed",
 ) -> TrainingPairBatch:
     """Preserve all positives; sample deterministic nearby negatives.
 
@@ -133,6 +134,8 @@ def build_training_pairs(
         raise ValueError("max_token_distance must be >= 0")
     if negative_ratio < 0:
         raise ValueError("negative_ratio must be >= 0")
+    if negative_policy not in {"typed", "boundary_replace"}:
+        raise ValueError(f"unsupported negative policy: {negative_policy}")
 
     gold_by_endpoint = {
         relation.endpoint_key: relation.label for relation in gold_relations
@@ -164,6 +167,36 @@ def build_training_pairs(
         chosen_indices = sorted(rng.sample(range(len(negatives)), negative_limit))
         negatives = [negatives[index] for index in chosen_indices]
 
+    policy_record = None
+    baseline_negatives = negatives
+    if negative_policy == "boundary_replace":
+        # Repair only the original draw: unaffected windows retain exact batches.
+        # Direction and document matter; endpoint types intentionally do not.
+        def boundary(pair):
+            return (pair.document_id, pair.source.start, pair.source.end,
+                    pair.target.start, pair.target.end)
+
+        positive_boundaries = {boundary(pair) for pair in positives}
+        drawn = (chosen_indices if len(eligible_negatives) > negative_limit
+                 else list(range(len(eligible_negatives))))
+        drawn_set = set(drawn)
+        safe = [i for i, pair in enumerate(eligible_negatives)
+                if boundary(pair) not in positive_boundaries]
+        safe_set = set(safe)
+        retained = [i for i in drawn if i in safe_set]
+        removed = len(drawn) - len(retained)
+        remaining = [i for i in safe if i not in drawn_set]
+        replacement = rng.sample(remaining, min(removed, len(remaining))) if removed else []
+        negatives = [eligible_negatives[i] for i in sorted(retained + replacement)]
+        policy_record = {
+            "name": negative_policy,
+            "baseline_sampled_negatives": len(drawn),
+            "removed_sampled_negatives": removed,
+            "replacement_negatives": len(replacement),
+            "negative_budget_shortfall": removed - len(replacement),
+            "safe_eligible_negatives": len(safe),
+        }
+
     pairs = positives + negatives
     positive_mask = tuple([True] * len(positives) + [False] * len(negatives))
     relation_labels = tuple(
@@ -177,4 +210,13 @@ def build_training_pairs(
             positives, eligible_negatives, batch, gold_relations,
             max_token_distance=max_token_distance,
         ))
+        if policy_record is not None:
+            baseline = TrainingPairBatch(tuple(positives + baseline_negatives),
+                tuple([True] * len(positives) + [False] * len(baseline_negatives)),
+                tuple([gold_by_endpoint[p.ordered_key] for p in positives]
+                      + [None] * len(baseline_negatives)))
+            original = summarize_training_pairs(positives, eligible_negatives,
+                baseline, gold_relations, max_token_distance=max_token_distance)
+            policy_record["baseline_sampled_batch_sha256"] = original["sampled_batch_sha256"]
+            diagnostics["negative_policy"] = policy_record
     return batch

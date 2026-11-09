@@ -23,6 +23,8 @@ def build_parser():
     p.add_argument('--resume',action='store_true',help='resume an incomplete run from its atomic epoch recovery state')
     p.add_argument('--train-pair-diagnostics',action='store_true',
                    help='record actual training-pair label collisions in epoch history')
+    p.add_argument('--relation-negative-policy',choices=('typed','boundary_replace'),default='typed',
+                   help='opt-in replacement of sampled boundary-conflicting negatives')
     return p
 
 
@@ -51,7 +53,8 @@ def run(args):
         dataset=str(args.bundle/args.package/'dataset.json'),fold=1,seed=42,
         output_dir=str(args.output_dir),device=args.device,overfit_epochs=20,encoder_package=package,
         epoch_recovery=args.mode != 'overfit',resume=getattr(args,'resume',False),
-        train_pair_diagnostics=getattr(args,'train_pair_diagnostics',False))
+        train_pair_diagnostics=getattr(args,'train_pair_diagnostics',False),
+        relation_negative_policy=getattr(args,'relation_negative_policy','typed'))
     if gate.mode_evaluates_test(delegated.mode):
         raise ValueError('test evaluation not authorized')
     from journal.scsp.training_recovery import run_lock

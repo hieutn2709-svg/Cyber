@@ -1,0 +1,494 @@
+{
+  "date": "2026-10-09",
+  "source_commit": "53146e3162676abe5cd6e5ae1523430872a76b08",
+  "validation_documents": 5,
+  "validation_gold_relations": 49,
+  "test_evaluated": false,
+  "new_training": false,
+  "fresh_checkpoint_forward": true,
+  "cases": [
+    {
+      "config": {
+        "model": "roberta",
+        "cap": 96,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 12,
+        "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+        "parent_config_sha256": "c29ce974417c677793dea01e726040b4b24390cf747d44420fa1385efee16f9d",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 245,
+          "fn": 17,
+          "precision": 0.2959770114942529,
+          "recall": 0.8583333333333333,
+          "f1": 0.4401709401709401
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 118,
+          "fn": 24,
+          "precision": 0.17482517482517482,
+          "recall": 0.5102040816326531,
+          "f1": 0.2604166666666667
+        }
+      },
+      "reference_metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 245,
+          "fn": 17,
+          "precision": 0.2959770114942529,
+          "recall": 0.8583333333333333,
+          "f1": 0.4401709401709401
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 118,
+          "fn": 24,
+          "precision": 0.17482517482517482,
+          "recall": 0.5102040816326531,
+          "f1": 0.2604166666666667
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "max_entity_score_abs_diff": 0.0,
+      "max_decoded_relation_score_abs_diff": 0.0,
+      "max_existence_logit_abs_diff": 4.76837158203125e-07,
+      "max_relation_type_logit_abs_diff": 0.0,
+      "all_candidate_type_argmax_changes": 0,
+      "pair_count": 15592,
+      "gold_pairs_reachable": 37,
+      "min_existence_probability_distance_to_threshold": 0.00030138608087981744,
+      "per_document_timing": [
+        {
+          "document_id": "365",
+          "seconds": 0.7578448790000039,
+          "span_count": 96,
+          "pair_count": 4854,
+          "process_peak_rss_kib": 1317916
+        },
+        {
+          "document_id": "389",
+          "seconds": 0.5109716960000696,
+          "span_count": 70,
+          "pair_count": 2770,
+          "process_peak_rss_kib": 1317916
+        },
+        {
+          "document_id": "395",
+          "seconds": 0.20790080799997668,
+          "span_count": 50,
+          "pair_count": 2450,
+          "process_peak_rss_kib": 1317916
+        },
+        {
+          "document_id": "400",
+          "seconds": 0.5840598409999984,
+          "span_count": 96,
+          "pair_count": 4336,
+          "process_peak_rss_kib": 1317916
+        },
+        {
+          "document_id": "420",
+          "seconds": 0.2448521090000213,
+          "span_count": 36,
+          "pair_count": 1182,
+          "process_peak_rss_kib": 1317916
+        }
+      ],
+      "total_inference_seconds": 2.30562933300007,
+      "process_peak_rss_mib": 1287.02734375,
+      "memory_scope": "whole isolated case process including checkpoint and model loading; not inference-only allocation",
+      "timing_scope": "one cold pass over five windows, excludes initialization and serialization; not a benchmark",
+      "environment": {
+        "python": "3.12.14",
+        "torch": "2.14.1+cpu",
+        "transformers": "5.18.0",
+        "threads": 4,
+        "device": "cpu",
+        "attention_implementation": "sdpa"
+      },
+      "test_evaluated": false,
+      "new_training": false,
+      "state_dict_strict_loaded": true,
+      "all_loaded_tensors_exact": true,
+      "predictions_sha256": "d871d3fbd70ef5e3457755074fb6dfbffbb9e3d8293c4d60d25146933204e771",
+      "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+      "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348"
+    },
+    {
+      "config": {
+        "model": "roberta",
+        "cap": 128,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 12,
+        "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+        "parent_config_sha256": "c29ce974417c677793dea01e726040b4b24390cf747d44420fa1385efee16f9d",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 309,
+          "fn": 17,
+          "precision": 0.25,
+          "recall": 0.8583333333333333,
+          "f1": 0.3872180451127819
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 123,
+          "fn": 24,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "f1": 0.25380710659898476
+        }
+      },
+      "reference_metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 309,
+          "fn": 17,
+          "precision": 0.25,
+          "recall": 0.8583333333333333,
+          "f1": 0.3872180451127819
+        },
+        "relation": {
+          "tp": 25,
+          "fp": 123,
+          "fn": 24,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "f1": 0.25380710659898476
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "max_entity_score_abs_diff": 0.0,
+      "max_decoded_relation_score_abs_diff": 0.0,
+      "max_existence_logit_abs_diff": 0.0,
+      "max_relation_type_logit_abs_diff": 0.0,
+      "all_candidate_type_argmax_changes": 0,
+      "pair_count": 22458,
+      "gold_pairs_reachable": 37,
+      "min_existence_probability_distance_to_threshold": 0.00022840882711250288,
+      "per_document_timing": [
+        {
+          "document_id": "365",
+          "seconds": 0.8187249350000911,
+          "span_count": 128,
+          "pair_count": 8694,
+          "process_peak_rss_kib": 1317728
+        },
+        {
+          "document_id": "389",
+          "seconds": 0.5140727429998151,
+          "span_count": 70,
+          "pair_count": 2770,
+          "process_peak_rss_kib": 1317728
+        },
+        {
+          "document_id": "395",
+          "seconds": 0.2035215870000684,
+          "span_count": 50,
+          "pair_count": 2450,
+          "process_peak_rss_kib": 1317728
+        },
+        {
+          "document_id": "400",
+          "seconds": 0.8513602890000129,
+          "span_count": 128,
+          "pair_count": 7362,
+          "process_peak_rss_kib": 1317728
+        },
+        {
+          "document_id": "420",
+          "seconds": 0.18344423300004564,
+          "span_count": 36,
+          "pair_count": 1182,
+          "process_peak_rss_kib": 1317728
+        }
+      ],
+      "total_inference_seconds": 2.571123787000033,
+      "process_peak_rss_mib": 1286.84375,
+      "memory_scope": "whole isolated case process including checkpoint and model loading; not inference-only allocation",
+      "timing_scope": "one cold pass over five windows, excludes initialization and serialization; not a benchmark",
+      "environment": {
+        "python": "3.12.14",
+        "torch": "2.14.1+cpu",
+        "transformers": "5.18.0",
+        "threads": 4,
+        "device": "cpu",
+        "attention_implementation": "sdpa"
+      },
+      "test_evaluated": false,
+      "new_training": false,
+      "state_dict_strict_loaded": true,
+      "all_loaded_tensors_exact": true,
+      "predictions_sha256": "c7f52f2657ed9d742bf6fcadb8bebaaf7edb34fd7b713a08699123c61ae8c5cb",
+      "checkpoint_sha256": "d637294c72f159762c4606637706171fdb8799140d7b012be3c6652a1f56aa44",
+      "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348"
+    },
+    {
+      "config": {
+        "model": "securebert",
+        "cap": 96,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 8,
+        "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+        "parent_config_sha256": "e672bf88e699208265fff6c8c08ba19a6e4eaf66cf66b05685d0fcea5ac9602e",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 320,
+          "fn": 20,
+          "precision": 0.23809523809523808,
+          "recall": 0.8333333333333334,
+          "f1": 0.37037037037037035
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 69,
+          "fn": 35,
+          "precision": 0.1686746987951807,
+          "recall": 0.2857142857142857,
+          "f1": 0.21212121212121213
+        }
+      },
+      "reference_metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 320,
+          "fn": 20,
+          "precision": 0.23809523809523808,
+          "recall": 0.8333333333333334,
+          "f1": 0.37037037037037035
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 69,
+          "fn": 35,
+          "precision": 0.1686746987951807,
+          "recall": 0.2857142857142857,
+          "f1": 0.21212121212121213
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "max_entity_score_abs_diff": 0.0,
+      "max_decoded_relation_score_abs_diff": 0.0,
+      "max_existence_logit_abs_diff": 4.76837158203125e-07,
+      "max_relation_type_logit_abs_diff": 0.0,
+      "all_candidate_type_argmax_changes": 0,
+      "pair_count": 22804,
+      "gold_pairs_reachable": 30,
+      "min_existence_probability_distance_to_threshold": 6.869005619170032e-05,
+      "per_document_timing": [
+        {
+          "document_id": "365",
+          "seconds": 0.7005632739999328,
+          "span_count": 96,
+          "pair_count": 5042,
+          "process_peak_rss_kib": 1317760
+        },
+        {
+          "document_id": "389",
+          "seconds": 0.47196865599994453,
+          "span_count": 96,
+          "pair_count": 5510,
+          "process_peak_rss_kib": 1317760
+        },
+        {
+          "document_id": "395",
+          "seconds": 0.23563567800010787,
+          "span_count": 64,
+          "pair_count": 4026,
+          "process_peak_rss_kib": 1317760
+        },
+        {
+          "document_id": "400",
+          "seconds": 0.8030767239999932,
+          "span_count": 96,
+          "pair_count": 3948,
+          "process_peak_rss_kib": 1317760
+        },
+        {
+          "document_id": "420",
+          "seconds": 0.3207041929999832,
+          "span_count": 68,
+          "pair_count": 4278,
+          "process_peak_rss_kib": 1317760
+        }
+      ],
+      "total_inference_seconds": 2.5319485249999616,
+      "process_peak_rss_mib": 1286.875,
+      "memory_scope": "whole isolated case process including checkpoint and model loading; not inference-only allocation",
+      "timing_scope": "one cold pass over five windows, excludes initialization and serialization; not a benchmark",
+      "environment": {
+        "python": "3.12.14",
+        "torch": "2.14.1+cpu",
+        "transformers": "5.18.0",
+        "threads": 4,
+        "device": "cpu",
+        "attention_implementation": "sdpa"
+      },
+      "test_evaluated": false,
+      "new_training": false,
+      "state_dict_strict_loaded": true,
+      "all_loaded_tensors_exact": true,
+      "predictions_sha256": "dc940c75577651a75e832ba3feada3af5207a81a2e39fc7017ade8dba0299999",
+      "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+      "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d"
+    },
+    {
+      "config": {
+        "model": "securebert",
+        "cap": 128,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 8,
+        "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+        "parent_config_sha256": "e672bf88e699208265fff6c8c08ba19a6e4eaf66cf66b05685d0fcea5ac9602e",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 416,
+          "fn": 20,
+          "precision": 0.1937984496124031,
+          "recall": 0.8333333333333334,
+          "f1": 0.3144654088050315
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 74,
+          "fn": 35,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "f1": 0.20437956204379562
+        }
+      },
+      "reference_metrics": {
+        "entity": {
+          "tp": 100,
+          "fp": 416,
+          "fn": 20,
+          "precision": 0.1937984496124031,
+          "recall": 0.8333333333333334,
+          "f1": 0.3144654088050315
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 74,
+          "fn": 35,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "f1": 0.20437956204379562
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "max_entity_score_abs_diff": 0.0,
+      "max_decoded_relation_score_abs_diff": 0.0,
+      "max_existence_logit_abs_diff": 0.0,
+      "max_relation_type_logit_abs_diff": 0.0,
+      "all_candidate_type_argmax_changes": 0,
+      "pair_count": 34136,
+      "gold_pairs_reachable": 30,
+      "min_existence_probability_distance_to_threshold": 6.869005619170032e-05,
+      "per_document_timing": [
+        {
+          "document_id": "365",
+          "seconds": 0.8852252179999596,
+          "span_count": 128,
+          "pair_count": 8772,
+          "process_peak_rss_kib": 1317776
+        },
+        {
+          "document_id": "389",
+          "seconds": 0.7070316950000688,
+          "span_count": 128,
+          "pair_count": 10072,
+          "process_peak_rss_kib": 1317776
+        },
+        {
+          "document_id": "395",
+          "seconds": 0.6270927680000113,
+          "span_count": 64,
+          "pair_count": 4026,
+          "process_peak_rss_kib": 1317776
+        },
+        {
+          "document_id": "400",
+          "seconds": 0.8369035559999247,
+          "span_count": 128,
+          "pair_count": 6988,
+          "process_peak_rss_kib": 1317776
+        },
+        {
+          "document_id": "420",
+          "seconds": 0.266166733999853,
+          "span_count": 68,
+          "pair_count": 4278,
+          "process_peak_rss_kib": 1317776
+        }
+      ],
+      "total_inference_seconds": 3.3224199709998175,
+      "process_peak_rss_mib": 1286.890625,
+      "memory_scope": "whole isolated case process including checkpoint and model loading; not inference-only allocation",
+      "timing_scope": "one cold pass over five windows, excludes initialization and serialization; not a benchmark",
+      "environment": {
+        "python": "3.12.14",
+        "torch": "2.14.1+cpu",
+        "transformers": "5.18.0",
+        "threads": 4,
+        "device": "cpu",
+        "attention_implementation": "sdpa"
+      },
+      "test_evaluated": false,
+      "new_training": false,
+      "state_dict_strict_loaded": true,
+      "all_loaded_tensors_exact": true,
+      "predictions_sha256": "960029c29bfe00d9e591dfeecdb44ffaff695496500d9f209f59723df1977252",
+      "checkpoint_sha256": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+      "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d"
+    }
+  ],
+  "verification": "All four fresh-forward cases match replay prediction keys and strict metrics exactly.",
+  "source_sha256": {
+    "journal/scsp/spans.py": "2f2e8fb0ff87ce9e18303250b9e74321ac929163de0d740d76ed7789f1b4cc50",
+    "journal/scsp/training.py": "70f814844e3bb49b1054ff157a7133c2f9ba08026f67938cc9761e06b7422c4f",
+    "journal/scsp/model.py": "58f0d31e31608cb4b3c428a60f345da385256ea9d4983c1573f48df4c3b034e5",
+    "journal/scsp/artifacts.py": "dfea9fb99ffee0154ce7af129578c904fcbf6d92b3cfea560bfecd68ceeea037",
+    "journal/scsp/data.py": "6d2d94e3e48ca516387f93c03edc2ebae25c7e8fb58b76c6e52660fd22c35b24",
+    "journal/scsp/pairs.py": "372c27278d6795f20d6772ea80cf5e59917c4e86e067e74b65698550394615c9",
+    "journal/scsp/structures.py": "64e9df66b6430d993c3dee770f927cf876da8a36eec92cde3d26fd742a250988",
+    "journal/scsp/candidates.py": "29137e47e2672dfea0feeaa701ce348fb3db56d8d11de91596fadb3c65d8f70f",
+    "journal/scsp/serialization.py": "035897f724402fadbab5efd59b612302e06f7b923f2eee4a3b8c45bc630361bb",
+    "journal/scsp/context_pooler.py": "b7ea49188f06ce3aba0e1493bc63b2386c3139a2eff21b0c420f123a70f074f5",
+    "journal/scsp/training_utils.py": "b36d96f37dd696664db43259894932a061529b024e793239b7133233ec22cd73",
+    "journal/scsp/runtime_model.py": "ac3a28779059b79e4b147b75bd4bebe42a7b89e9040e1f475b700d41fbfc689e"
+  }
+}

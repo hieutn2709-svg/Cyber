@@ -1,0 +1,147 @@
+{
+  "date": "2026-10-08",
+  "scope": "matched70_fold1_seed42_dev_validation_only",
+  "test_evaluated": false,
+  "epochs_per_model": 12,
+  "summaries": {
+    "RoBERTa": {
+      "best_epoch": 12,
+      "config_sha256": "c29ce974417c677793dea01e726040b4b24390cf747d44420fa1385efee16f9d",
+      "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+      "fold": 1,
+      "git_commit": "cef0c5c8648d7781951f82d99b375c17d35225d6",
+      "mode": "dev",
+      "relation_threshold": 0.9,
+      "seed": 42,
+      "status": "dev_complete",
+      "test_evaluated": false,
+      "validation": {
+        "primary_entity_f1": 0.3872180451127819,
+        "relation_f1": 0.25380710659898476,
+        "threshold": 0.9
+      }
+    },
+    "SecureBERT": {
+      "best_epoch": 8,
+      "config_sha256": "e672bf88e699208265fff6c8c08ba19a6e4eaf66cf66b05685d0fcea5ac9602e",
+      "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+      "fold": 1,
+      "git_commit": "48e79601cb50de5987bca8e492196f56e8e9690d",
+      "mode": "dev",
+      "relation_threshold": 0.9,
+      "seed": 42,
+      "status": "dev_complete",
+      "test_evaluated": false,
+      "validation": {
+        "primary_entity_f1": 0.3144654088050315,
+        "relation_f1": 0.20437956204379562,
+        "threshold": 0.9
+      }
+    }
+  },
+  "metrics": {
+    "RoBERTa": {
+      "all": {
+        "entity": {
+          "f1": 0.3857677902621722,
+          "fn": 19,
+          "fp": 309,
+          "precision": 0.25,
+          "recall": 0.8442622950819673,
+          "tp": 103
+        },
+        "relation": {
+          "f1": 0.25380710659898476,
+          "fn": 24,
+          "fp": 123,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "tp": 25
+        }
+      },
+      "all_relation": {
+        "f1": 0.25380710659898476,
+        "fn": 24,
+        "fp": 123,
+        "precision": 0.16891891891891891,
+        "recall": 0.5102040816326531,
+        "tp": 25
+      },
+      "core_to_core_relation": {
+        "f1": 0.25380710659898476,
+        "fn": 24,
+        "fp": 123,
+        "precision": 0.16891891891891891,
+        "recall": 0.5102040816326531,
+        "tp": 25
+      },
+      "primary_entity": {
+        "f1": 0.3872180451127819,
+        "fn": 17,
+        "fp": 309,
+        "precision": 0.25,
+        "recall": 0.8583333333333333,
+        "tp": 103
+      }
+    },
+    "SecureBERT": {
+      "all": {
+        "entity": {
+          "f1": 0.31347962382445144,
+          "fn": 22,
+          "fp": 416,
+          "precision": 0.1937984496124031,
+          "recall": 0.819672131147541,
+          "tp": 100
+        },
+        "relation": {
+          "f1": 0.20437956204379562,
+          "fn": 35,
+          "fp": 74,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "tp": 14
+        }
+      },
+      "all_relation": {
+        "f1": 0.20437956204379562,
+        "fn": 35,
+        "fp": 74,
+        "precision": 0.1590909090909091,
+        "recall": 0.2857142857142857,
+        "tp": 14
+      },
+      "core_to_core_relation": {
+        "f1": 0.20437956204379562,
+        "fn": 35,
+        "fp": 74,
+        "precision": 0.1590909090909091,
+        "recall": 0.2857142857142857,
+        "tp": 14
+      },
+      "primary_entity": {
+        "f1": 0.3144654088050315,
+        "fn": 20,
+        "fp": 416,
+        "precision": 0.1937984496124031,
+        "recall": 0.8333333333333334,
+        "tp": 100
+      }
+    }
+  },
+  "securebert_minus_roberta_f1_percentage_points": {
+    "primary_entity": -7.275263630775042,
+    "all_relation": -4.942754455518913
+  },
+  "securebert_first_two_epochs_match_smoke": true,
+  "regression_tests_passed": 244,
+  "independent_review": "authorization delta approved; no findings",
+  "securebert_local_execution_commit": "48e79601cb50de5987bca8e492196f56e8e9690d",
+  "securebert_published_execution_commit": "9aca2f80a3b92186ff20e94d9cabc1c1cd30b39f",
+  "securebert_execution_tree": "e95109bd15d826d784fb6c7c58527ab107fa7456",
+  "artifact_sha256": {
+    "runs70/securebert_dev/best_model.pt": "4e50005d62b3c6bc2f696d13a314d413204001124258ec003a947b718af70812",
+    "runs70/securebert_dev/training_history.json": "31e2ca39bedd5b77797e32a2be6b4d430ac1f52c7b0125dc4a4e7ef47419be22",
+    "runs70/securebert_dev/validation_predictions.jsonl": "fc90bf1151247a22142aac94bcf3d1458d0a80d08b747b4f7cc67b4e7a2ba701"
+  }
+}

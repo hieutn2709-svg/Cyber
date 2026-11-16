@@ -1,0 +1,38 @@
+{
+  "source_commit": "0089d1bbe4fbce847f8ed26d9605ac5de4748907",
+  "date": "2026-11-16",
+  "final_bundle": {
+    "path": "/workspace/scratch/a169be051251/deliverables/CTI_Q2_E2_Bang_chung_doi_chung_20261116.zip",
+    "bytes": 18312548,
+    "sha256": "7ead7dba826be24d51ef6f1326b16d2f6a5e92baac3103a17d02efdeb962c722",
+    "verified_entries": 133,
+    "crc_verified": true
+  },
+  "document_qa": {
+    "artifact": "/workspace/scratch/a169be051251/deliverables/CTI_Q2_E2_Doi_chung_20261116.docx",
+    "sha256": "689cc57b62f33b7eaa6c0391bbec22609b25bdd57eefe9defe20759d019a2e9e",
+    "pages": 3,
+    "rendered": true,
+    "all_pages_visually_reviewed": true,
+    "tables_and_chart_readable": true,
+    "qa_images_delivered": false
+  },
+  "review_disposition": {
+    "date": "2026-11-16",
+    "review_findings": {
+      "critical": 0,
+      "important": 0,
+      "minor": 0
+    },
+    "rulings": [
+      "Report only descriptive one-seed/five-validation-document results; full/test, gold adjudication and default policy change remain unperformed. Cost of broader inference would be unsupported scientific claims.",
+      "Preserve archived RoBERTa recovery checks and freshly verify selected weights; delivered archives cannot resume full optimizer state. Do not imply fresh recovery verification.",
+      "Use official rescoring of saved predictions and selection over saved history/grid, without new neural forward or independent full grid decoding. Those broader parity claims are not made.",
+      "Accept confirmed successful service receipts for SHA-verified local archives; no additional remote byte-readback claim is made.",
+      "Primary owns final Word QA, combined ZIP integrity and PR publication verification after independent review. Do not attribute these later checks to reviewer.",
+      "Recorded versions and historical gates do not establish same physical machine or a speed comparison."
+    ],
+    "deferred_minors": []
+  },
+  "test_evaluated": false
+}

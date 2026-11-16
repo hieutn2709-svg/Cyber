@@ -1,0 +1,62 @@
+{
+  "amendment_applied": false,
+  "builder_git_commit": "8cbdf7909c09751c9e873f40d38afe8a980d6970",
+  "builder_tree_sha": "e2064f860c6d8b3841abe60dc9d796db39ee1c61",
+  "checked_date": "2026-10-07",
+  "counts": {
+    "auxiliary_entity_count": 28,
+    "core_to_core_relation_count": 561,
+    "document_count": 52,
+    "primary_entity_count": 1353,
+    "relation_count": 564,
+    "window_count": 67
+  },
+  "dataset_sha256": "751f692ab74e30096965cca1328a0b673a34177d717984bf1da0d83d370580cf",
+  "excluded_unlabeled_region_count": 5,
+  "frozen_dataset_sha256": "190d3136edba33d89ee58f533e2d12cc6cac2842323e3168f6e3e0e71af72c48",
+  "frozen_semantic_sha256": "dbcc1d83bed30f1a7b286bb84ae95b4ee415ec6b70e6acdd6bdc8797422df631",
+  "latest_regression_runtime": {
+    "httpx": "0.28.1",
+    "huggingface-hub": "1.33.0",
+    "python": "3.12.14",
+    "socksio": "1.0.0",
+    "tokenizers": "0.23.2",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.18.0"
+  },
+  "model_weights_loaded": false,
+  "proposed_common_window_count": 70,
+  "publication_provenance": "Published code tree equals the locally executed builder tree exactly; commit identity differs because publication used the GitHub connector.",
+  "published_builder_commit": "dc5500235539e5728c32074c8673a3e8d55c4176",
+  "reference_overlap_excluded_count": 20,
+  "roberta_dataset_written": true,
+  "roberta_parity_manifest_sha256": "7244756f44e40b7ed10d1217652613b3f7c508b1b08b1d83540828561c329797",
+  "runtime_preflight_run": false,
+  "securebert": {
+    "dataset_written": false,
+    "id": "ehsanaghaei/SecureBERT",
+    "maximum_token_count": 520,
+    "overflow_window_count": 3,
+    "revision": "3a47918dd874e5c769efd152b51c5756a953fb67",
+    "status": "protocol_amendment_required",
+    "target_alignment_issue_count": 0,
+    "tokenizer_loaded": true,
+    "windows_audited": 67
+  },
+  "securebert_dataset_written": false,
+  "semantic_sha256": "dbcc1d83bed30f1a7b286bb84ae95b4ee415ec6b70e6acdd6bdc8797422df631",
+  "source_overlap_policy": "exclude_all_frozen_reference_conflicts_v1",
+  "source_sha256": "dabd5c52c20c7aa912de65723699f246b0c12b3590289283b3c2a2fa6250e776",
+  "status": "roberta_parity_passed_securebert_amendment_required",
+  "test_evaluated": false,
+  "training_run": false,
+  "verification": {
+    "bundle_sha256_check": "passed",
+    "dataset_gate_tests": 36,
+    "errors": 0,
+    "exact_semantic_comparison": "passed",
+    "failures": 0,
+    "independent_review": "no blocking findings",
+    "repository_tests": 214
+  }
+}

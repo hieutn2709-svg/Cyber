@@ -1,0 +1,171 @@
+{
+  "completed_new_dev_runs": 4,
+  "pending_new_dev_runs": 0,
+  "seed44_status": "completed",
+  "test_evaluated": false,
+  "source_commit": "1e589a02bc77cef3af1dd27a09effce4e6c80f72",
+  "seed43_forward_cases": [
+    {
+      "config": {
+        "model": "roberta",
+        "cap": 128,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "seed": 43,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 10,
+        "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+        "parent_config_sha256": "e294a4340148b47bedbf0489457e36be3a54f97be53adb60269d19116605f2e1",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 242,
+          "fn": 23,
+          "precision": 0.2861356932153392,
+          "recall": 0.8083333333333333,
+          "f1": 0.4226579520697168
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "predictions_sha256": "354d2f4652312aa6f9774aa7353a4ede4de916f8ed3c328272fd20e4b7ecbe75",
+      "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+      "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+      "verification_passed": true
+    },
+    {
+      "config": {
+        "model": "roberta",
+        "cap": 96,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "seed": 43,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 10,
+        "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+        "parent_config_sha256": "e294a4340148b47bedbf0489457e36be3a54f97be53adb60269d19116605f2e1",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 97,
+          "fp": 231,
+          "fn": 23,
+          "precision": 0.29573170731707316,
+          "recall": 0.8083333333333333,
+          "f1": 0.4330357142857143
+        },
+        "relation": {
+          "tp": 15,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.32608695652173914,
+          "recall": 0.30612244897959184,
+          "f1": 0.3157894736842105
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "predictions_sha256": "37ece0d9a05637922a22bbd712f425c6c6c49ca138f44dab143c5e5741c42a9d",
+      "checkpoint_sha256": "2680bd523488f72163346b3db8702018bfeae480ed3df51bb9cf8ec98dbfed5d",
+      "dataset_sha256": "16e7d45fd39e1fb774567d8374ffc0929633d973b1d27de8d7ba2f14f6ba9348",
+      "verification_passed": true
+    },
+    {
+      "config": {
+        "model": "securebert",
+        "cap": 128,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "seed": 43,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 11,
+        "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+        "parent_config_sha256": "c2337c9a889d274969a80106142b111da4da0a0228d68c00d487a7a20bcd2c68",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 105,
+          "fp": 424,
+          "fn": 15,
+          "precision": 0.19848771266540643,
+          "recall": 0.875,
+          "f1": 0.32357473035439144
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "predictions_sha256": "b383eea4b928b89aa47aa0533f64c77121f5f5dc1db9013ec8d0641ddbbdb74b",
+      "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+      "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+      "verification_passed": true
+    },
+    {
+      "config": {
+        "model": "securebert",
+        "cap": 96,
+        "min_entity_score": 0.05,
+        "relation_threshold": 0.9,
+        "seed": 43,
+        "max_relation_token_distance": 96,
+        "selected_epoch": 11,
+        "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+        "parent_config_sha256": "c2337c9a889d274969a80106142b111da4da0a0228d68c00d487a7a20bcd2c68",
+        "mode": "fresh_checkpoint_forward",
+        "split": "validation",
+        "relation_chunk_size": 512
+      },
+      "metrics": {
+        "entity": {
+          "tp": 103,
+          "fp": 340,
+          "fn": 17,
+          "precision": 0.2325056433408578,
+          "recall": 0.8583333333333333,
+          "f1": 0.36589698046181174
+        },
+        "relation": {
+          "tp": 14,
+          "fp": 56,
+          "fn": 35,
+          "precision": 0.2,
+          "recall": 0.2857142857142857,
+          "f1": 0.23529411764705882
+        }
+      },
+      "exact_prediction_keys": true,
+      "exact_metrics": true,
+      "predictions_sha256": "791fb9c33bffda7792dd3f3cefc710133db9ff59c202be3a070f6b4f2807d64b",
+      "checkpoint_sha256": "d3be7bf9bb5751a2abeefddfda33ed965252a1dcfae957ace504365fdfc89918",
+      "dataset_sha256": "ff60eba8a472f9a090bcb14be000ab18cb30fb9df68768a08a74de55c5d1b33d",
+      "verification_passed": true
+    }
+  ],
+  "updated_at": "2026-10-13",
+  "final_report": "journal/reports/matched70_multiseed_20261013.json"
+}

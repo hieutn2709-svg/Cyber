@@ -1,0 +1,836 @@
+{
+  "source_commit": "0089d1bbe4fbce847f8ed26d9605ac5de4748907",
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.18.0",
+    "cuda_available": false,
+    "cuda_runtime": null,
+    "device": "cpu",
+    "gpu_name": null
+  },
+  "complete": true,
+  "total_epochs": 48,
+  "total_train_window_records": 2352,
+  "validation_documents": 5,
+  "test_evaluated": false,
+  "arms": {
+    "roberta_typed": {
+      "encoder": "roberta",
+      "policy": "typed",
+      "epochs": 12,
+      "window_records": 588,
+      "selected_epoch": 12,
+      "threshold": 0.9,
+      "metrics": {
+        "all": {
+          "entity": {
+            "f1": 0.3857677902621722,
+            "fn": 19,
+            "fp": 309,
+            "precision": 0.25,
+            "recall": 0.8442622950819673,
+            "tp": 103
+          },
+          "relation": {
+            "f1": 0.25380710659898476,
+            "fn": 24,
+            "fp": 123,
+            "precision": 0.16891891891891891,
+            "recall": 0.5102040816326531,
+            "tp": 25
+          }
+        },
+        "all_relation": {
+          "f1": 0.25380710659898476,
+          "fn": 24,
+          "fp": 123,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "tp": 25
+        },
+        "core_to_core_relation": {
+          "f1": 0.25380710659898476,
+          "fn": 24,
+          "fp": 123,
+          "precision": 0.16891891891891891,
+          "recall": 0.5102040816326531,
+          "tp": 25
+        },
+        "primary_entity": {
+          "f1": 0.3872180451127819,
+          "fn": 17,
+          "fp": 309,
+          "precision": 0.25,
+          "recall": 0.8583333333333333,
+          "tp": 103
+        }
+      },
+      "coverage": {
+        "pair_post_distance": {
+          "candidate_count": 22458,
+          "gold_relation_count": 49,
+          "matched_relation_count": 37,
+          "negative_candidate_count": 22421,
+          "positive_candidate_count": 37,
+          "recall": 0.7551020408163265
+        },
+        "pair_pre_distance": {
+          "candidate_count": 41052,
+          "gold_relation_count": 49,
+          "matched_relation_count": 37,
+          "recall": 0.7551020408163265
+        },
+        "span_post_pruning_typed": {
+          "gold_count": 122,
+          "matched_count": 103,
+          "recall": 0.8442622950819673
+        },
+        "span_proposal": {
+          "gold_count": 122,
+          "matched_count": 120,
+          "recall": 0.9836065573770492
+        }
+      },
+      "totals": {
+        "eligible_boundary_groups": 4824356,
+        "eligible_collision_groups": 813,
+        "eligible_collision_negative_pairs": 863,
+        "eligible_collision_positive_pairs": 813,
+        "eligible_negative_pairs": 4970578,
+        "eligible_positive_pairs": 4632,
+        "eligible_affected_windows": 302,
+        "eligible_affected_documents": 287,
+        "sampled_boundary_groups": 32711,
+        "sampled_collision_groups": 3,
+        "sampled_collision_negative_pairs": 3,
+        "sampled_collision_positive_pairs": 3,
+        "sampled_negative_pairs": 28094,
+        "sampled_positive_pairs": 4632,
+        "sampled_affected_windows": 3,
+        "sampled_affected_documents": 3,
+        "eligible_long_positive_pairs": 12,
+        "removed_sampled_negatives": 0,
+        "replacement_negatives": 0,
+        "negative_budget_shortfall": 0
+      },
+      "conflict_documents": {
+        "eligible": [
+          "366",
+          "370",
+          "371",
+          "372",
+          "373",
+          "374",
+          "375",
+          "376",
+          "377",
+          "378",
+          "381",
+          "386",
+          "388",
+          "390",
+          "391",
+          "392",
+          "393",
+          "397",
+          "398",
+          "399",
+          "403",
+          "406",
+          "407",
+          "408",
+          "409",
+          "411",
+          "412",
+          "416",
+          "418",
+          "419",
+          "421",
+          "422",
+          "423",
+          "424",
+          "426"
+        ],
+        "sampled": [
+          "370",
+          "376",
+          "421"
+        ]
+      },
+      "epochs_with_sampled_conflicts": 3,
+      "checkpoint_verification": {
+        "model": "roberta",
+        "policy": "typed",
+        "arm": "roberta_typed",
+        "status": "verified",
+        "recovery_epoch": 12,
+        "selected_epoch": 12,
+        "embedded_best_exact": true,
+        "selected_tensors": 212,
+        "optimizer_states": 210,
+        "optimizer_step_distribution": {
+          "156": 201,
+          "154": 9
+        },
+        "empty_pair_accumulation_groups": [
+          [
+            10,
+            49
+          ],
+          [
+            11,
+            49
+          ]
+        ],
+        "validation_records": 5,
+        "saved_validation_rescored_exact": true,
+        "checkpoint_selection_recomputed": true,
+        "best_sha256": "960575366fc3c2153c9fe7a534418c9554cb0da6a514afa8a622e708238a0ac6",
+        "recovery_sha256": "1f6344c46139a725de87486909ec311f648a3c21e6feb497de037a46ebb114d1",
+        "test_evaluated": false
+      },
+      "delivery_or_restoration": {
+        "status": "verified",
+        "date": "2026-11-16",
+        "archive_sha256": "9342eb43b8accc31097211087b2190abebc2054aaea1989173a5ecd189a74fd1",
+        "archive_entries": 21,
+        "library_file_id": "libfile_ab423cffde4c8191be66f0cdef6e07b4",
+        "selected_tensors": 212,
+        "validation_rescored_exact": true,
+        "runtime_metadata_matches": true,
+        "optimizer_recovery_check": "archived 20261114; recovery tensors not included in archive",
+        "no_retraining": true
+      },
+      "history_sha256": "a794ee3d79b83754508c5b1703369b66fc5e46b7dbd21395e5d7889d274236d0"
+    },
+    "roberta_boundary_replace": {
+      "encoder": "roberta",
+      "policy": "boundary_replace",
+      "epochs": 12,
+      "window_records": 588,
+      "selected_epoch": 11,
+      "threshold": 0.9,
+      "metrics": {
+        "all": {
+          "entity": {
+            "f1": 0.3822393822393822,
+            "fn": 23,
+            "fp": 297,
+            "precision": 0.25,
+            "recall": 0.8114754098360656,
+            "tp": 99
+          },
+          "relation": {
+            "f1": 0.2690058479532164,
+            "fn": 26,
+            "fp": 99,
+            "precision": 0.1885245901639344,
+            "recall": 0.46938775510204084,
+            "tp": 23
+          }
+        },
+        "all_relation": {
+          "f1": 0.2690058479532164,
+          "fn": 26,
+          "fp": 99,
+          "precision": 0.1885245901639344,
+          "recall": 0.46938775510204084,
+          "tp": 23
+        },
+        "core_to_core_relation": {
+          "f1": 0.2690058479532164,
+          "fn": 26,
+          "fp": 99,
+          "precision": 0.1885245901639344,
+          "recall": 0.46938775510204084,
+          "tp": 23
+        },
+        "primary_entity": {
+          "f1": 0.38372093023255816,
+          "fn": 21,
+          "fp": 297,
+          "precision": 0.25,
+          "recall": 0.825,
+          "tp": 99
+        }
+      },
+      "coverage": {
+        "pair_post_distance": {
+          "candidate_count": 21142,
+          "gold_relation_count": 49,
+          "matched_relation_count": 33,
+          "negative_candidate_count": 21109,
+          "positive_candidate_count": 33,
+          "recall": 0.673469387755102
+        },
+        "pair_pre_distance": {
+          "candidate_count": 39110,
+          "gold_relation_count": 49,
+          "matched_relation_count": 33,
+          "recall": 0.673469387755102
+        },
+        "span_post_pruning_typed": {
+          "gold_count": 122,
+          "matched_count": 99,
+          "recall": 0.8114754098360656
+        },
+        "span_proposal": {
+          "gold_count": 122,
+          "matched_count": 120,
+          "recall": 0.9836065573770492
+        }
+      },
+      "totals": {
+        "eligible_boundary_groups": 4866898,
+        "eligible_collision_groups": 813,
+        "eligible_collision_negative_pairs": 865,
+        "eligible_collision_positive_pairs": 813,
+        "eligible_negative_pairs": 5013788,
+        "eligible_positive_pairs": 4632,
+        "eligible_affected_windows": 303,
+        "eligible_affected_documents": 288,
+        "sampled_boundary_groups": 32717,
+        "sampled_collision_groups": 0,
+        "sampled_collision_negative_pairs": 0,
+        "sampled_collision_positive_pairs": 0,
+        "sampled_negative_pairs": 28094,
+        "sampled_positive_pairs": 4632,
+        "sampled_affected_windows": 0,
+        "sampled_affected_documents": 0,
+        "eligible_long_positive_pairs": 12,
+        "removed_sampled_negatives": 1,
+        "replacement_negatives": 1,
+        "negative_budget_shortfall": 0
+      },
+      "conflict_documents": {
+        "eligible": [
+          "366",
+          "370",
+          "371",
+          "372",
+          "373",
+          "374",
+          "375",
+          "376",
+          "377",
+          "378",
+          "381",
+          "386",
+          "388",
+          "390",
+          "391",
+          "392",
+          "393",
+          "397",
+          "398",
+          "399",
+          "403",
+          "406",
+          "407",
+          "408",
+          "409",
+          "411",
+          "412",
+          "416",
+          "418",
+          "419",
+          "421",
+          "422",
+          "423",
+          "424",
+          "426"
+        ],
+        "sampled": []
+      },
+      "epochs_with_sampled_conflicts": 0,
+      "checkpoint_verification": {
+        "model": "roberta",
+        "policy": "boundary_replace",
+        "arm": "roberta_boundary_replace",
+        "status": "verified",
+        "recovery_epoch": 12,
+        "selected_epoch": 11,
+        "embedded_best_exact": true,
+        "selected_tensors": 212,
+        "optimizer_states": 210,
+        "optimizer_step_distribution": {
+          "156": 201,
+          "154": 9
+        },
+        "empty_pair_accumulation_groups": [
+          [
+            10,
+            49
+          ],
+          [
+            11,
+            49
+          ]
+        ],
+        "validation_records": 5,
+        "saved_validation_rescored_exact": true,
+        "checkpoint_selection_recomputed": true,
+        "best_sha256": "75e3f32ffee97d80ae40c02a83f1f0fc94af93f7cdc38a99f06451b00521f67e",
+        "recovery_sha256": "a7b5e1f179caff09b224fcee400d71847f067467836da6377afae574ee8f8f8b",
+        "test_evaluated": false
+      },
+      "delivery_or_restoration": {
+        "status": "verified",
+        "date": "2026-11-16",
+        "archive_sha256": "10c9c8bd64e7058506890a7617206967b5b60ae7263a2b494a8e5e482f7d2bdc",
+        "archive_entries": 21,
+        "library_file_id": "libfile_6d3f5c2564b88191aa4338cc688fcdc7",
+        "selected_tensors": 212,
+        "validation_rescored_exact": true,
+        "runtime_metadata_matches": true,
+        "optimizer_recovery_check": "archived 20261115; recovery tensors not included in archive",
+        "no_retraining": true
+      },
+      "history_sha256": "7a675af17a28d800f5e404af25d439584e503418a6ba8006d8b2e414ad1b852e"
+    },
+    "securebert_typed": {
+      "encoder": "securebert",
+      "policy": "typed",
+      "epochs": 12,
+      "window_records": 588,
+      "selected_epoch": 8,
+      "threshold": 0.9,
+      "metrics": {
+        "all": {
+          "entity": {
+            "f1": 0.31347962382445144,
+            "fn": 22,
+            "fp": 416,
+            "precision": 0.1937984496124031,
+            "recall": 0.819672131147541,
+            "tp": 100
+          },
+          "relation": {
+            "f1": 0.20437956204379562,
+            "fn": 35,
+            "fp": 74,
+            "precision": 0.1590909090909091,
+            "recall": 0.2857142857142857,
+            "tp": 14
+          }
+        },
+        "all_relation": {
+          "f1": 0.20437956204379562,
+          "fn": 35,
+          "fp": 74,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "tp": 14
+        },
+        "core_to_core_relation": {
+          "f1": 0.20437956204379562,
+          "fn": 35,
+          "fp": 74,
+          "precision": 0.1590909090909091,
+          "recall": 0.2857142857142857,
+          "tp": 14
+        },
+        "primary_entity": {
+          "f1": 0.3144654088050315,
+          "fn": 20,
+          "fp": 416,
+          "precision": 0.1937984496124031,
+          "recall": 0.8333333333333334,
+          "tp": 100
+        }
+      },
+      "coverage": {
+        "pair_post_distance": {
+          "candidate_count": 34136,
+          "gold_relation_count": 49,
+          "matched_relation_count": 30,
+          "negative_candidate_count": 34106,
+          "positive_candidate_count": 30,
+          "recall": 0.6122448979591837
+        },
+        "pair_pre_distance": {
+          "candidate_count": 57356,
+          "gold_relation_count": 49,
+          "matched_relation_count": 30,
+          "recall": 0.6122448979591837
+        },
+        "span_post_pruning_typed": {
+          "gold_count": 122,
+          "matched_count": 100,
+          "recall": 0.819672131147541
+        },
+        "span_proposal": {
+          "gold_count": 122,
+          "matched_count": 120,
+          "recall": 0.9836065573770492
+        }
+      },
+      "totals": {
+        "eligible_boundary_groups": 5601364,
+        "eligible_collision_groups": 837,
+        "eligible_collision_negative_pairs": 887,
+        "eligible_collision_positive_pairs": 837,
+        "eligible_negative_pairs": 5750550,
+        "eligible_positive_pairs": 4632,
+        "eligible_affected_windows": 329,
+        "eligible_affected_documents": 317,
+        "sampled_boundary_groups": 32866,
+        "sampled_collision_groups": 11,
+        "sampled_collision_negative_pairs": 11,
+        "sampled_collision_positive_pairs": 11,
+        "sampled_negative_pairs": 28254,
+        "sampled_positive_pairs": 4632,
+        "sampled_affected_windows": 11,
+        "sampled_affected_documents": 11,
+        "eligible_long_positive_pairs": 12,
+        "removed_sampled_negatives": 0,
+        "replacement_negatives": 0,
+        "negative_budget_shortfall": 0
+      },
+      "conflict_documents": {
+        "eligible": [
+          "366",
+          "370",
+          "371",
+          "372",
+          "373",
+          "374",
+          "375",
+          "376",
+          "377",
+          "378",
+          "381",
+          "386",
+          "388",
+          "390",
+          "391",
+          "392",
+          "393",
+          "396",
+          "397",
+          "398",
+          "399",
+          "403",
+          "406",
+          "407",
+          "408",
+          "409",
+          "411",
+          "412",
+          "416",
+          "418",
+          "419",
+          "421",
+          "422",
+          "423",
+          "424",
+          "426"
+        ],
+        "sampled": [
+          "376",
+          "378",
+          "386",
+          "390",
+          "412",
+          "421",
+          "426"
+        ]
+      },
+      "epochs_with_sampled_conflicts": 8,
+      "checkpoint_verification": {
+        "model": "securebert",
+        "policy": "typed",
+        "arm": "securebert_typed",
+        "status": "verified",
+        "recovery_epoch": 12,
+        "selected_epoch": 8,
+        "embedded_best_exact": true,
+        "selected_tensors": 212,
+        "optimizer_states": 210,
+        "optimizer_step_distribution": {
+          "156": 210
+        },
+        "empty_pair_accumulation_groups": [],
+        "validation_records": 5,
+        "saved_validation_rescored_exact": true,
+        "checkpoint_selection_recomputed": true,
+        "best_sha256": "9aa251b75ad9a778f1629af53907fdb94052ca964fc7dc9fb412da732808ba50",
+        "recovery_sha256": "87d21fb86177aee24b65d411ee7f93922a54fff8351369687da06ec9b8adc6ca",
+        "test_evaluated": false
+      },
+      "delivery_or_restoration": {
+        "local_path": "/workspace/scratch/a169be051251/deliverables/CTI_Q2_E2_securebert_typed_20261116.zip",
+        "purpose": "create_library_file",
+        "status": "succeeded",
+        "file_id": "file_00000000aa7081f5bd917bb5c8bbd682",
+        "library_file_id": "libfile_6167c08d560c81919206dafb12a6bb23",
+        "file_name": "CTI_Q2_E2_securebert_typed_20261116.zip",
+        "local_metadata_applied": true,
+        "path": "/CTI_Q2_E2_securebert_typed_20261116.zip",
+        "current_version_number": 0,
+        "archive_sha256": "4c09726c4f578838ef1337de03436302f5fd043c80f3bcc2c437305e2d545ea8"
+      },
+      "history_sha256": "ea6e1f6d43b6ccef9cfa8c96b64b3e320f3531f8df3eea8afee1c6a2de897a53"
+    },
+    "securebert_boundary_replace": {
+      "encoder": "securebert",
+      "policy": "boundary_replace",
+      "epochs": 12,
+      "window_records": 588,
+      "selected_epoch": 8,
+      "threshold": 0.9,
+      "metrics": {
+        "all": {
+          "entity": {
+            "f1": 0.2831858407079646,
+            "fn": 26,
+            "fp": 460,
+            "precision": 0.17266187050359713,
+            "recall": 0.7868852459016393,
+            "tp": 96
+          },
+          "relation": {
+            "f1": 0.16842105263157894,
+            "fn": 33,
+            "fp": 125,
+            "precision": 0.11347517730496454,
+            "recall": 0.32653061224489793,
+            "tp": 16
+          }
+        },
+        "all_relation": {
+          "f1": 0.16842105263157894,
+          "fn": 33,
+          "fp": 125,
+          "precision": 0.11347517730496454,
+          "recall": 0.32653061224489793,
+          "tp": 16
+        },
+        "core_to_core_relation": {
+          "f1": 0.16842105263157894,
+          "fn": 33,
+          "fp": 125,
+          "precision": 0.11347517730496454,
+          "recall": 0.32653061224489793,
+          "tp": 16
+        },
+        "primary_entity": {
+          "f1": 0.28402366863905326,
+          "fn": 24,
+          "fp": 460,
+          "precision": 0.17266187050359713,
+          "recall": 0.8,
+          "tp": 96
+        }
+      },
+      "coverage": {
+        "pair_post_distance": {
+          "candidate_count": 40494,
+          "gold_relation_count": 49,
+          "matched_relation_count": 27,
+          "negative_candidate_count": 40467,
+          "positive_candidate_count": 27,
+          "recall": 0.5510204081632653
+        },
+        "pair_pre_distance": {
+          "candidate_count": 63726,
+          "gold_relation_count": 49,
+          "matched_relation_count": 27,
+          "recall": 0.5510204081632653
+        },
+        "span_post_pruning_typed": {
+          "gold_count": 122,
+          "matched_count": 96,
+          "recall": 0.7868852459016393
+        },
+        "span_proposal": {
+          "gold_count": 122,
+          "matched_count": 120,
+          "recall": 0.9836065573770492
+        }
+      },
+      "totals": {
+        "eligible_boundary_groups": 5627392,
+        "eligible_collision_groups": 880,
+        "eligible_collision_negative_pairs": 934,
+        "eligible_collision_positive_pairs": 880,
+        "eligible_negative_pairs": 5784926,
+        "eligible_positive_pairs": 4632,
+        "eligible_affected_windows": 335,
+        "eligible_affected_documents": 325,
+        "sampled_boundary_groups": 32864,
+        "sampled_collision_groups": 0,
+        "sampled_collision_negative_pairs": 0,
+        "sampled_collision_positive_pairs": 0,
+        "sampled_negative_pairs": 28238,
+        "sampled_positive_pairs": 4632,
+        "sampled_affected_windows": 0,
+        "sampled_affected_documents": 0,
+        "eligible_long_positive_pairs": 12,
+        "removed_sampled_negatives": 4,
+        "replacement_negatives": 4,
+        "negative_budget_shortfall": 0
+      },
+      "conflict_documents": {
+        "eligible": [
+          "366",
+          "370",
+          "371",
+          "372",
+          "373",
+          "374",
+          "375",
+          "376",
+          "377",
+          "378",
+          "381",
+          "386",
+          "388",
+          "390",
+          "391",
+          "392",
+          "393",
+          "396",
+          "397",
+          "398",
+          "399",
+          "403",
+          "406",
+          "407",
+          "408",
+          "409",
+          "411",
+          "412",
+          "416",
+          "418",
+          "419",
+          "421",
+          "422",
+          "423",
+          "424",
+          "426"
+        ],
+        "sampled": []
+      },
+      "epochs_with_sampled_conflicts": 0,
+      "checkpoint_verification": {
+        "model": "securebert",
+        "policy": "boundary_replace",
+        "arm": "securebert_boundary_replace",
+        "status": "verified",
+        "recovery_epoch": 12,
+        "selected_epoch": 8,
+        "embedded_best_exact": true,
+        "selected_tensors": 212,
+        "optimizer_states": 210,
+        "optimizer_step_distribution": {
+          "156": 210
+        },
+        "empty_pair_accumulation_groups": [],
+        "validation_records": 5,
+        "saved_validation_rescored_exact": true,
+        "checkpoint_selection_recomputed": true,
+        "best_sha256": "d8285311f3c995e8eb93d2729c0960ba27fe0f132917e5bc40dfe4abbbb2ef27",
+        "recovery_sha256": "70baccb130ff626fc5a9fd8091a1a935b8a5005ae73b6af2ccf0f3415e32f84a",
+        "test_evaluated": false
+      },
+      "delivery_or_restoration": {
+        "local_path": "/workspace/scratch/a169be051251/deliverables/CTI_Q2_E2_securebert_boundary_replace_20261116.zip",
+        "purpose": "create_library_file",
+        "status": "succeeded",
+        "file_id": "file_000000006a048212bd096b30f9b7ca12",
+        "library_file_id": "libfile_e7a2d28c02d48191b6cf2f53089518a6",
+        "file_name": "CTI_Q2_E2_securebert_boundary_replace_20261116.zip",
+        "local_metadata_applied": true,
+        "path": "/CTI_Q2_E2_securebert_boundary_replace_20261116.zip",
+        "current_version_number": 0,
+        "archive_sha256": "e0f610dcca5ac6c65e4276f30eb2318167c38810484fdfe9dd140ca95658c4df"
+      },
+      "history_sha256": "888f4caab9dae5b555cf489d51cac462adbbf8eb4e398bf0bfafd739b339bdf1"
+    }
+  },
+  "paired_comparisons": {
+    "roberta": {
+      "primary_entity_f1_delta_percentage_points": -0.34971148802237506,
+      "all_relation_f1_delta_percentage_points": 1.519874135423166,
+      "first_intervention_window": {
+        "epoch": 8,
+        "step": 25,
+        "document_id": "370",
+        "window_index": 0
+      },
+      "identical_sampled_batch_prefix_windows": 367
+    },
+    "securebert": {
+      "primary_entity_f1_delta_percentage_points": -3.0441740165978226,
+      "all_relation_f1_delta_percentage_points": -3.5958509412216677,
+      "first_intervention_window": {
+        "epoch": 1,
+        "step": 25,
+        "document_id": "421",
+        "window_index": 0
+      },
+      "identical_sampled_batch_prefix_windows": 24
+    }
+  },
+  "logit_stream_verification": {
+    "status": "verified",
+    "note": "Complete JSONL integrity and candidate-count check, not a new forward or independent decoding.",
+    "arms": {
+      "roberta_typed": {
+        "rows": 22458,
+        "candidate_count_matches": true,
+        "finite_unique_rows": true,
+        "documents": [
+          "365",
+          "389",
+          "395",
+          "400",
+          "420"
+        ],
+        "sha256": "7e36f716c75927a001dc1cc2a1bb5feaf729c2adecd688cab92523c1a4072648"
+      },
+      "roberta_boundary_replace": {
+        "rows": 21142,
+        "candidate_count_matches": true,
+        "finite_unique_rows": true,
+        "documents": [
+          "365",
+          "389",
+          "395",
+          "400",
+          "420"
+        ],
+        "sha256": "ee2bcf15a402a2d9b1bb77f95e43978e0900d27fae0f29c4b52fd12c5ff0fe7b"
+      },
+      "securebert_typed": {
+        "rows": 34136,
+        "candidate_count_matches": true,
+        "finite_unique_rows": true,
+        "documents": [
+          "365",
+          "389",
+          "395",
+          "400",
+          "420"
+        ],
+        "sha256": "0cb2ca36a2195b1103abbe5e33e04480379293419066b5c6e32b3df115517467"
+      },
+      "securebert_boundary_replace": {
+        "rows": 40494,
+        "candidate_count_matches": true,
+        "finite_unique_rows": true,
+        "documents": [
+          "365",
+          "389",
+          "395",
+          "400",
+          "420"
+        ],
+        "sha256": "afb557385b91688e377e6f53cead3166db4bfef80ed9a5fcf0b3849924674056"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "source_commit": "0089d1bbe4fbce847f8ed26d9605ac5de4748907",
+  "date": "2026-11-16",
+  "items": [
+    {
+      "arm": "roberta_typed",
+      "file_name": "CTI_Q2_E2_roberta_typed_20261114.zip",
+      "library_file_id": "libfile_ab423cffde4c8191be66f0cdef6e07b4",
+      "url": "https://chatgpt.com/library?file_id=libfile_ab423cffde4c8191be66f0cdef6e07b4&account_id=personal",
+      "archive_sha256": "9342eb43b8accc31097211087b2190abebc2054aaea1989173a5ecd189a74fd1",
+      "selected_checkpoint_sha256": "960575366fc3c2153c9fe7a534418c9554cb0da6a514afa8a622e708238a0ac6",
+      "selected_epoch": 12,
+      "selected_checkpoint_included": true,
+      "optimizer_recovery_included": false
+    },
+    {
+      "arm": "roberta_boundary_replace",
+      "file_name": "CTI_Q2_E2_roberta_boundary_replace_20261115.zip",
+      "library_file_id": "libfile_6d3f5c2564b88191aa4338cc688fcdc7",
+      "url": "https://chatgpt.com/library?file_id=libfile_6d3f5c2564b88191aa4338cc688fcdc7&account_id=personal",
+      "archive_sha256": "10c9c8bd64e7058506890a7617206967b5b60ae7263a2b494a8e5e482f7d2bdc",
+      "selected_checkpoint_sha256": "75e3f32ffee97d80ae40c02a83f1f0fc94af93f7cdc38a99f06451b00521f67e",
+      "selected_epoch": 11,
+      "selected_checkpoint_included": true,
+      "optimizer_recovery_included": false
+    },
+    {
+      "arm": "securebert_typed",
+      "file_name": "CTI_Q2_E2_securebert_typed_20261116.zip",
+      "library_file_id": "libfile_6167c08d560c81919206dafb12a6bb23",
+      "url": "https://chatgpt.com/library?file_id=libfile_6167c08d560c81919206dafb12a6bb23&account_id=personal",
+      "archive_sha256": "4c09726c4f578838ef1337de03436302f5fd043c80f3bcc2c437305e2d545ea8",
+      "selected_checkpoint_sha256": "9aa251b75ad9a778f1629af53907fdb94052ca964fc7dc9fb412da732808ba50",
+      "selected_epoch": 8,
+      "selected_checkpoint_included": true,
+      "optimizer_recovery_included": false
+    },
+    {
+      "arm": "securebert_boundary_replace",
+      "file_name": "CTI_Q2_E2_securebert_boundary_replace_20261116.zip",
+      "library_file_id": "libfile_e7a2d28c02d48191b6cf2f53089518a6",
+      "url": "https://chatgpt.com/library?file_id=libfile_e7a2d28c02d48191b6cf2f53089518a6&account_id=personal",
+      "archive_sha256": "e0f610dcca5ac6c65e4276f30eb2318167c38810484fdfe9dd140ca95658c4df",
+      "selected_checkpoint_sha256": "d8285311f3c995e8eb93d2729c0960ba27fe0f132917e5bc40dfe4abbbb2ef27",
+      "selected_epoch": 8,
+      "selected_checkpoint_included": true,
+      "optimizer_recovery_included": false
+    }
+  ]
+}
